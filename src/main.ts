@@ -2,9 +2,13 @@ import OpenAI from "openai";
 import { concatMap, filter, fromEvent, map, tap } from "rxjs";
 import { $apiKey, setApiKey } from "./lib/auth";
 
+import { html, render } from "lit";
+import { repeat } from "lit/directives/repeat.js";
+
 import { fromAbortablePromise } from "./lib/abort";
 import { isEnterKeydown, preventDefault, toTargetValueString } from "./lib/event";
 import { user } from "./lib/message";
+import { $thread, appendThreadItem } from "./lib/thread";
 import { $recognition, recognizer } from "./lib/web-speech/speech-to-text";
 import { speaker } from "./lib/web-speech/text-to-speech";
 import "./main.css";
@@ -24,10 +28,6 @@ function consumeTextareaValue() {
   return value;
 }
 
-function appendMessage(role: string, content: string) {
-  threadContainer.innerHTML += `<div class="message"><span class="message__role">${role}</span><pre><code>${content}</code></pre></div>`;
-}
-
 // initialize api key input
 apiKeyInput.value = $apiKey.value;
 fromEvent<KeyboardEvent>(apiKeyInput, "input").pipe(map(toTargetValueString), tap(setApiKey)).subscribe();
@@ -44,12 +44,32 @@ fromEvent<SubmitEvent>(chatForm, "submit")
   .pipe(
     tap(preventDefault),
     map(consumeTextareaValue),
-    tap((content) => appendMessage("User", content)),
+    tap((content) => appendThreadItem({ role: "user", content })),
     concatMap((prompt) => fromAbortablePromise((signal) => openai.chat.completions.create({ model: "gpt-4o-mini", messages: [user`${prompt}`] }, { signal }))),
     filter((r) => r.choices[0].finish_reason === "stop"),
     map((r) => r.choices[0].message.content ?? ""),
-    tap((content) => appendMessage("Assistant", content)),
+    tap((content) => appendThreadItem({ role: "assistant", content })),
     tap(speaker.speak)
+  )
+  .subscribe();
+
+$thread
+  .pipe(
+    tap((thread) =>
+      render(
+        repeat(
+          thread,
+          (item) => item.id,
+          (item) => html`
+            <div class="message">
+              <span class="message__role">${item.role}</span>
+              <pre><code>${item.content}</code></pre>
+            </div>
+          `
+        ),
+        threadContainer
+      )
+    )
   )
   .subscribe();
 
