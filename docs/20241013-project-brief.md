@@ -10,7 +10,7 @@
 ## How
 
 - Multi-agent
-- Code centric
+- Everything is scriptable
 - Metaphorical UX
 - Data sharing via communication
 - Temporal and causal arrows as first-class citizen
