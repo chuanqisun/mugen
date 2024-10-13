@@ -8,6 +8,9 @@ export interface SimpleRecognitionEvent {
 
 export const $recognition = new Subject<SimpleRecognitionEvent>();
 const recognition = new webkitSpeechRecognition();
+
+// Prevent starting multiple sessions
+let isStarted = false;
 recognition.interimResults = true;
 
 export const recognizer = {
@@ -17,6 +20,8 @@ export const recognizer = {
 };
 
 function initSession() {
+  isStarted = true;
+
   recognition.continuous = true;
   recognition.onstart = () => console.log("[recognition] session stated");
   recognition.onresult = (e) => {
@@ -31,6 +36,7 @@ function initSession() {
     console.error(`[recognition] sliently omit error`, e);
   };
   recognition.onend = () => {
+    isStarted = false;
     recognition.stop();
     console.log("[recognition] session ended");
     if (recognition.continuous) initSession();
@@ -38,6 +44,7 @@ function initSession() {
 }
 
 function start() {
+  if (isStarted) return;
   initSession();
   recognition.start();
 }
