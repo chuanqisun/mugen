@@ -5,6 +5,7 @@ import { $apiKey, setApiKey } from "./lib/auth";
 import { fromAbortablePromise } from "./lib/abort";
 import { isEnterKeydown, preventDefault, toTargetValueString } from "./lib/event";
 import { user } from "./lib/message";
+import { $recognition, recognizer } from "./lib/web-speech/speech-to-text";
 import "./main.css";
 
 const openai = new OpenAI({ apiKey: $apiKey.value, dangerouslyAllowBrowser: true });
@@ -12,6 +13,7 @@ const openai = new OpenAI({ apiKey: $apiKey.value, dangerouslyAllowBrowser: true
 // static elements
 const apiKeyInput = document.querySelector(`[name="api-key"]`) as HTMLInputElement;
 const textareaElement = document.querySelector("textarea") as HTMLTextAreaElement;
+const speakButton = document.querySelector(`#push-to-talk`) as HTMLButtonElement;
 
 function clearTextarea() {
   textareaElement.value = "";
@@ -30,3 +32,14 @@ fromEvent<KeyboardEvent>(textareaElement, "keydown")
     tap((r) => console.log(r))
   )
   .subscribe();
+
+// poc speech
+speakButton.addEventListener("mousedown", () => recognizer.start());
+speakButton.addEventListener("mouseup", () => recognizer.stop());
+$recognition.subscribe((e) => {
+  if (e.isFinal) {
+    textareaElement.value += e.text;
+  } else {
+    console.log(e.text);
+  }
+});

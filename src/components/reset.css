@@ -20,6 +20,7 @@ body {
   font-family: monospace;
 }
 
+button,
 input,
 textarea {
   padding: 4px;
