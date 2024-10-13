@@ -4,7 +4,7 @@ export function fromAbortablePromise<T>(factoryFunc: (signal: AbortSignal) => Pr
   return new Observable((subscriber) => {
     const ac = new AbortController();
 
-    factoryFunc(ac.signal).then(subscriber.next.bind(subscriber)).catch(subscriber.error.bind(subscriber));
+    factoryFunc(ac.signal).then(subscriber.next.bind(subscriber)).catch(subscriber.error.bind(subscriber)).finally(subscriber.complete.bind(subscriber));
 
     return () => {
       ac.abort();

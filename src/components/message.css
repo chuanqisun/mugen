@@ -1,0 +1,12 @@
+.message {
+  display: grid;
+  gap: 4px;
+
+  .message__role {
+    font-weight: 600;
+  }
+
+  pre {
+    white-space: pre-wrap;
+  }
+}
