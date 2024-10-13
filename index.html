@@ -4,11 +4,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vite + TS</title>
+  <title>Mugen</title>
 </head>
 
-<body>
-  <chat-box-element></chat-box-element>
+<body class="app-layout">
+  <div id="chat-pane" class="chat-layout">
+    <div>Thread messages</div>
+    <textarea id="chat-input" autofocus></textarea>
+  </div>
+  <div id="canvas-pane"></div>
+  <script src="./src/main.ts" type="module"></script>
 </body>
 
 </html>

@@ -1,0 +1,10 @@
+.chat-layout {
+  display: grid;
+
+  overflow: auto;
+  resize: horizontal;
+
+  textarea {
+    resize: none;
+  }
+}

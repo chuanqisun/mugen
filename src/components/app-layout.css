@@ -1,0 +1,13 @@
+.app-layout {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr 0fr;
+
+  > * {
+    height: 100%;
+  }
+}
+
+.app-layout:has(> :nth-child(2):not(:empty)) {
+  grid-template-columns: auto 1fr;
+}
