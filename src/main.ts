@@ -14,20 +14,30 @@ const openai = new OpenAI({ apiKey: $apiKey.value, dangerouslyAllowBrowser: true
 const apiKeyInput = document.querySelector(`[name="api-key"]`) as HTMLInputElement;
 const textareaElement = document.querySelector("textarea") as HTMLTextAreaElement;
 const speakButton = document.querySelector(`#push-to-talk`) as HTMLButtonElement;
+const chatForm = document.querySelector(`#chat-form`) as HTMLFormElement;
 
-function clearTextarea() {
+function consumeTextareaValue() {
+  const value = textareaElement.value;
   textareaElement.value = "";
+  return value;
 }
 
 // initialize api key input
 apiKeyInput.value = $apiKey.value;
 fromEvent<KeyboardEvent>(apiKeyInput, "input").pipe(map(toTargetValueString), tap(setApiKey)).subscribe();
+
 fromEvent<KeyboardEvent>(textareaElement, "keydown")
   .pipe(
     filter(isEnterKeydown),
     tap(preventDefault),
-    map(toTargetValueString),
-    tap(clearTextarea),
+    tap(() => chatForm.requestSubmit())
+  )
+  .subscribe();
+
+fromEvent<SubmitEvent>(chatForm, "submit")
+  .pipe(
+    tap(preventDefault),
+    map(consumeTextareaValue),
     concatMap((prompt) => fromAbortablePromise((signal) => openai.chat.completions.create({ model: "gpt-4o", messages: [user`${prompt}`] }, { signal }))),
     tap((r) => console.log(r))
   )
@@ -36,9 +46,10 @@ fromEvent<KeyboardEvent>(textareaElement, "keydown")
 // poc speech
 speakButton.addEventListener("mousedown", () => recognizer.start());
 speakButton.addEventListener("mouseup", () => recognizer.stop());
+
 $recognition.subscribe((e) => {
   if (e.isFinal) {
-    textareaElement.value += e.text;
+    textareaElement.value += (textareaElement.value ? " " : "") + e.text;
   } else {
     console.log(e.text);
   }

@@ -11,8 +11,11 @@
   <label>API Key</label>
   <input name="api-key" type="password" />
   <label>Prompt</label>
-  <textarea id="chat-input" autofocus></textarea>
-  <button id="push-to-talk">Push to talk</button>
+  <form id="chat-form" style="display: grid">
+    <textarea id="chat-input" autofocus></textarea>
+    <button type="button" id="push-to-talk">Push to talk</button>
+    <button type="submit">Submit</button>
+  </form>
   <div>Thread messages</div>
   <script src="./src/main.ts" type="module"></script>
 </body>
