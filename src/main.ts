@@ -1,15 +1,14 @@
-import OpenAI from "openai";
-import { concatMap, filter, fromEvent, map, tap } from "rxjs";
-import { $apiKey, setApiKey } from "./lib/auth";
-
 import { html, render } from "lit";
 import { repeat } from "lit/directives/repeat.js";
-
+import OpenAI from "openai";
+import { concatMap, filter, fromEvent, map, tap } from "rxjs";
 import { fromAbortablePromise } from "./lib/abort";
+import { $apiKey, setApiKey } from "./lib/auth";
 import { isEnterKeydown, preventDefault, toTargetValueString } from "./lib/event";
 import { $thread, appendThreadItem } from "./lib/thread";
 import { $recognition, recognizer } from "./lib/web-speech/speech-to-text";
 import { speaker } from "./lib/web-speech/text-to-speech";
+
 import "./main.css";
 
 const openai = new OpenAI({ apiKey: $apiKey.value, dangerouslyAllowBrowser: true });
