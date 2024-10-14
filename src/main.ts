@@ -7,7 +7,6 @@ import { repeat } from "lit/directives/repeat.js";
 
 import { fromAbortablePromise } from "./lib/abort";
 import { isEnterKeydown, preventDefault, toTargetValueString } from "./lib/event";
-import { user } from "./lib/message";
 import { $thread, appendThreadItem } from "./lib/thread";
 import { $recognition, recognizer } from "./lib/web-speech/speech-to-text";
 import { speaker } from "./lib/web-speech/text-to-speech";
@@ -45,7 +44,7 @@ fromEvent<SubmitEvent>(chatForm, "submit")
     tap(preventDefault),
     map(consumeTextareaValue),
     tap((content) => appendThreadItem({ role: "user", content })),
-    concatMap((prompt) => fromAbortablePromise((signal) => openai.chat.completions.create({ model: "gpt-4o-mini", messages: [user`${prompt}`] }, { signal }))),
+    concatMap(() => fromAbortablePromise((signal) => openai.chat.completions.create({ model: "gpt-4o-mini", messages: $thread.value }, { signal }))),
     filter((r) => r.choices[0].finish_reason === "stop"),
     map((r) => r.choices[0].message.content ?? ""),
     tap((content) => appendThreadItem({ role: "assistant", content })),
