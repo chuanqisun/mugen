@@ -1,4 +1,16 @@
 .app-layout {
+  height: 100%;
   display: grid;
-  align-items: center;
+  grid-template: "aside main" auto / auto 1fr;
+}
+
+.app-layout__aside {
+  grid-area: aside;
+  overflow: auto;
+  resize: horizontal;
+}
+
+.app-layout__main {
+  grid-area: main;
+  overflow: auto;
 }

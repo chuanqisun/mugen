@@ -11,17 +11,24 @@
   <dialog>
     <label>API Key</label>
     <input name="api-key" type="password" />
+    <form method="dialog">
+      <button>OK</button>
+    </form>
   </dialog>
-  <button id="open-menu">Menu</button>
-  <label>Prompt</label>
-  <form id="chat-form" style="display: grid">
-    <textarea id="chat-input" autofocus></textarea>
-    <div>
-      <button type="button" id="push-to-talk">Push to talk</button>
-      <button type="submit">Submit</button>
-    </div>
-  </form>
-  <div id="thread" class="thread"></div>
+  <div class="app-layout__aside" style="width: min(320px, 50vw)">
+    <button id="open-menu">Menu</button>
+    <div id="thread" class="thread"></div>
+    <form id="chat-form" style="display: grid">
+      <textarea style="resize: vertical" id="chat-input" autofocus></textarea>
+      <div>
+        <button type="button" id="push-to-talk">Push to talk</button>
+        <button type="submit">Submit</button>
+      </div>
+    </form>
+  </div>
+  <div class="app-layout__main">
+    artifacts editor
+  </div>
   <script src="./src/main.ts" type="module"></script>
 </body>
 
