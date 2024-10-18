@@ -9,7 +9,11 @@ import { $thread, appendThreadItem } from "./lib/thread";
 import { $recognition, recognizer } from "./lib/web-speech/speech-to-text";
 import { speaker } from "./lib/web-speech/text-to-speech";
 
+import { defineNewFileElement } from "./components/new-file-element";
 import "./main.css";
+
+/* Define web components */
+defineNewFileElement();
 
 const openai = new OpenAI({ apiKey: $apiKey.value, dangerouslyAllowBrowser: true });
 
@@ -52,6 +56,26 @@ fromEvent<SubmitEvent>(chatForm, "submit")
   )
   .subscribe();
 
+speakButton.addEventListener("mousedown", () => {
+  speaker.stop();
+  recognizer.start();
+});
+speakButton.addEventListener("mouseup", () => recognizer.stop());
+
+$recognition.subscribe((e) => {
+  if (e.isFinal) {
+    textareaElement.value += (textareaElement.value ? " " : "") + e.text;
+  } else {
+    console.log(e.text);
+  }
+});
+
+menuButton.addEventListener("click", () => {
+  document.querySelector("dialog")!.showModal();
+});
+
+/* Output */
+
 $thread
   .pipe(
     tap((thread) =>
@@ -71,22 +95,3 @@ $thread
     )
   )
   .subscribe();
-
-// poc speech
-speakButton.addEventListener("mousedown", () => {
-  speaker.stop();
-  recognizer.start();
-});
-speakButton.addEventListener("mouseup", () => recognizer.stop());
-
-$recognition.subscribe((e) => {
-  if (e.isFinal) {
-    textareaElement.value += (textareaElement.value ? " " : "") + e.text;
-  } else {
-    console.log(e.text);
-  }
-});
-
-menuButton.addEventListener("click", () => {
-  document.querySelector("dialog")!.showModal();
-});

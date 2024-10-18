@@ -15,19 +15,24 @@
       <button>OK</button>
     </form>
   </dialog>
-  <div class="app-layout__aside" style="width: min(320px, 50vw)">
+  <aside class="app-layout__aside" style="width: min(320px, 50vw)">
     <button id="open-menu">Menu</button>
     <div id="thread" class="thread"></div>
     <form id="chat-form" style="display: grid">
-      <textarea style="resize: vertical" id="chat-input" autofocus></textarea>
+      <textarea name="prompt" style="resize: vertical" id="chat-input" autofocus></textarea>
       <div>
         <button type="button" id="push-to-talk">Push to talk</button>
         <button type="submit">Submit</button>
       </div>
     </form>
-  </div>
-  <div class="app-layout__main">
-    artifacts editor
+  </aside>
+  <div class="app-layout__main editor-layout">
+    <nav>
+      <new-file-element>
+        <button>New file</button>
+        <input name="new-file-name" />
+      </new-file-element>
+    </nav>
   </div>
   <script src="./src/main.ts" type="module"></script>
 </body>
