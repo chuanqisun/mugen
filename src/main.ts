@@ -17,6 +17,7 @@ const openai = new OpenAI({ apiKey: $apiKey.value, dangerouslyAllowBrowser: true
 const apiKeyInput = document.querySelector(`[name="api-key"]`) as HTMLInputElement;
 const textareaElement = document.querySelector("textarea") as HTMLTextAreaElement;
 const speakButton = document.querySelector(`#push-to-talk`) as HTMLButtonElement;
+const menuButton = document.querySelector(`#open-menu`) as HTMLButtonElement;
 const chatForm = document.querySelector(`#chat-form`) as HTMLFormElement;
 const threadContainer = document.querySelector(`#thread`) as HTMLElement;
 
@@ -84,4 +85,8 @@ $recognition.subscribe((e) => {
   } else {
     console.log(e.text);
   }
+});
+
+menuButton.addEventListener("click", () => {
+  document.querySelector("dialog")!.showModal();
 });
