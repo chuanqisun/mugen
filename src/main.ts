@@ -4,7 +4,7 @@ import OpenAI from "openai";
 import { concatMap, filter, fromEvent, map, tap } from "rxjs";
 import { fromAbortablePromise } from "./lib/abort";
 import { $apiKey, setApiKey } from "./lib/auth";
-import { isEnterKeydown, preventDefault, toTargetValueString } from "./lib/event";
+import { isCtrlEnterKeydown, preventDefault, toTargetValueString } from "./lib/event";
 import { $thread, appendThreadItem } from "./lib/thread";
 import { $recognition, recognizer } from "./lib/web-speech/speech-to-text";
 import { speaker } from "./lib/web-speech/text-to-speech";
@@ -33,7 +33,7 @@ fromEvent<KeyboardEvent>(apiKeyInput, "input").pipe(map(toTargetValueString), ta
 
 fromEvent<KeyboardEvent>(textareaElement, "keydown")
   .pipe(
-    filter(isEnterKeydown),
+    filter(isCtrlEnterKeydown),
     tap(preventDefault),
     tap(() => chatForm.requestSubmit())
   )
