@@ -7,34 +7,20 @@
   <title>Mugen</title>
 </head>
 
-<body class="app-layout">
+<body class="rows" style="height: 100%">
   <dialog>
-    <label>API Key</label>
-    <input name="api-key" type="password" />
-    <form method="dialog">
-      <button>OK</button>
-    </form>
+    <div class="rows">
+      <label>API Key</label>
+      <input name="api-key" type="password" />
+      <form method="dialog">
+        <button>OK</button>
+      </form>
+    </div>
   </dialog>
-  <aside class="app-layout__aside" style="width: min(320px, 50vw)">
-    <button id="open-menu">Menu</button>
-    <div id="thread" class="thread"></div>
-    <form id="chat-form" style="display: grid">
-      <textarea name="prompt" style="resize: vertical" id="chat-input" autofocus></textarea>
-      <div>
-        <button type="button" id="push-to-talk">Push to talk</button>
-        <button type="submit">Submit</button>
-      </div>
-    </form>
-  </aside>
-  <div class="app-layout__main editor-layout">
-    <nav>
-      <new-file-element>
-        <button>New file</button>
-        <input name="new-file-name" />
-      </new-file-element>
-    </nav>
-  </div>
+  <button id="open-menu">Menu</button>
+  <textarea style="resize: vertical"></textarea>
   <script src="./src/main.ts" type="module"></script>
+
 </body>
 
 </html>
