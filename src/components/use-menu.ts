@@ -2,7 +2,7 @@ import { fromEvent, map, tap } from "rxjs";
 import { $apiKey, setApiKey } from "../lib/auth";
 import { toTargetValueString } from "../lib/event";
 
-export function useOptionsDialog() {
+export function useMenu() {
   const optionsDialogTrigger = document.querySelector("#open-menu") as HTMLButtonElement;
   optionsDialogTrigger.addEventListener("click", () => {
     document.querySelector("dialog")!.showModal();
