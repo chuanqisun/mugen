@@ -5,34 +5,30 @@ export interface AttributeMutationRecord {
   newValue: string | null;
 }
 
-export function fromAttributeChange(element: HTMLElement, attributeName: string): Observable<AttributeMutationRecord> {
+export function fromAttributes(element: HTMLElement, attributeFilter?: string[]): Observable<Record<string, AttributeMutationRecord>> {
+  function isAttributeNameObserved(name: string) {
+    return !attributeFilter || attributeFilter.includes(name);
+  }
+
   return new Observable((subscriber) => {
-    // starts with initial value
-    subscriber.next({ oldValue: null, newValue: element.getAttribute(attributeName) });
+    // starts with initial values
+    subscriber.next(
+      element
+        .getAttributeNames()
+        .filter(isAttributeNameObserved)
+        .reduce(
+          (map, name) => {
+            map[name] = { oldValue: null, newValue: element.getAttribute(name) };
+            return map;
+          },
+          {} as Record<string, AttributeMutationRecord>
+        )
+    );
 
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === "attributes" && mutation.attributeName === attributeName) {
-          const newValue = element.getAttribute(attributeName);
-          subscriber.next({ oldValue: mutation.oldValue, newValue });
-        }
-      });
-    });
-    observer.observe(element, { attributes: true, attributeFilter: [attributeName] });
-
-    /** Mutation observer holds weak reference to observed node. No need to manually unsubscribe */
-    return () => {
-      observer.disconnect();
-    };
-  });
-}
-
-export function fromAttributesChange(element: HTMLElement, attributeFilter?: string[]): Observable<Record<string, AttributeMutationRecord>> {
-  return new Observable((subscriber) => {
     const observer = new MutationObserver((mutations) => {
       const combinedMutationMap = mutations.reduce(
         (map, mutation) => {
-          if (mutation.type === "attributes") {
+          if (mutation.type === "attributes" && isAttributeNameObserved(mutation.attributeName!)) {
             map[mutation.attributeName!] = {
               oldValue: mutation.oldValue,
               newValue: element.getAttribute(mutation.attributeName!),

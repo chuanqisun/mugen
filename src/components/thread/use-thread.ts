@@ -1,4 +1,5 @@
 import { map, Observable, tap } from "rxjs";
+import { TaskElement } from "./task-element";
 
 export interface UseThreadOptions {
   newMessage: Observable<string>;
@@ -9,8 +10,12 @@ export function useThread(options: UseThreadOptions) {
 
   options.newMessage
     .pipe(
-      map((message) => `<task-element input="${message}"></task-element>`),
-      tap((message) => (thread.innerHTML += message))
+      map((message) => {
+        const taskElement = document.createElement("task-element") as TaskElement;
+        taskElement.setAttribute("input", message);
+        return taskElement;
+      }),
+      tap((taskElement) => thread.appendChild(taskElement))
     )
     .subscribe();
 }
