@@ -12,7 +12,6 @@ export function useChatInput() {
     tap(preventDefault),
     map((e) => e.target as HTMLTextAreaElement),
     map(consumeStringValue),
-    tap(console.log),
     share()
   );
 

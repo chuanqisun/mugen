@@ -9,7 +9,7 @@ export function useThread(options: UseThreadOptions) {
 
   options.newMessage
     .pipe(
-      map((message) => `<task-element data-input="${message}"></task-element>`),
+      map((message) => `<task-element input="${message}"></task-element>`),
       tap((message) => (thread.innerHTML += message))
     )
     .subscribe();
