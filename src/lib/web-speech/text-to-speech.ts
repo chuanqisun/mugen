@@ -10,3 +10,7 @@ function speak(text: string) {
 function stop() {
   speechSynthesis.cancel();
 }
+
+// TODO, use a queue to track unspoken text.
+// Auto-combine unspoken text into one utterance call
+// Track spoken state of each utterance, including those combined
