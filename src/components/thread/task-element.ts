@@ -1,24 +1,18 @@
 import { html, render } from "lit";
-import { BehaviorSubject, map, tap } from "rxjs";
-import { fromAttributes } from "../../lib/mutation-observer";
+import { BehaviorSubject, combineLatestWith, tap } from "rxjs";
+import { reflectAttributes } from "../../lib/attributes";
 
 export class TaskElement extends HTMLElement {
-  private $state = new BehaviorSubject<{ input: string }>({ input: this.getAttribute("input") ?? "" });
-  private $attributeReflection = fromAttributes(this).pipe(
-    map((changes) =>
-      Object.entries(changes)
-        .map((change) => ({ [change[0]]: change[1].newValue }) as { [key: string]: string | null })
-        .reduce((acc, changes) => ({ ...acc, ...changes }), {} as { [key: string]: string | null })
-    ),
-    tap((changes) => this.$state.next({ ...this.$state.value, ...changes }))
-  );
+  private $state = new BehaviorSubject({ input: this.getAttribute("input") ?? "" });
+  private $reflectAttributes = reflectAttributes(this, this.$state);
 
   private $render = this.$state.pipe(
-    tap((state) =>
+    combineLatestWith(this.$state),
+    tap(([_state, attr]) =>
       render(
         html`
           <div>
-            <div>Input: ${state.input}</div>
+            <div>Input: ${attr.input}</div>
             <div>Output</div>
           </div>
         `,
@@ -28,8 +22,8 @@ export class TaskElement extends HTMLElement {
   );
 
   connectedCallback() {
-    this.$attributeReflection.subscribe();
     this.$render.subscribe();
+    this.$reflectAttributes.subscribe();
   }
 
   run() {

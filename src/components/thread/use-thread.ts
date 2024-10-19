@@ -15,7 +15,8 @@ export function useThread(options: UseThreadOptions) {
         taskElement.setAttribute("input", message);
         return taskElement;
       }),
-      tap((taskElement) => thread.appendChild(taskElement))
+      tap((taskElement) => thread.appendChild(taskElement)),
+      tap((taskElement) => taskElement.run())
     )
     .subscribe();
 }
