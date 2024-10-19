@@ -1,6 +1,6 @@
 import { fromEvent, map, tap } from "rxjs";
-import { $apiKey, setApiKey } from "../lib/auth";
 import { toTargetValueString } from "../lib/event";
+import { $apiKey, setApiKey } from "./chat-provider/auth";
 
 export function useMenu() {
   const optionsDialogTrigger = document.querySelector("#open-menu") as HTMLButtonElement;
