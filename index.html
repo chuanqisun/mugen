@@ -22,7 +22,7 @@
     </popover-element>
     <button>Edit</button>
     <button>View</button>
-    <button id="open-menu">Account</button>
+    <button id="open-settings">Account</button>
   </div>
 
   <main class="cols" style="flex-grow: 1">
@@ -51,14 +51,8 @@
     </div>
   </main>
 
-  <dialog>
-    <div class="rows">
-      <label>API Key</label>
-      <input name="api-key" type="password" />
-      <form method="dialog">
-        <button>OK</button>
-      </form>
-    </div>
+  <dialog id="settings-dialog">
+    <settings-element></settings-element>
   </dialog>
   <script src="./src/main.ts" type="module"></script>
 
