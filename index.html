@@ -7,8 +7,8 @@
   <title>Mugen</title>
 </head>
 
-<body class="cols" style="height: 100%">
-  <div class="rows" style="width: 320px; height: 100%; overflow-y: auto; flex-shrink: 0">
+<body class="rows" style="height: 100%">
+  <div class="rows" style=" flex-shrink: 0">
     <dialog>
       <div class="rows">
         <label>API Key</label>
@@ -18,10 +18,14 @@
         </form>
       </div>
     </dialog>
-    <button id="open-menu" style="position: sticky; top: 0;">Menu</button>
-    <div id="thread" class="rows"></div>
-    <textarea id="chat-input" style="resize: vertical; position: sticky; bottom: 0; flex-shrink: 0"
-      autofocus></textarea>
+    <div id="thread" class="rows" style="display: none"></div>
+    <textarea id="chat-input" style="resize: vertical;" autofocus></textarea>
+    <menu class="cols">
+      <button id="open-menu">Menu</button>
+      <button>Talk</button>
+      <button>History</button>
+      <button>Submit</button>
+    </menu>
   </div>
   <div class="cols" style="flex-grow: 1">
     <nav class="rows">
