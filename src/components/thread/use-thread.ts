@@ -1,18 +1,16 @@
-import { map, Observable, tap } from "rxjs";
+import { map, tap } from "rxjs";
+import { $submission } from "../chat-input/chat-input-element";
 import { TaskElement } from "./task-element";
 
-export interface UseThreadOptions {
-  newMessage: Observable<string>;
-}
-export function useThread(options: UseThreadOptions) {
+export function useThread() {
   /* query dom for static elements */
   const thread = document.querySelector("#thread") as HTMLDivElement;
 
-  options.newMessage
+  $submission
     .pipe(
-      map((message) => {
+      map(({ prompt }) => {
         const taskElement = document.createElement("task-element") as TaskElement;
-        taskElement.setAttribute("input", message);
+        taskElement.setAttribute("input", prompt);
         return taskElement;
       }),
       tap((taskElement) => thread.appendChild(taskElement)),

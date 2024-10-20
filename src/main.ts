@@ -1,5 +1,5 @@
 import { fromEvent, switchMap, tap } from "rxjs";
-import { useChatInput } from "./components/chat-input/use-chat-input";
+import { defineChatInputElement } from "./components/chat-input/chat-input-element";
 import { CodeEditorElement, defineCodeEditorElement } from "./components/code-editor/code-editor-element";
 import { defineTaskElement } from "./components/thread/task-element";
 import { useThread } from "./components/thread/use-thread";
@@ -8,12 +8,12 @@ import { useMenu } from "./components/use-menu";
 import { readFile } from "./components/file-system/file-system";
 import "./main.css";
 
+defineChatInputElement();
 defineTaskElement();
 defineCodeEditorElement();
 
 useMenu();
-const { $submission } = useChatInput();
-useThread({ newMessage: $submission });
+useThread();
 
 fromEvent<CustomEvent>(window, "open-file")
   .pipe(
