@@ -20,10 +20,10 @@ export class TaskElement extends HTMLElement {
         model: "gpt-4o-mini",
         messages: [
           system`Respond based on user's instruction or goal. Wrap your response in <response-file path=""></response-file> tags.
-path attribute must end with one of these extensions: txt, md, html, css, js, ts, jsx, tsx, json, jsonl, ndjson.
 
 Requirement:
-- Every <response-file> tag must have a path with a meaningful filename and valid extension.
+- Every <response-file> tag must have a path with a meaningful filename and file extension.
+- Use valid file extensions. For example: txt, md, html, yaml, css, js, ts, jsx, tsx, json, jsonl, ndjson.
 - When writing code, entry function name must be \`main\`.
 - Do NOT discuss your plan, unless asked by user.
 - Do NOT explain your code or show examples, unless asked by user.
