@@ -1,5 +1,5 @@
 import { html, render } from "lit";
-import { BehaviorSubject, Subject, switchMap, tap, withLatestFrom } from "rxjs";
+import { BehaviorSubject, filter, from, map, Subject, switchMap, tap, withLatestFrom } from "rxjs";
 import { reflectAttributes } from "../../lib/attributes";
 import { system, user } from "../../lib/message";
 import { $openai } from "../chat-provider/openai";
@@ -16,6 +16,7 @@ export class TaskElement extends HTMLElement {
     withLatestFrom($openai),
     switchMap(([input, openai]) =>
       openai.chat.completions.create({
+        stream: true,
         model: "gpt-4o-mini",
         messages: [
           system`Respond based on user's instruction or goal. Wrap your response in <response-file path=""></response-file> tags.
@@ -39,8 +40,10 @@ your reponse here...
         temperature: 0,
       })
     ),
-    tap((res) => this.$state.next({ ...this.$state.value, output: res.choices[0].message.content ?? "" })),
-    tap(console.log)
+    switchMap((stream) => from(stream)),
+    map((chunk) => chunk.choices[0].delta.content),
+    filter(Boolean),
+    tap((textChunk) => this.$state.next({ ...this.$state.value, output: this.$state.value.output + textChunk }))
   );
 
   private $render = this.$state.pipe(
