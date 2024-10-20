@@ -1,16 +1,22 @@
 import { html, render } from "lit";
-import { BehaviorSubject, filter, from, map, Subject, switchMap, tap, withLatestFrom } from "rxjs";
+import { BehaviorSubject, endWith, filter, from, fromEvent, map, Subject, switchMap, tap, withLatestFrom } from "rxjs";
 import { reflectAttributes } from "../../lib/attributes";
 import { system, user } from "../../lib/message";
 import { $openai } from "../chat-provider/openai";
 
+import { unsafeHTML } from "lit/directives/unsafe-html.js";
+import { writeFile } from "../file-system/file-system";
 import "./task-element.css";
 
 export class TaskElement extends HTMLElement {
-  private $state = new BehaviorSubject({ input: this.getAttribute("input") ?? "", output: "" });
+  private $state = new BehaviorSubject({ input: this.getAttribute("input") ?? "", outputRaw: "", outputHtml: "" });
   private $reflectAttributes = reflectAttributes(this, this.$state);
-
   private $runInput = new Subject<string>();
+  private $openFile = fromEvent<MouseEvent>(this, "click").pipe(
+    filter((event) => (event.target as HTMLElement).dataset.action === "open-file"),
+    map((event) => (event.target as HTMLElement).dataset.path),
+    tap((path) => this.dispatchEvent(new CustomEvent("open-file", { detail: path, bubbles: true })))
+  );
 
   private $taskRuns = this.$runInput.pipe(
     withLatestFrom($openai),
@@ -40,10 +46,37 @@ your reponse here...
         temperature: 0,
       })
     ),
-    switchMap((stream) => from(stream)),
-    map((chunk) => chunk.choices[0].delta.content),
+    switchMap((stream) =>
+      from(stream).pipe(
+        map((chunk) => chunk.choices[0].delta.content),
+        endWith("\0")
+      )
+    ),
     filter(Boolean),
-    tap((textChunk) => this.$state.next({ ...this.$state.value, output: this.$state.value.output + textChunk }))
+    tap((textChunk) => {
+      if (textChunk !== "\0") {
+        this.$state.next({ ...this.$state.value, outputRaw: this.$state.value.outputRaw + textChunk });
+      } else {
+        // wrap into artifact
+        // TODO: symbolize as soon as we encounter the html open tag
+        const extractedFiles: Record<string, string> = {};
+        const responseFileElementPattern = /<response-file path="(.+?)">([\s\S]*?)<\/response-file>/g;
+
+        // replace all with <button>[filename]</button>
+        const output = this.$state.value.outputRaw.replace(responseFileElementPattern, (_, path: string, content: string) => {
+          // TODO prettier process the source code
+          const formmatedSourceCode = content.trim();
+          extractedFiles[path] = formmatedSourceCode;
+          return `<button data-action="open-file" data-path="${path}">${path}</button>`;
+        });
+
+        this.$state.next({ ...this.$state.value, outputHtml: output });
+
+        Object.entries(extractedFiles).forEach(([path, content]) => {
+          writeFile(path, content);
+        });
+      }
+    })
   );
 
   private $render = this.$state.pipe(
@@ -53,7 +86,7 @@ your reponse here...
           <div>
             <br />
             <pre><code>&gt; ${state.input}</code></pre>
-            <pre><code>${state.output}</code></pre>
+            ${state.outputHtml ? html`<div>${unsafeHTML(state.outputHtml)}</div>` : html`<pre><code>${state.outputRaw}</code></pre>`}
             <br />
             <hr />
           </div>
@@ -67,6 +100,7 @@ your reponse here...
     this.$render.subscribe();
     this.$reflectAttributes.subscribe();
     this.$taskRuns.subscribe();
+    this.$openFile.subscribe();
   }
 
   run() {

@@ -8,7 +8,7 @@
 </head>
 
 <body class="cols" style="height: 100%">
-  <div class="rows" style="width: 320px; height: 100%; overflow-y: auto">
+  <div class="rows" style="width: 320px; height: 100%; overflow-y: auto; flex-shrink: 0">
     <dialog>
       <div class="rows">
         <label>API Key</label>
@@ -23,20 +23,23 @@
     <textarea id="chat-input" style="resize: vertical; position: sticky; bottom: 0; flex-shrink: 0"
       autofocus></textarea>
   </div>
-  <div class="cols">
+  <div class="cols" style="flex-grow: 1">
     <nav class="rows">
       files
     </nav>
-    <div class="rows">
-      <menu class="flow">
-        <button>Source</button>
-        <button>Preview</button>
-        <button>Side-by-side</button>
-        <button>Run</button>
-        <button>Copy</button>
-        <button>Download</button>
+    <div class="rows" style="flex-grow: 1">
+      <menu class="flow" style="justify-content: space-between;">
+        <div class="cols">
+          <button>Source</button>
+          <button>Preview</button>
+          <button>Side-by-side</button>
+        </div>
+        <div class="cols">
+          <button>Copy</button>
+          <button>Download</button>
+        </div>
       </menu>
-      <div id="editor-root"></div>
+      <code-editor-element></code-editor-element>
     </div>
 
   </div>
