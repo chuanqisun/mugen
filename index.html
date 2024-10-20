@@ -8,7 +8,7 @@
 </head>
 
 <body class="cols" style="height: 100%">
-  <div class="rows" style="width: 320px">
+  <div class="rows" style="width: 320px; height: 100%; overflow-y: auto">
     <dialog>
       <div class="rows">
         <label>API Key</label>
@@ -18,9 +18,10 @@
         </form>
       </div>
     </dialog>
-    <button id="open-menu">Menu</button>
+    <button id="open-menu" style="position: sticky; top: 0;">Menu</button>
     <div id="thread" class="rows"></div>
-    <textarea id="chat-input" style="resize: vertical" autofocus></textarea>
+    <textarea id="chat-input" style="resize: vertical; position: sticky; bottom: 0; flex-shrink: 0"
+      autofocus></textarea>
   </div>
   <div>
     editor

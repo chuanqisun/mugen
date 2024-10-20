@@ -18,18 +18,18 @@ export class TaskElement extends HTMLElement {
       openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
-          system`Respond with triple backtick blocks based on user's instruction or goal.
-Supported languages are txt, md, html, css, js, ts, jsx, tsx, json, jsonl, ndjson.
+          system`Respond based on user's instruction or goal. Wrap your response in <response-file path=""></response-file> tags.
+the file in the path attribute must have one of these extensions: txt, md, html, css, js, ts, jsx, tsx, json, jsonl, ndjson.
 
 Requirement:
-- No text outside code blocks.
-- Each code block must have language and path, like this \`\`\`html path=<filename>.html
+- Every <response-file> tag must have a path with a meaningful filename and valid extension.
 - When writing code, entry function name must be \`main\`.
 - Do NOT explain your code or show examples, unless asked by user.
 - Do NOT use external libraries or frameworks, unless asked by user.
-- For generic chat, use text code blocks like this
-\`\`\`txt path=<filename>.txt
-<your response here>
+- For generic chat, respond with markdown like this
+<response-file path="[filename].md">
+your reponse here...
+</response-file>
 \`\`\`
       `,
           user`${input}`,
