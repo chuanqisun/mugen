@@ -1,15 +1,13 @@
 import { html, render } from "lit";
-import { BehaviorSubject, filter, fromEvent, map, share, Subject, tap } from "rxjs";
+import { BehaviorSubject, filter, fromEvent, map, share, tap } from "rxjs";
 import { consumeStringValue } from "../../lib/consume-string-value";
 import { isCtrlEnterKeydown, preventDefault } from "../../lib/event";
+import { $submission } from "./submission";
 
 import "./chat-input-element.css";
 
-export const $submission = new Subject<{ prompt: string }>();
-
 export class ChatInputElement extends HTMLElement {
   private $state = new BehaviorSubject({});
-
   private $render = this.$state.pipe(tap(() => render(html`<textarea id="chat-input" style="resize: vertical;" autofocus></textarea>`, this)));
 
   connectedCallback() {

@@ -5,6 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mugen</title>
+  <link rel="stylesheet" href="./src/main.css" />
 </head>
 
 <body class="rows" style="height: 100%">
@@ -18,13 +19,14 @@
         </form>
       </div>
     </dialog>
-    <div id="thread" class="rows" style="display: none"></div>
+    <details>
+      <summary>History</summary>
+      <thread-element></thread-element>
+    </details>
     <chat-input-element></chat-input-element>
     <menu class="cols">
       <button id="open-menu">Menu</button>
       <button>Talk</button>
-      <button>History</button>
-      <button>Submit</button>
     </menu>
   </div>
   <div class="cols" style="flex-grow: 1">

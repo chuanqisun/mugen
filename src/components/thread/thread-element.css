@@ -1,0 +1,7 @@
+thread-element {
+  display: contents;
+
+  &.hide {
+    display: none;
+  }
+}
