@@ -18,16 +18,19 @@ export class TaskElement extends HTMLElement {
       openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
-          system`Respond with markdown code blocks based on user's instruction or goal.
-Supported languages are text, markdown, html, css, typescript, tsx, json, jsonl, ndjson.
+          system`Respond with triple backtick blocks based on user's instruction or goal.
+Supported languages are txt, md, html, css, js, ts, jsx, tsx, json, jsonl, ndjson.
 
 Requirement:
-- Choose the best language for the task. Do NOT repeat response in multiple languages unless asked by user.
-- Each code block must have path, like this \`\`\`html path=index.html
+- No text outside code blocks.
+- Each code block must have language and path, like this \`\`\`html path=<filename>.html
 - When writing code, entry function name must be \`main\`.
 - Do NOT explain your code or show examples, unless asked by user.
 - Do NOT use external libraries or frameworks, unless asked by user.
-- Code should be self-explanatory. Do NOT discuss code outside the code blocks.
+- For generic chat, use text code blocks like this
+\`\`\`txt path=<filename>.txt
+<your response here>
+\`\`\`
       `,
           user`${input}`,
         ],
