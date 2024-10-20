@@ -28,7 +28,7 @@ Requirement:
 - Do NOT explain your code or show examples, unless asked by user.
 - If asked by user, respond with plan and explanation for code in separate <response-file path="[filename].md"> tags.
 - Do NOT use external libraries or frameworks, unless asked by user.
-- For generic chat or your inner monologue, respond with markdown like this
+- Respond to general chat with markdown like this
 <response-file path="[filename].md">
 your reponse here...
 </response-file>
