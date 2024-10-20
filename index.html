@@ -9,46 +9,50 @@
 </head>
 
 <body class="rows" style="height: 100%">
-  <div class="rows" style=" flex-shrink: 0">
-    <dialog>
-      <div class="rows">
-        <label>API Key</label>
-        <input name="api-key" type="password" />
-        <form method="dialog">
-          <button>OK</button>
-        </form>
-      </div>
-    </dialog>
-    <details>
-      <summary>History</summary>
-      <thread-element></thread-element>
-    </details>
-    <chat-input-element></chat-input-element>
-    <menu class="cols">
-      <button id="open-menu">Menu</button>
-      <button>Talk</button>
-    </menu>
+
+  <!-- Command bar -->
+  <div class="cols" style="flex-shrink: 0">
+    <button>File</button>
+    <button>Edit</button>
+    <button>View</button>
+    <button id="open-menu">Account</button>
   </div>
-  <div class="cols" style="flex-grow: 1">
-    <nav class="rows">
-      files
+
+  <main class="cols" style="flex-grow: 1">
+    <!-- File explorer -->
+    <nav class="rows" style="flex-shrink: 0">
+      <div>Session <button>+</button></div>
+      <div>File 1</div>
+      <div>File 2</div>
+      <div>File 3</div>
     </nav>
+
+    <!-- Workbench -->
     <div class="rows" style="flex-grow: 1">
-      <menu class="flow" style="justify-content: space-between;">
-        <div class="cols">
-          <button>Source</button>
-          <button>Preview</button>
-          <button>Side-by-side</button>
-        </div>
-        <div class="cols">
-          <button>Copy</button>
-          <button>Download</button>
-        </div>
-      </menu>
+
+      <!-- Input bar -->
+      <div class="rows" style=" flex-shrink: 0">
+        <chat-input-element></chat-input-element>
+        <details open>
+          <summary>History</summary>
+          <thread-element></thread-element>
+        </details>
+      </div>
+
+
       <code-editor-element></code-editor-element>
     </div>
+  </main>
 
-  </div>
+  <dialog>
+    <div class="rows">
+      <label>API Key</label>
+      <input name="api-key" type="password" />
+      <form method="dialog">
+        <button>OK</button>
+      </form>
+    </div>
+  </dialog>
   <script src="./src/main.ts" type="module"></script>
 
 </body>
