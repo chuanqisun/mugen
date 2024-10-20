@@ -12,6 +12,11 @@
   font-family: inherit;
 }
 
+/* https://www.abeautifulsite.net/posts/flash-of-undefined-custom-elements/ */
+:not(:defined) {
+  visibility: hidden;
+}
+
 html {
   height: 100%;
 }

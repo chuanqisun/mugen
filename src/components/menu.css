@@ -1,0 +1,9 @@
+.menu {
+  display: grid;
+  min-width: 200px;
+  max-width: calc(100vw - 32px);
+
+  button {
+    text-align: start;
+  }
+}

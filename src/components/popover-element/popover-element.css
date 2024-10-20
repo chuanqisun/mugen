@@ -1,0 +1,18 @@
+[data-popover-body] {
+  display: none;
+}
+
+.layout-container {
+  position: relative;
+
+  &:has([popover]:popover-open) [data-popover-body] {
+    display: grid;
+  }
+}
+
+[data-popover-body] {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1;
+}

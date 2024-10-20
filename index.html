@@ -12,7 +12,14 @@
 
   <!-- Command bar -->
   <div class="cols" style="flex-shrink: 0">
-    <button>File</button>
+    <popover-element>
+      <span slot="trigger">File</span>
+      <div class="menu" slot="popover">
+        <button>New</button>
+        <button>Open</button>
+        <button>Save</button>
+      </div>
+    </popover-element>
     <button>Edit</button>
     <button>View</button>
     <button id="open-menu">Account</button>
