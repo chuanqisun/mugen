@@ -1,36 +1,17 @@
-import { html, render } from "lit";
-import resetCSSUrl from "../reset.css?url";
-import elementCSSUrl from "./popover-element.css?url";
-
+import "./popover-element.css";
 export class PopoverElement extends HTMLElement {
-  shadowRoot: ShadowRoot;
-
-  constructor() {
-    super();
-    this.shadowRoot = this.attachShadow({ mode: "open" });
-  }
-
   connectedCallback() {
-    const popoverId = crypto.getRandomValues(new Uint32Array(1))[0].toString(16);
+    const triggerElement = this.querySelector("[data-trigger]") as HTMLButtonElement;
+    const randomBase64Id = crypto.getRandomValues(new Uint32Array(1))[0].toString(36);
+    const targetElement = this.querySelector("[data-target]") as HTMLElement;
 
-    render(
-      html`
-        <style>
-          @import url(${resetCSSUrl});
-          @import url(${elementCSSUrl});
-        </style>
-        <div class="layout-container">
-          <button popovertarget=${popoverId}>
-            <slot name="trigger"></slot>
-          </button>
-          <div data-popover-body>
-            <slot name="popover"></slot>
-          </div>
-          <div popover id=${popoverId}></div>
-        </div>
-      `,
-      this.shadowRoot
-    );
+    triggerElement.setAttribute("popovertarget", randomBase64Id);
+    const dummyPopover = document.createElement("div");
+    dummyPopover.id = randomBase64Id;
+    dummyPopover.setAttribute("popover", "");
+
+    // insert dummy just before the this element
+    targetElement.before(dummyPopover);
   }
 }
 

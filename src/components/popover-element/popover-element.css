@@ -1,18 +1,19 @@
-[data-popover-body] {
-  display: none;
-}
-
-.layout-container {
+popover-element {
   position: relative;
 
-  &:has([popover]:popover-open) [data-popover-body] {
-    display: grid;
+  &:not(:has([popover]:popover-open)) [data-target] {
+    display: none !important;
   }
-}
 
-[data-popover-body] {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  z-index: 1;
+  /* This is a dummy popover */
+  [popover] {
+    visibility: hidden;
+  }
+
+  [data-target] {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1;
+  }
 }
