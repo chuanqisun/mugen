@@ -7,19 +7,24 @@
   <title>Mugen</title>
 </head>
 
-<body class="rows" style="height: 100%">
-  <dialog>
-    <div class="rows">
-      <label>API Key</label>
-      <input name="api-key" type="password" />
-      <form method="dialog">
-        <button>OK</button>
-      </form>
-    </div>
-  </dialog>
-  <button id="open-menu">Menu</button>
-  <div id="thread" class="rows"></div>
-  <textarea id="chat-input" style="resize: vertical"></textarea>
+<body class="cols" style="height: 100%">
+  <div class="rows" style="width: 320px">
+    <dialog>
+      <div class="rows">
+        <label>API Key</label>
+        <input name="api-key" type="password" />
+        <form method="dialog">
+          <button>OK</button>
+        </form>
+      </div>
+    </dialog>
+    <button id="open-menu">Menu</button>
+    <div id="thread" class="rows"></div>
+    <textarea id="chat-input" style="resize: vertical" autofocus></textarea>
+  </div>
+  <div>
+    editor
+  </div>
   <script src="./src/main.ts" type="module"></script>
 
 </body>
