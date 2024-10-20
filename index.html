@@ -23,8 +23,22 @@
     <textarea id="chat-input" style="resize: vertical; position: sticky; bottom: 0; flex-shrink: 0"
       autofocus></textarea>
   </div>
-  <div>
-    editor
+  <div class="cols">
+    <nav class="rows">
+      files
+    </nav>
+    <div class="rows">
+      <menu class="flow">
+        <button>Source</button>
+        <button>Preview</button>
+        <button>Side-by-side</button>
+        <button>Run</button>
+        <button>Copy</button>
+        <button>Download</button>
+      </menu>
+      <div id="editor-root"></div>
+    </div>
+
   </div>
   <script src="./src/main.ts" type="module"></script>
 
