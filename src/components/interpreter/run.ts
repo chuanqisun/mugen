@@ -1,4 +1,4 @@
-import { endWith, filter, from, map, switchMap, tap, withLatestFrom } from "rxjs";
+import { EMPTY, endWith, filter, from, map, Observable, switchMap, tap, withLatestFrom } from "rxjs";
 import { system, user } from "../../lib/message";
 import { $promptSubmissions } from "../chat-input/submission";
 import { $openai } from "../chat-provider/openai";
@@ -42,3 +42,12 @@ your reponse here...
     console.log(textChunk);
   })
 );
+
+export interface PartialResponse {
+  runId: number;
+  delta?: string;
+  objectPath?: string;
+}
+export function getPartialResponses(runId: number, rawStream: AsyncIterable<string>): Observable<PartialResponse> {
+  return EMPTY;
+}
