@@ -11,7 +11,10 @@ export class ChatInputElement extends HTMLElement {
   private $state = new BehaviorSubject({});
   private $render = this.$state.pipe(
     tap(() =>
-      render(html`<textarea id="chat-input" style="resize: vertical;" placeholder="Enter to submit goal, instruction, or /help" autofocus></textarea>`, this)
+      render(
+        html`<textarea id="chat-input" style="resize: vertical;" placeholder=${`Goal, instruction, or \"/help\". Enter to submit`} autofocus></textarea>`,
+        this
+      )
     )
   );
 

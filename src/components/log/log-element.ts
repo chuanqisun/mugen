@@ -1,12 +1,12 @@
 import { map, tap } from "rxjs";
-import { $promptSubmissions } from "../chat-input/submission";
+import { $submission } from "../chat-input/submission";
 import { EntryElement } from "./entry-element";
 
 import { $rawPartialResponses } from "../interpreter/run";
 import "./log-element.css";
 
 export class LogElement extends HTMLElement {
-  private $runSubmission = $promptSubmissions.pipe(
+  private $runSubmission = $submission.pipe(
     map(({ id, prompt }) => {
       const taskElement = document.createElement("entry-element") as EntryElement;
       taskElement.setAttribute("run-id", id.toString());
