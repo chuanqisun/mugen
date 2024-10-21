@@ -1,16 +1,19 @@
-import { EMPTY, endWith, filter, from, map, Observable, switchMap, tap, withLatestFrom } from "rxjs";
+import { EMPTY, endWith, filter, from, map, Observable, Subject, switchMap, tap, withLatestFrom } from "rxjs";
 import { system, user } from "../../lib/message";
 import { $promptSubmissions } from "../chat-input/submission";
 import { $openai } from "../chat-provider/openai";
 
+export const $rawPartialResponses = new Subject<{ runId: number; delta: string }>();
+
 export const $runs = $promptSubmissions.pipe(
   withLatestFrom($openai),
-  switchMap(([input, openai]) =>
-    openai.chat.completions.create({
-      stream: true,
-      model: "gpt-4o-mini",
-      messages: [
-        system`Respond based on user's instruction or goal. Wrap your response in <response-file path=""></response-file> tags.
+  switchMap(([submission, openai]) =>
+    openai.chat.completions
+      .create({
+        stream: true,
+        model: "gpt-4o-mini",
+        messages: [
+          system`Respond based on user's instruction or goal. Wrap your response in <response-file path=""></response-file> tags.
 
 Requirement:
 - Every <response-file> tag must have a path with a meaningful filename and file extension.
@@ -26,14 +29,20 @@ your reponse here...
 </response-file>
 \`\`\`
       `,
-        user`${input}`,
-      ],
-      temperature: 0,
-    })
+          user`${submission.prompt}`,
+        ],
+        temperature: 0,
+      })
+      .then((stream) => ({
+        stream,
+        submission,
+      }))
   ),
-  switchMap((stream) =>
+  switchMap(({ stream, submission }) =>
     from(stream).pipe(
       map((chunk) => chunk.choices[0].delta.content),
+      filter(Boolean),
+      tap((delta) => $rawPartialResponses.next({ runId: submission.id, delta })),
       endWith("\0")
     )
   ),
