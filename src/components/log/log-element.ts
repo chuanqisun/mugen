@@ -20,7 +20,6 @@ export class LogElement extends HTMLElement {
     this.$runSubmission.subscribe();
 
     $rawPartialResponses.subscribe(({ runId, delta }) => {
-      console.log("partial response", [runId, delta]);
       this.querySelector<EntryElement>(`entry-element[run-id="${runId}"]`)?.appendOutputRaw(delta);
     });
   }
