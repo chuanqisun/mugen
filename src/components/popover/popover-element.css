@@ -16,4 +16,9 @@ popover-element {
     left: 0;
     z-index: 1;
   }
+
+  [data-target][data-open-towards="sw"] {
+    left: auto;
+    right: 0;
+  }
 }
