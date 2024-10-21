@@ -41,6 +41,7 @@ export class OutlineElement extends HTMLElement {
     })
   );
 
+  // TODO refactor out of outline. It should be workspace manager's responsibility
   private $watchUpdate = this.$openFilePath.pipe(
     combineLatestWith($fs),
     map(([path, fs]) => fs[path]),
