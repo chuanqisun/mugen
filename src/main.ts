@@ -1,14 +1,14 @@
 import { filter, fromEvent, switchMap, tap } from "rxjs";
 import { ChatInputElement, defineChatInputElement } from "./components/chat-input/chat-input-element";
+import { $commandSubmissions } from "./components/chat-input/submission";
 import { CodeEditorElement, defineCodeEditorElement } from "./components/code-editor/code-editor-element";
-import { $globalCommands } from "./components/command/command";
 import { readFile } from "./components/file-system/file-system";
 import helpText from "./components/help/help.txt?raw";
 import { $globalShortcut } from "./components/keyboard/keyboard";
+import { defineTaskElement } from "./components/log/task-element";
+import { defineThreadElement } from "./components/log/thread-element";
 import { definePopoverElement } from "./components/popover/popover-element";
 import { defineSettingsElement } from "./components/settings/settings-element";
-import { defineTaskElement } from "./components/thread/task-element";
-import { defineThreadElement } from "./components/thread/thread-element";
 import { preventDefault } from "./lib/event";
 
 defineChatInputElement();
@@ -25,7 +25,7 @@ fromEvent<CustomEvent>(window, "open-file")
   )
   .subscribe();
 
-$globalCommands
+$commandSubmissions
   .pipe(
     tap((command) => {
       switch (command) {
