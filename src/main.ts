@@ -4,6 +4,7 @@ import { $commandSubmissions } from "./components/chat-input/submission";
 import { CodeEditorElement, defineCodeEditorElement } from "./components/code-editor/code-editor-element";
 import { readFile } from "./components/file-system/file-system";
 import helpText from "./components/help/help.txt?raw";
+import { $runs } from "./components/interpreter/run";
 import { $globalShortcut } from "./components/keyboard/keyboard";
 import { defineTaskElement } from "./components/log/task-element";
 import { defineThreadElement } from "./components/log/thread-element";
@@ -24,6 +25,8 @@ fromEvent<CustomEvent>(window, "open-file")
     tap((sourceCode) => (document.querySelector<CodeEditorElement>("code-editor-element")!.value = sourceCode))
   )
   .subscribe();
+
+$runs.subscribe();
 
 $commandSubmissions
   .pipe(

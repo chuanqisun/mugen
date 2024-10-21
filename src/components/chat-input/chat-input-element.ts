@@ -7,6 +7,7 @@ import { $submission } from "./submission";
 import "./chat-input-element.css";
 
 export class ChatInputElement extends HTMLElement {
+  private submissionId = 0;
   private $state = new BehaviorSubject({});
   private $render = this.$state.pipe(
     tap(() =>
@@ -23,7 +24,7 @@ export class ChatInputElement extends HTMLElement {
         tap(preventDefault),
         map((e) => e.target as HTMLTextAreaElement),
         map(consumeStringValue),
-        map((input) => ({ prompt: input })),
+        map((input) => ({ id: ++this.submissionId, prompt: input })),
         share()
       )
       .subscribe($submission);
