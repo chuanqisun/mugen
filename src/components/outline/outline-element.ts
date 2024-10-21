@@ -6,7 +6,7 @@ import { $fs, readFile } from "../file-system/file-system";
 import "./outline-element.css";
 
 export class OutlineElement extends HTMLElement {
-  private $items = $fs.pipe(map((fs) => Object.entries(fs).map(([path, vfile]) => ({ path, filename: vfile.file.name, isBusy: vfile.isBusy }))));
+  private $items = $fs.pipe(map((fs) => Object.entries(fs).map(([path, vfile]) => ({ path, filename: vfile.file.name, hasStream: vfile.stream }))));
   private $render = this.$items.pipe(
     tap((items) =>
       render(
@@ -15,7 +15,7 @@ export class OutlineElement extends HTMLElement {
           (item) => item.path,
           (item) =>
             html`<button class="cols" style="justify-content: space-between" data-action="load-file" data-path=${item.path}>
-              <span>${item.filename}</span>${item.isBusy ? html`<spinner-element></spinner-element>` : ""}
+              <span>${item.filename}</span>${item.hasStream ? html`<spinner-element></spinner-element>` : ""}
             </button>`
         ),
         this

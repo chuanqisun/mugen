@@ -4,7 +4,7 @@ import { concatMap, filter, from, map, Observable, Subject, switchMap, tap, with
 import { system, user } from "../../lib/message";
 import { $promptSubmissions } from "../chat-input/submission";
 import { $openai } from "../chat-provider/openai";
-import { appendFile, readFile, setFileBusy, writeFile } from "../file-system/file-system";
+import { appendFile, endFileStreaming, readFile, startFileStreaming, writeFile } from "../file-system/file-system";
 
 export const $rawPartialResponses = new Subject<{ runId: number; delta: string }>();
 
@@ -49,13 +49,13 @@ your reponse here...
       concatMap(async (partialResponse) => {
         if (partialResponse.isOpening) {
           await writeFile(partialResponse.objectPath!, "");
-          await setFileBusy(partialResponse.objectPath!, true);
+          await startFileStreaming(partialResponse.objectPath!);
         } else if (partialResponse.isClosing) {
           const file = await readFile(partialResponse.objectPath!);
           // trim after response ended
           // TODO run prettier
           await writeFile(partialResponse.objectPath!, (await file.file.text()).trim());
-          await setFileBusy(partialResponse.objectPath!, false);
+          await endFileStreaming(partialResponse.objectPath!);
         }
 
         if (partialResponse.delta) {

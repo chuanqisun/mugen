@@ -1,9 +1,9 @@
-import { BehaviorSubject } from "rxjs";
+import { BehaviorSubject, ReplaySubject } from "rxjs";
 
 export interface VirtualFile {
   path: string;
   file: File;
-  isBusy?: boolean;
+  stream?: ReplaySubject<string>;
 }
 export const $fs = new BehaviorSubject<Record<string, VirtualFile>>({
   "welcome.txt": {
@@ -32,16 +32,30 @@ export async function appendFile(path: string, content: string) {
   const vfile = $fs.value[path];
   const text = vfile ? await vfile.file.text() : "";
   await writeFile(path, text + content);
+  vfile.stream?.next(content);
 }
 
-export async function setFileBusy(path: string, isBusy: boolean) {
+export async function startFileStreaming(path: string) {
   const vfile = $fs.value[path];
   if (vfile) {
     $fs.next({
       ...$fs.value,
       [path]: {
         ...vfile,
-        isBusy,
+        stream: vfile.stream ?? new ReplaySubject<string>(),
+      },
+    });
+  }
+}
+
+export async function endFileStreaming(path: string) {
+  const vfile = $fs.value[path];
+  if (vfile) {
+    $fs.next({
+      ...$fs.value,
+      [path]: {
+        ...vfile,
+        stream: undefined,
       },
     });
   }
