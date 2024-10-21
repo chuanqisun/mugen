@@ -1,6 +1,6 @@
 import { Parser } from "htmlparser2";
 import { ChatCompletionChunk } from "openai/resources/index.mjs";
-import { concatMap, filter, from, map, Observable, Subject, switchMap, tap, withLatestFrom } from "rxjs";
+import { concatMap, distinctUntilKeyChanged, filter, from, map, Observable, Subject, switchMap, tap, withLatestFrom } from "rxjs";
 import { system, user } from "../../lib/message";
 import { $promptSubmissions } from "../chat-input/submission";
 import { $openai } from "../chat-provider/openai";
@@ -50,6 +50,9 @@ your reponse here...
         if (partialResponse.isOpening) {
           await writeFile(partialResponse.objectPath!, "");
           await startFileStreaming(partialResponse.objectPath!);
+
+          // we must make sure the file exists before we announce streaming started
+          $streamingStarts.next({ submissionId: submission.id, objectPath: partialResponse.objectPath! });
         } else if (partialResponse.isClosing) {
           const file = await readFile(partialResponse.objectPath!);
           // trim after response ended
@@ -64,6 +67,12 @@ your reponse here...
       })
     )
   )
+);
+
+const $streamingStarts = new Subject<{ submissionId: number; objectPath: string }>();
+export const $firstStreamingPathPerSubmission = $streamingStarts.pipe(
+  distinctUntilKeyChanged("submissionId"),
+  map(({ objectPath }) => objectPath)
 );
 
 export interface ParseHtmlStreamOptions {
@@ -84,16 +93,17 @@ export function parseHtmlStream(runId: number, rawStream: AsyncIterable<ChatComp
     let currentObjectPath: undefined | string = undefined;
     let shouldTrimStart = true; // trim whitespace immediately before tag inner html starts. This allows artifact to have a clean looking start
     const parser = new Parser({
-      onopentag(name, attributes) {
+      onopentag(name, attributes, isImplied) {
         if (name === "response-file") {
           currentObjectPath = attributes.path ?? "raw.txt";
           subscriber.next({ runId, objectPath: currentObjectPath, isOpening: true });
           shouldTrimStart = true;
         } else {
+          if (isImplied) return;
           const attributesString = Object.entries(attributes)
             .map(([key, value]) => `${key}="${value}"`)
             .join(" ");
-          subscriber.next({ runId, objectPath: currentObjectPath, delta: `<${name}${attributesString.length ? ` ${attributesString}` : ""}}>` });
+          subscriber.next({ runId, objectPath: currentObjectPath, delta: `<${name}${attributesString.length ? ` ${attributesString}` : ""}>` });
         }
       },
       ontext(text) {
@@ -104,11 +114,12 @@ export function parseHtmlStream(runId: number, rawStream: AsyncIterable<ChatComp
         }
         subscriber.next({ runId, objectPath: currentObjectPath, delta: text });
       },
-      onclosetag(name) {
+      onclosetag(name, isImplied) {
         if (name === "response-file") {
           subscriber.next({ runId, objectPath: currentObjectPath, isClosing: true });
           currentObjectPath = undefined;
         } else {
+          if (isImplied) return;
           subscriber.next({ runId, objectPath: currentObjectPath, delta: `</${name}>` });
         }
       },

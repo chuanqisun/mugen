@@ -3,6 +3,7 @@ import { repeat } from "lit/directives/repeat.js";
 import { combineLatestWith, distinctUntilChanged, filter, fromEvent, map, share, switchMap, tap } from "rxjs";
 import { CodeEditorElement } from "../code-editor/code-editor-element";
 import { $fs, readFile } from "../file-system/file-system";
+import { $firstStreamingPathPerSubmission } from "../interpreter/run";
 import "./outline-element.css";
 
 export class OutlineElement extends HTMLElement {
@@ -31,12 +32,15 @@ export class OutlineElement extends HTMLElement {
   private $openFile = this.$openFilePath.pipe(
     switchMap((path) => readFile(path)),
     switchMap((vFile) => {
+      const codeEditor = document.querySelector<CodeEditorElement>("code-editor-element")!;
+
       if (vFile.stream) {
         // TODO need to lock the editor to prevent user changes
         // TODO rewrite file abstraction to allow both streaming and whole file loading easy to watch
-        return vFile.stream.pipe(tap((content) => document.querySelector<CodeEditorElement>("code-editor-element")!.appendText(content)));
+        codeEditor.loadText("");
+        return vFile.stream.pipe(tap((content) => codeEditor.appendText(content)));
       } else {
-        return document.querySelector<CodeEditorElement>("code-editor-element")!.loadFile(vFile.file);
+        return codeEditor.loadFile(vFile.file);
       }
     })
   );
@@ -50,10 +54,15 @@ export class OutlineElement extends HTMLElement {
     tap((vfile) => document.querySelector<CodeEditorElement>("code-editor-element")!.loadFile(vfile.file))
   );
 
+  private $autoOpenFirstStreamingResponse = $firstStreamingPathPerSubmission.pipe(
+    tap((path) => this.querySelector<HTMLButtonElement>(`[data-path="${path}"]`)?.click())
+  );
+
   connectedCallback() {
     this.$render.subscribe();
     this.$openFile.subscribe();
     this.$watchUpdate.subscribe();
+    this.$autoOpenFirstStreamingResponse.subscribe();
   }
 }
 
