@@ -8,47 +8,31 @@
   <link rel="stylesheet" href="./src/main.css" />
 </head>
 
-<body class="rows" style="height: 100%">
+<body class="cols" style="height: 100%">
 
-  <!-- Command bar -->
-  <div class="cols" style="flex-shrink: 0">
-    <popover-element>
-      <button data-trigger>File</button>
-      <div data-target class="menu">
-        <button>New</button>
-        <button>Open</button>
-        <button>Save</button>
-      </div>
-    </popover-element>
-    <button>Edit</button>
-    <button>View</button>
-    <button id="open-settings">Account</button>
-  </div>
+  <!-- File explorer -->
+  <aside class="rows" style="flex-shrink: 0; width: 240px; resize: horizontal; overflow-y: auto">
+    <div>Session <button>+</button></div>
+    <div>File 1</div>
+    <div>File 2</div>
+    <div>File 3</div>
 
-  <main class="cols" style="flex-grow: 1">
-    <!-- File explorer -->
-    <nav class="rows" style="flex-shrink: 0">
-      <div>Session <button>+</button></div>
-      <div>File 1</div>
-      <div>File 2</div>
-      <div>File 3</div>
-    </nav>
+    <details open>
+      <summary>History</summary>
+      <thread-element></thread-element>
+    </details>
+  </aside>
 
-    <!-- Workbench -->
-    <div class="rows" style="flex-grow: 1">
+  <!-- Workbench -->
+  <main class="rows" style="flex-grow: 1">
 
-      <!-- Input bar -->
-      <div class="rows" style=" flex-shrink: 0">
-        <chat-input-element></chat-input-element>
-        <details open>
-          <summary>History</summary>
-          <thread-element></thread-element>
-        </details>
-      </div>
-
-
-      <code-editor-element></code-editor-element>
+    <!-- Input bar -->
+    <div class="rows" style=" flex-shrink: 0">
+      <chat-input-element></chat-input-element>
     </div>
+
+
+    <code-editor-element></code-editor-element>
   </main>
 
   <dialog id="settings-dialog">
