@@ -10,6 +10,7 @@ import { defineTaskElement } from "./components/log/entry-element";
 import { defineLogElement } from "./components/log/log-element";
 import { defineOutlineElement } from "./components/outline/outline-element";
 import { definePopoverElement } from "./components/popover/popover-element";
+import { defineSpinnerElement } from "./components/spinner/spinner";
 import { preventDefault } from "./lib/event";
 
 defineChatInputElement();
@@ -19,6 +20,7 @@ defineSettingsElement();
 defineTaskElement();
 defineLogElement();
 defineOutlineElement();
+defineSpinnerElement();
 
 $runs.subscribe();
 

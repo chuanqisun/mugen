@@ -6,14 +6,17 @@ import { $fs, readFile } from "../file-system/file-system";
 import "./outline-element.css";
 
 export class OutlineElement extends HTMLElement {
-  private $items = $fs.pipe(map((fs) => Object.entries(fs).map(([path, file]) => ({ path, filename: file.name }))));
+  private $items = $fs.pipe(map((fs) => Object.entries(fs).map(([path, vfile]) => ({ path, filename: vfile.file.name, isBusy: vfile.isBusy }))));
   private $render = this.$items.pipe(
     tap((items) =>
       render(
         repeat(
           items,
           (item) => item.path,
-          (item) => html`<button data-action="load-file" , data-path=${item.path}>${item.filename}</button>`
+          (item) =>
+            html`<button class="cols" style="justify-content: space-between" data-action="load-file" data-path=${item.path}>
+              <span>${item.filename}</span>${item.isBusy ? html`<spinner-element></spinner-element>` : ""}
+            </button>`
         ),
         this
       )
@@ -23,7 +26,7 @@ export class OutlineElement extends HTMLElement {
     map((e) => e.target as HTMLElement),
     map((target) => (target.closest(`[data-action="load-file"]`) as HTMLButtonElement).getAttribute("data-path")!),
     switchMap((path) => readFile(path)),
-    switchMap((file) => document.querySelector<CodeEditorElement>("code-editor-element")!.loadFile(file))
+    switchMap((vFile) => document.querySelector<CodeEditorElement>("code-editor-element")!.loadFile(vFile.file))
   );
 
   connectedCallback() {

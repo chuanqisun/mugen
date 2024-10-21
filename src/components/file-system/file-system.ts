@@ -5,8 +5,11 @@ export interface VirtualFile {
   file: File;
   isBusy?: boolean;
 }
-export const $fs = new BehaviorSubject<Record<string, File>>({
-  "welcome.txt": new File(["Welcome to the virtual file system!"], "welcome.txt", { type: "text/plain" }),
+export const $fs = new BehaviorSubject<Record<string, VirtualFile>>({
+  "welcome.txt": {
+    path: "welcome.txt",
+    file: new File(["Welcome to the virtual file system!"], "welcome.txt", { type: "text/plain" }),
+  },
 });
 
 export async function readFile(path: string) {
@@ -16,8 +19,32 @@ export async function readFile(path: string) {
 export async function writeFile(path: string, content: string) {
   $fs.next({
     ...$fs.value,
-    [path]: new File([content], getFilename(path), { type: getMimeType(getExtension(path)) }),
+    [path]: {
+      ...$fs.value[path],
+      path,
+      file: new File([content], getFilename(path), { type: getMimeType(getExtension(path)) }),
+    },
   });
+}
+
+// TODO use efficient appending
+export async function appendFile(path: string, content: string) {
+  const vfile = $fs.value[path];
+  const text = vfile ? await vfile.file.text() : "";
+  await writeFile(path, text + content);
+}
+
+export async function setFileBusy(path: string, isBusy: boolean) {
+  const vfile = $fs.value[path];
+  if (vfile) {
+    $fs.next({
+      ...$fs.value,
+      [path]: {
+        ...vfile,
+        isBusy,
+      },
+    });
+  }
 }
 
 export function getFilename(path: string) {

@@ -1,9 +1,10 @@
 import { Parser } from "htmlparser2";
 import { ChatCompletionChunk } from "openai/resources/index.mjs";
-import { filter, from, map, Observable, Subject, switchMap, tap, withLatestFrom } from "rxjs";
+import { concatMap, filter, from, map, Observable, Subject, switchMap, tap, withLatestFrom } from "rxjs";
 import { system, user } from "../../lib/message";
 import { $promptSubmissions } from "../chat-input/submission";
 import { $openai } from "../chat-provider/openai";
+import { appendFile, readFile, setFileBusy, writeFile } from "../file-system/file-system";
 
 export const $rawPartialResponses = new Subject<{ runId: number; delta: string }>();
 
@@ -43,7 +44,25 @@ your reponse here...
   switchMap(({ stream, submission }) =>
     parseHtmlStream(submission.id, stream, {
       onRaw: (raw) => $rawPartialResponses.next({ runId: submission.id, delta: raw }),
-    })
+    }).pipe(
+      filter((partialResponse) => partialResponse.objectPath !== undefined),
+      concatMap(async (partialResponse) => {
+        if (partialResponse.isOpening) {
+          await writeFile(partialResponse.objectPath!, "");
+          await setFileBusy(partialResponse.objectPath!, true);
+        } else if (partialResponse.isClosing) {
+          const file = await readFile(partialResponse.objectPath!);
+          // trim after response ended
+          // TODO run prettier
+          await writeFile(partialResponse.objectPath!, (await file.file.text()).trim());
+          await setFileBusy(partialResponse.objectPath!, false);
+        }
+
+        if (partialResponse.delta) {
+          await appendFile(partialResponse.objectPath!, partialResponse.delta);
+        }
+      })
+    )
   )
 );
 
@@ -62,7 +81,7 @@ export interface PartialResponse {
 
 export function parseHtmlStream(runId: number, rawStream: AsyncIterable<ChatCompletionChunk>, options?: ParseHtmlStreamOptions): Observable<PartialResponse> {
   return new Observable<PartialResponse>((subscriber) => {
-    let currentObjectPath = "raw.txt";
+    let currentObjectPath: undefined | string = undefined;
     const parser = new Parser({
       onopentag(name, attributes) {
         if (name === "response-file") {
@@ -80,8 +99,8 @@ export function parseHtmlStream(runId: number, rawStream: AsyncIterable<ChatComp
       },
       onclosetag(name) {
         if (name === "response-file") {
-          currentObjectPath = "raw.txt";
           subscriber.next({ runId, objectPath: currentObjectPath, isClosing: true });
+          currentObjectPath = undefined;
         } else {
           subscriber.next({ runId, objectPath: currentObjectPath, delta: `</${name}>` });
         }
