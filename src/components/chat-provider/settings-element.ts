@@ -1,7 +1,7 @@
 import { html, render } from "lit";
 import { fromEvent, map, tap } from "rxjs";
 import { toTargetValueString } from "../../lib/event";
-import { $apiKey, setApiKey } from "../chat-provider/auth";
+import { $apiKey, setApiKey } from "./auth";
 
 export class SettingsElement extends HTMLElement {
   connectedCallback() {

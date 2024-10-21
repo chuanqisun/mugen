@@ -1,6 +1,7 @@
 import { filter, tap } from "rxjs";
 import { ChatInputElement, defineChatInputElement } from "./components/chat-input/chat-input-element";
 import { $commandSubmissions } from "./components/chat-input/submission";
+import { defineSettingsElement } from "./components/chat-provider/settings-element";
 import { CodeEditorElement, defineCodeEditorElement } from "./components/code-editor/code-editor-element";
 import helpText from "./components/help/help.txt?raw";
 import { $runs } from "./components/interpreter/run";
@@ -8,7 +9,6 @@ import { $globalShortcut } from "./components/keyboard/keyboard";
 import { defineTaskElement } from "./components/log/entry-element";
 import { defineLogElement } from "./components/log/log-element";
 import { definePopoverElement } from "./components/popover/popover-element";
-import { defineSettingsElement } from "./components/settings/settings-element";
 import { preventDefault } from "./lib/event";
 
 defineChatInputElement();
