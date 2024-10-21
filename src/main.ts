@@ -3,6 +3,7 @@ import { ChatInputElement, defineChatInputElement } from "./components/chat-inpu
 import { CodeEditorElement, defineCodeEditorElement } from "./components/code-editor/code-editor-element";
 import { $globalCommands } from "./components/command/command";
 import { readFile } from "./components/file-system/file-system";
+import helpText from "./components/help/help.txt?raw";
 import { $globalShortcut } from "./components/keyboard/keyboard";
 import { definePopoverElement } from "./components/popover/popover-element";
 import { defineSettingsElement } from "./components/settings/settings-element";
@@ -30,17 +31,7 @@ $globalCommands
       switch (command) {
         case "?":
         case "help": {
-          document.querySelector<CodeEditorElement>("code-editor-element")!.value = `
-Syntax
-======
-<goal or instruction> - Run a task
-/<command> - Run a command
-
-Commands
-========
-? or help - Show this help message
-login - Log in to connect with LLM service
-    `.trim();
+          document.querySelector<CodeEditorElement>("code-editor-element")!.value = helpText.trim();
           break;
         }
         case "login": {

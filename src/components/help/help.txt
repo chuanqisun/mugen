@@ -1,0 +1,9 @@
+Syntax
+======
+<goal or instruction> - Run a task
+/<command> - Run a command
+
+Commands
+========
+? or help - Show this help message
+login - Log in to connect with LLM service
