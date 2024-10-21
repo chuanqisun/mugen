@@ -31,6 +31,17 @@ export class CodeEditorElement extends HTMLElement {
     return file.text().then((text) => (this.value = text));
   }
 
+  appendText(text: string) {
+    const length = this.editorView.state.doc.length;
+    this.editorView.dispatch({
+      changes: {
+        from: length,
+        to: length,
+        insert: text,
+      },
+    });
+  }
+
   loadText(text: string) {
     this.value = text;
   }

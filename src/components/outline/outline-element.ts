@@ -1,6 +1,6 @@
 import { html, render } from "lit";
 import { repeat } from "lit/directives/repeat.js";
-import { fromEvent, map, switchMap, tap } from "rxjs";
+import { combineLatestWith, distinctUntilChanged, filter, fromEvent, map, share, switchMap, tap } from "rxjs";
 import { CodeEditorElement } from "../code-editor/code-editor-element";
 import { $fs, readFile } from "../file-system/file-system";
 import "./outline-element.css";
@@ -22,16 +22,37 @@ export class OutlineElement extends HTMLElement {
       )
     )
   );
-  private $openFile = fromEvent(this, "click").pipe(
+  private $openFilePath = fromEvent(this, "click").pipe(
     map((e) => e.target as HTMLElement),
     map((target) => (target.closest(`[data-action="load-file"]`) as HTMLButtonElement).getAttribute("data-path")!),
+    share()
+  );
+
+  private $openFile = this.$openFilePath.pipe(
     switchMap((path) => readFile(path)),
-    switchMap((vFile) => document.querySelector<CodeEditorElement>("code-editor-element")!.loadFile(vFile.file))
+    switchMap((vFile) => {
+      if (vFile.stream) {
+        // TODO need to lock the editor to prevent user changes
+        // TODO rewrite file abstraction to allow both streaming and whole file loading easy to watch
+        return vFile.stream.pipe(tap((content) => document.querySelector<CodeEditorElement>("code-editor-element")!.appendText(content)));
+      } else {
+        return document.querySelector<CodeEditorElement>("code-editor-element")!.loadFile(vFile.file);
+      }
+    })
+  );
+
+  private $watchUpdate = this.$openFilePath.pipe(
+    combineLatestWith($fs),
+    map(([path, fs]) => fs[path]),
+    filter((vfile) => !vfile.stream),
+    distinctUntilChanged((a, b) => a.file === b.file),
+    tap((vfile) => document.querySelector<CodeEditorElement>("code-editor-element")!.loadFile(vfile.file))
   );
 
   connectedCallback() {
     this.$render.subscribe();
     this.$openFile.subscribe();
+    this.$watchUpdate.subscribe();
   }
 }
 
