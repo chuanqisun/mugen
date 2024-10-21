@@ -55,6 +55,9 @@ export interface PartialResponse {
   runId: number;
   delta?: string;
   objectPath?: string;
+  scope?: string;
+  isOpening?: boolean;
+  isClosing?: boolean;
 }
 
 export function parseHtmlStream(runId: number, rawStream: AsyncIterable<ChatCompletionChunk>, options?: ParseHtmlStreamOptions): Observable<PartialResponse> {
@@ -64,6 +67,7 @@ export function parseHtmlStream(runId: number, rawStream: AsyncIterable<ChatComp
       onopentag(name, attributes) {
         if (name === "response-file") {
           currentObjectPath = attributes.path ?? "raw.txt";
+          subscriber.next({ runId, objectPath: currentObjectPath, isOpening: true });
         } else {
           const attributesString = Object.entries(attributes)
             .map(([key, value]) => `${key}="${value}"`)
@@ -77,6 +81,7 @@ export function parseHtmlStream(runId: number, rawStream: AsyncIterable<ChatComp
       onclosetag(name) {
         if (name === "response-file") {
           currentObjectPath = "raw.txt";
+          subscriber.next({ runId, objectPath: currentObjectPath, isClosing: true });
         } else {
           subscriber.next({ runId, objectPath: currentObjectPath, delta: `</${name}>` });
         }

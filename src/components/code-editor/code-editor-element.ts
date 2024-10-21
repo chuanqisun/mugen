@@ -26,6 +26,14 @@ export class CodeEditorElement extends HTMLElement {
   get value() {
     return this.editorView.state.doc.toString();
   }
+
+  async loadFile(file: File) {
+    return file.text().then((text) => (this.value = text));
+  }
+
+  loadText(text: string) {
+    this.value = text;
+  }
 }
 
 export function defineCodeEditorElement() {

@@ -1,0 +1,7 @@
+outline-element {
+  display: grid;
+
+  button {
+    text-align: start;
+  }
+}

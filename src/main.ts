@@ -8,6 +8,7 @@ import { $runs } from "./components/interpreter/run";
 import { $globalShortcut } from "./components/keyboard/keyboard";
 import { defineTaskElement } from "./components/log/entry-element";
 import { defineLogElement } from "./components/log/log-element";
+import { defineOutlineElement } from "./components/outline/outline-element";
 import { definePopoverElement } from "./components/popover/popover-element";
 import { preventDefault } from "./lib/event";
 
@@ -17,6 +18,7 @@ definePopoverElement();
 defineSettingsElement();
 defineTaskElement();
 defineLogElement();
+defineOutlineElement();
 
 $runs.subscribe();
 
@@ -26,7 +28,7 @@ $commandSubmissions
       switch (command) {
         case "?":
         case "help": {
-          document.querySelector<CodeEditorElement>("code-editor-element")!.value = helpText.trim();
+          document.querySelector<CodeEditorElement>("code-editor-element")!.loadText(helpText);
           break;
         }
         case "login": {
