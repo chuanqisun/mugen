@@ -82,11 +82,13 @@ export interface PartialResponse {
 export function parseHtmlStream(runId: number, rawStream: AsyncIterable<ChatCompletionChunk>, options?: ParseHtmlStreamOptions): Observable<PartialResponse> {
   return new Observable<PartialResponse>((subscriber) => {
     let currentObjectPath: undefined | string = undefined;
+    let shouldTrimStart = true; // trim whitespace immediately before tag inner html starts. This allows artifact to have a clean looking start
     const parser = new Parser({
       onopentag(name, attributes) {
         if (name === "response-file") {
           currentObjectPath = attributes.path ?? "raw.txt";
           subscriber.next({ runId, objectPath: currentObjectPath, isOpening: true });
+          shouldTrimStart = true;
         } else {
           const attributesString = Object.entries(attributes)
             .map(([key, value]) => `${key}="${value}"`)
@@ -95,6 +97,11 @@ export function parseHtmlStream(runId: number, rawStream: AsyncIterable<ChatComp
         }
       },
       ontext(text) {
+        if (shouldTrimStart) {
+          text = text.trimStart();
+          const hasMoreSpace = !text;
+          shouldTrimStart = !hasMoreSpace;
+        }
         subscriber.next({ runId, objectPath: currentObjectPath, delta: text });
       },
       onclosetag(name) {
