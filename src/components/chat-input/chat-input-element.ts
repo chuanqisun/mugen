@@ -1,21 +1,25 @@
 import { html, render } from "lit";
 import { BehaviorSubject, filter, fromEvent, map, share, tap } from "rxjs";
 import { consumeStringValue } from "../../lib/consume-string-value";
-import { isCtrlEnterKeydown, preventDefault } from "../../lib/event";
+import { isEnterKeydown, preventDefault } from "../../lib/event";
 import { $submission } from "./submission";
 
 import "./chat-input-element.css";
 
 export class ChatInputElement extends HTMLElement {
   private $state = new BehaviorSubject({});
-  private $render = this.$state.pipe(tap(() => render(html`<textarea id="chat-input" style="resize: vertical;" autofocus></textarea>`, this)));
+  private $render = this.$state.pipe(
+    tap(() =>
+      render(html`<textarea id="chat-input" style="resize: vertical;" placeholder="Enter to submit goal, instruction, or /help" autofocus></textarea>`, this)
+    )
+  );
 
   connectedCallback() {
     this.$render.subscribe();
     const chatInputElement = this.querySelector("#chat-input") as HTMLTextAreaElement;
     fromEvent<KeyboardEvent>(chatInputElement, "keydown")
       .pipe(
-        filter(isCtrlEnterKeydown),
+        filter(isEnterKeydown),
         tap(preventDefault),
         map((e) => e.target as HTMLTextAreaElement),
         map(consumeStringValue),
@@ -23,6 +27,10 @@ export class ChatInputElement extends HTMLElement {
         share()
       )
       .subscribe($submission);
+  }
+
+  focus() {
+    (this.querySelector("#chat-input") as HTMLTextAreaElement).focus();
   }
 }
 

@@ -1,5 +1,5 @@
-export function isCtrlEnterKeydown(e: KeyboardEvent) {
-  return e.key === "Enter" && !e.shiftKey && e.ctrlKey && !e.metaKey && !e.altKey;
+export function isEnterKeydown(e: KeyboardEvent) {
+  return e.key === "Enter" && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey;
 }
 
 export function preventDefault(e: Event) {
