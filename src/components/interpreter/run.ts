@@ -16,18 +16,18 @@ export const $runs = $promptSubmissions.pipe(
         stream: true,
         model: "gpt-4o-mini",
         messages: [
-          system`Respond in markdown based on user's instruction or goal. In addition, you can use <embed-code path=""></embed-code> tag to surround any code. No other elements are allowed.
+          system`Generate files based on user's goals or instructions. Wrap each file's content like this: <respond-file path="">...</respond-file>. No text allowed outside <respond-file> tags 
 
 Requirement:
-- Every <embed-code> tag must have a path with a meaningful filename and file extension.
-- The text inside <embed-code> tag must use valid syntax in the target language.
-- Only use allowed file extensions: txt, md, html, yaml, css, js, ts, jsx, tsx, json, jsonl, ndjson.
+- Every <respond-file> tag must have a path with a meaningful filename and file extension.
+- The text inside <respond-file> tag must use valid syntax in the file's language.
+- Only use allowed file extensions: txt, markdown, html, yaml, css, js, ts, jsx, tsx, json, jsonl, ndjson.
 - When writing code, entry function name must be \`main\`.
 - Do NOT discuss your plan, unless asked by user.
 - Do NOT explain your code or show examples, unless asked by user.
-- If asked by user, respond with plan and explanation for code in separate <embed-code path="[filename].md"> tags.
+- If asked by user, respond with plan and explanation for code in separate <respond-file path="[filename].md"> tags.
 - Do NOT use external libraries or frameworks, unless asked by user.
-- When nexting markdown code blocks, use four backticks for the outer block and three for the inner.
+- Do NOT nest markdown blocks.
 \`\`\`
       `,
           user`${submission.prompt}`,
@@ -92,7 +92,7 @@ export function parseHtmlStream(runId: number, rawStream: AsyncIterable<ChatComp
     let shouldTrimStart = true; // trim whitespace immediately before tag inner html starts. This allows artifact to have a clean looking start
     const parser = new Parser({
       onopentag(name, attributes, isImplied) {
-        if (name === "embed-code") {
+        if (name === "respond-file") {
           currentObjectPath = attributes.path ?? "raw.txt";
           subscriber.next({ runId, objectPath: currentObjectPath, isOpening: true });
           shouldTrimStart = true;
@@ -113,7 +113,7 @@ export function parseHtmlStream(runId: number, rawStream: AsyncIterable<ChatComp
         subscriber.next({ runId, objectPath: currentObjectPath, delta: text });
       },
       onclosetag(name, isImplied) {
-        if (name === "embed-code") {
+        if (name === "respond-file") {
           subscriber.next({ runId, objectPath: currentObjectPath, isClosing: true });
           currentObjectPath = undefined;
         } else {
