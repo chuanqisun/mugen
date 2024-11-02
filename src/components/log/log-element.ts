@@ -2,7 +2,7 @@ import { map, tap } from "rxjs";
 import { $submission } from "../chat-input/submission";
 import { EntryElement } from "./entry-element";
 
-import { $rawPartialResponses } from "../interpreter/run";
+import { $rawPartialResponses } from "../interpreter/run-anthropic";
 import "./log-element.css";
 
 export class LogElement extends HTMLElement {

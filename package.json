@@ -16,6 +16,7 @@
     "vite": "^5.4.8"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.31.0",
     "@codemirror/theme-one-dark": "^6.1.2",
     "@codemirror/view": "^6.34.1",
     "codemirror": "^6.0.1",

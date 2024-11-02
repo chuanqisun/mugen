@@ -73,11 +73,11 @@ export const $firstStreamingPathPerSubmission = $streamingStarts.pipe(
   map(({ objectPath }) => objectPath)
 );
 
-export interface ParseHtmlStreamOptions {
+interface ParseHtmlStreamOptions {
   onRaw?: (raw: string) => void;
 }
 
-export interface PartialResponse {
+interface PartialResponse {
   runId: number;
   delta?: string;
   objectPath?: string;
@@ -86,7 +86,7 @@ export interface PartialResponse {
   isClosing?: boolean;
 }
 
-export function parseHtmlStream(runId: number, rawStream: AsyncIterable<ChatCompletionChunk>, options?: ParseHtmlStreamOptions): Observable<PartialResponse> {
+function parseHtmlStream(runId: number, rawStream: AsyncIterable<ChatCompletionChunk>, options?: ParseHtmlStreamOptions): Observable<PartialResponse> {
   return new Observable<PartialResponse>((subscriber) => {
     let currentObjectPath: undefined | string = undefined;
     let shouldTrimStart = true; // trim whitespace immediately before tag inner html starts. This allows artifact to have a clean looking start

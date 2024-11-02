@@ -3,7 +3,7 @@ import { repeat } from "lit/directives/repeat.js";
 import { combineLatestWith, distinctUntilChanged, filter, fromEvent, map, share, switchMap, tap } from "rxjs";
 import { CodeEditorElement } from "../code-editor/code-editor-element";
 import { $fs, readFile } from "../file-system/file-system";
-import { $firstStreamingPathPerSubmission } from "../interpreter/run";
+import { $firstStreamingPathPerSubmission } from "../interpreter/run-anthropic";
 import "./outline-element.css";
 
 export class OutlineElement extends HTMLElement {

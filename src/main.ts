@@ -4,7 +4,7 @@ import { $commandSubmissions } from "./components/chat-input/submission";
 import { defineSettingsElement } from "./components/chat-provider/settings-element";
 import { CodeEditorElement, defineCodeEditorElement } from "./components/code-editor/code-editor-element";
 import helpText from "./components/help/help.txt?raw";
-import { $runs } from "./components/interpreter/run";
+import { $runs } from "./components/interpreter/run-anthropic";
 import { $globalShortcut } from "./components/keyboard/keyboard";
 import { defineTaskElement } from "./components/log/entry-element";
 import { defineLogElement } from "./components/log/log-element";
