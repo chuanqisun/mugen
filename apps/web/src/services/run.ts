@@ -1,12 +1,34 @@
 import { Parser } from "htmlparser2";
+import { appendArtifactContent, createArtifact } from "./artifacts";
 import { $chat } from "./chat";
 import { $thread, appendAssistantMessage, createAssistantMessage } from "./thread";
 
-export async function run(id: number) {
+export async function run(userMessageId: number) {
   const currentItems = $thread.value.items;
-  const runItems = currentItems.slice(0, currentItems.findIndex((item) => item.id === id) + 1);
+  const runItems = currentItems.slice(0, currentItems.findIndex((item) => item.id === userMessageId) + 1);
 
-  const parser = new Parser({});
+  let currentArtifactId: string | null = null;
+
+  const parser = new Parser({
+    onopentag: (name, attributes, isImplied) => {
+      if (name === "standalone-artifact") {
+        currentArtifactId = createArtifact(attributes.path, "");
+        appendAssistantMessage(userMessageId, `[${attributes.path}]`);
+      }
+    },
+    ontext: (text) => {
+      if (currentArtifactId) {
+        appendArtifactContent(currentArtifactId, text);
+      } else {
+        appendAssistantMessage(userMessageId, text);
+      }
+    },
+    onclosetag: (name, _isImplied) => {
+      if (name === "standalone-artifact") {
+        currentArtifactId = null;
+      }
+    },
+  });
 
   const stream = $chat.value.messages
     .stream({
@@ -26,11 +48,12 @@ Requirements:
       stream: true,
     })
     .on("connect", () => {
-      createAssistantMessage(id);
+      createAssistantMessage(userMessageId);
     })
     .on("text", (text) => {
-      appendAssistantMessage(id, text);
+      parser.write(text);
     });
 
   await stream.finalMessage();
+  parser.end();
 }

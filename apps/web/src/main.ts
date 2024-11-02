@@ -1,5 +1,6 @@
 import { defineSettingsElement } from "./elements/settings-element";
 import { defineThreadElement } from "./elements/thread-element";
+import { $artifacts } from "./services/artifacts";
 import { runCommand } from "./services/command";
 import { run } from "./services/run";
 import { addUserMessage } from "./services/thread";
@@ -23,3 +24,6 @@ $("textarea")?.addEventListener("keydown", (event) => {
     }
   }
 });
+
+// debug only
+$artifacts.subscribe((a) => console.log({ artifacts: a }));
