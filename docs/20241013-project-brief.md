@@ -2,28 +2,9 @@
 
 - An integrated generative environment (IGE)
 
-## Why
+## Key features
 
-- Give control to programmers beyond chat paradigm
-- Productivity through concurrency
-
-## How
-
-- Everything is scriptable
-- Multi-agent
-- Metaphorical UX
-- Data sharing via communication
-- Temporal and causal arrows as first-class citizen
-- Choreography over orchestration
-- Voice and Visual first
-
-## Details
-
-Everything is scriptable
-
-- Instead of start with UI and model, we start with an API, that can be `eval`ed in javascript. The script should include chat capability, as well as audio/visual modality I/O.
-
-Expose eval friendly scripting API
-
-- `/<command>` can be direct scripting calls, e.g. `/help()` or `/newfile("index.html")`
-- Alternatively, use `/` for reserved commands, an `!` for scripting
+- **Everything is scriptable**: Message, Tool, Agent, Artifacts, Environment have APIs exposed to both human and agents.
+- **Concurrent**: Parallel dispatch of actions, powered by Elm architecture.
+- **Graph modeled**: Everything as node, connected by causal links
+- **Grain of the web**: HTML and URL as first class citizen. Easy to parser. Easy to traverse.
