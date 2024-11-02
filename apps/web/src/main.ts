@@ -1,3 +1,5 @@
+import { html, render } from "lit";
+import { repeat } from "lit/directives/repeat.js";
 import { defineSettingsElement } from "./elements/settings-element";
 import { defineThreadElement } from "./elements/thread-element";
 import { $artifacts } from "./services/artifacts";
@@ -26,4 +28,20 @@ $("textarea")?.addEventListener("keydown", (event) => {
 });
 
 // debug only
-$artifacts.subscribe((a) => console.log({ artifacts: a }));
+$artifacts.subscribe((a) => {
+  const artifacts = Object.values(a);
+
+  render(
+    repeat(
+      artifacts,
+      (artifact) => artifact.path,
+      (artifact) => html`
+        <h2>${artifact.path}</h2>
+        <pre><code>${artifact.content}</code></pre>
+      `
+    ),
+    document.querySelector("main")!
+  );
+
+  console.log({ artifacts: a });
+});
