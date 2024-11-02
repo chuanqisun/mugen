@@ -1,4 +1,5 @@
-import { defineThreadElement, ThreadElement } from "./elements/thread-element";
+import { defineThreadElement } from "./elements/thread-element";
+import { $thread, addUserMessage } from "./services/thread";
 import { $ } from "./utils/query";
 
 defineThreadElement();
@@ -6,8 +7,7 @@ defineThreadElement();
 $("textarea")?.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
     event.preventDefault();
-
-    $<ThreadElement>("thread-element")?.appendUserMessage((event.target as HTMLTextAreaElement).value);
+    const id = addUserMessage($thread, (event.target as HTMLTextAreaElement).value);
     (event.target as HTMLTextAreaElement).value = "";
   }
 });

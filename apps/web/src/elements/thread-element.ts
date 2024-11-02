@@ -1,17 +1,32 @@
-import template from "./thread-element.html?raw";
+import { html, render } from "lit";
+import { repeat } from "lit/directives/repeat.js";
+import { tap } from "rxjs";
+import { $thread, type Thread } from "../services/thread";
+
 export class ThreadElement extends HTMLElement {
   shadowRoot = this.attachShadow({ mode: "open" });
-  private mid = 0;
 
   connectedCallback() {
-    this.shadowRoot.innerHTML = template;
+    $thread.pipe(tap((thread) => this.render(thread))).subscribe();
   }
 
-  appendUserMessage(message: string) {
-    const messageElement = document.createElement("div");
-    messageElement.dataset.id = (++this.mid).toString();
-    messageElement.textContent = message;
-    this.shadowRoot.querySelector<HTMLElement>(".thread")!.appendChild(messageElement);
+  render(thread: Thread) {
+    render(
+      html` <style>
+          .thread {
+            display: grid;
+            gap: 8px;
+          }
+        </style>
+        <div class="thread">
+          ${repeat(
+            thread.items,
+            (message) => message.id,
+            (message) => html` <div class="message">${message.role} &gt; ${message.content}</div> `
+          )}
+        </div>`,
+      this.shadowRoot
+    );
   }
 }
 
