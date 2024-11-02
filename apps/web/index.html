@@ -8,40 +8,21 @@
   <link rel="stylesheet" href="./src/main.css" />
 </head>
 
-<body class="cols" style="height: 100%">
+<body>
 
-  <!-- File explorer -->
-  <aside class="rows" style="flex-shrink: 0; width: 240px; resize: horizontal; overflow-y: auto">
-    <div class="cols" style="justify-content: space-between;"><span>Workspace</span> <popover-element><button
-          data-trigger>+</button>
-        <div class="menu" data-target data-open-towards="sw">
-          <button>New session</button>
-          <button>New object</button>
-        </div>
-      </popover-element></div>
-    <outline-element></outline-element>
-  </aside>
+  <!-- CLI -->
+  <aside></aside>
 
   <!-- Workbench -->
-  <main class="rows" style="flex-grow: 1">
+  <main></main>
 
-    <!-- Input bar -->
-    <div class="rows" style="flex-shrink: 0">
-      <chat-input-element></chat-input-element>
-    </div>
-    <code-editor-element></code-editor-element>
 
-    <details>
-      <summary>Log</summary>
-      <log-element></log-element>
-    </details>
-  </main>
-
+  <!-- overlay -->
   <dialog id="settings-dialog">
     <settings-element></settings-element>
   </dialog>
-  <script src="./src/main.ts" type="module"></script>
 
+  <script src="./src/main.ts" type="module"></script>
 </body>
 
 </html>
