@@ -1,28 +1,17 @@
 {
-  "name": "mugen",
+  "name": "root",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port 5173",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
+    "dev": "npm run dev -w apps/web",
+    "build": "npm run build -w apps/web"
   },
   "devDependencies": {
-    "@types/dom-speech-recognition": "^0.0.4",
-    "@types/node": "^22.7.5",
-    "prettier": "^3.3.3",
-    "typescript": "^5.5.3",
-    "vite": "^5.4.8"
+    "prettier": "^3.3.3"
   },
-  "dependencies": {
-    "@anthropic-ai/sdk": "^0.31.0",
-    "@codemirror/theme-one-dark": "^6.1.2",
-    "@codemirror/view": "^6.34.1",
-    "codemirror": "^6.0.1",
-    "htmlparser2": "^9.1.0",
-    "lit": "^3.2.1",
-    "openai": "^4.67.3",
-    "rxjs": "^7.8.1"
-  }
+  "dependencies": {},
+  "workspaces": [
+    "apps/*"
+  ]
 }
