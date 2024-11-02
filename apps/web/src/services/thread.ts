@@ -8,7 +8,7 @@ export interface Thread {
 
 export interface ThreadItem {
   id: number;
-  role: string;
+  role: "user" | "assistant";
   content: any[];
 }
 
