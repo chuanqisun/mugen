@@ -1,9 +1,38 @@
+/** SETTINGS */
 :root {
   color-scheme: light dark;
+  --divider-color: light-dark(#333, #666);
 }
 
+/** RESETS */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+body {
+  height: 100vh;
+  margin: 0;
+}
+
+/** COMPONENTS */
+.app-layout {
+  display: grid;
+  grid-template-columns: auto 1fr;
+
+  & > aside {
+    overflow-y: auto;
+    resize: horizontal;
+    border-inline-end: 1px solid var(--divider-color);
+  }
+}
+
+/** UTILS */
+.rows {
+  display: flex;
+  flex-direction: column;
+}
+.cols {
+  display: flex;
 }
