@@ -1,5 +1,5 @@
 import { $chat } from "./chat";
-import { $thread } from "./thread";
+import { $thread, appendAssistantMessage, createAssistantMessage } from "./thread";
 
 export async function run(id: number) {
   const currentItems = $thread.value.items;
@@ -12,15 +12,16 @@ export async function run(id: number) {
       model: "claude-3-haiku-20240307",
       messages: runItems.map((item) => ({
         role: item.role,
-        content: item.content.join(" "), // HACK
+        content: item.content,
       })),
       stream: true,
     })
+    .on("connect", () => {
+      createAssistantMessage(id);
+    })
     .on("text", (text) => {
-      console.log(text);
+      appendAssistantMessage(id, text);
     });
 
-  const final = await stream.finalMessage();
-
-  console.log({ final });
+  await stream.finalMessage();
 }
