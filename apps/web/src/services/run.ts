@@ -13,11 +13,11 @@ export async function run(id: number) {
       temperature: 0,
       max_tokens: 4_000,
       model: "claude-3-haiku-20240307",
-      system: `Respond in plaintext. If user asks for standalone code or document, wrap them with embedded <standalone-artifact> tags.
+      system: `Respond in plaintext. If user asks for standalone code blocks, documents, or files, wrap them with embedded <standalone-artifact> tags.
 Requirements:
-- Each <standalone-artifact> must have path with extension, e.g. <standalone-artifact path="[filename].[extension]">...</standalone-artifact>.
+- Each <standalone-artifact> must have a path with descriptive filename and extension, e.g. <standalone-artifact path="[filename].[extension]">...</standalone-artifact>.
 - Suppported file extensions: txt, md, html, css, js, ts, jsx, tsx, json, sh
-- Do NOT explain the artifact
+- Do NOT nest <standalone-artifact> elements
       `.trim(),
       messages: runItems.map((item) => ({
         role: item.role,
