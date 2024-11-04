@@ -8,24 +8,54 @@ export async function run(userMessageId: number) {
   const runItems = currentItems.slice(0, currentItems.findIndex((item) => item.id === userMessageId) + 1);
 
   let currentArtifactId: string | null = null;
+  let shouldTrimStart = true; // trim whitespace immediately before tag inner html starts. This allows artifact to have a clean looking start
 
   const parser = new Parser({
     onopentag: (name, attributes, isImplied) => {
       if (name === "standalone-artifact") {
         currentArtifactId = createArtifact(attributes.path, "");
         appendAssistantMessage(userMessageId, `[${attributes.path}]`);
+      } else {
+        /* treat other tags as plaintext */
+
+        if (isImplied) return;
+
+        const attributesString = Object.entries(attributes)
+          .map(([key, value]) => `${key}="${value}"`)
+          .join(" ");
+
+        const tagString = `<${name}${attributesString.length ? ` ${attributesString}` : ""}>`;
+
+        if (currentArtifactId) {
+          appendArtifactContent(currentArtifactId, tagString);
+        } else {
+          appendAssistantMessage(userMessageId, tagString);
+        }
       }
     },
     ontext: (text) => {
       if (currentArtifactId) {
+        if (shouldTrimStart) {
+          text = text.trimStart();
+          shouldTrimStart = !text; // if text is empty, keep trimming
+        }
         appendArtifactContent(currentArtifactId, text);
       } else {
         appendAssistantMessage(userMessageId, text);
       }
     },
-    onclosetag: (name, _isImplied) => {
+    onclosetag: (name, isImplied) => {
       if (name === "standalone-artifact") {
         currentArtifactId = null;
+      } else {
+        if (isImplied) return;
+
+        const tagString = `</${name}>`;
+        if (currentArtifactId) {
+          appendArtifactContent(currentArtifactId, tagString);
+        } else {
+          appendAssistantMessage(userMessageId, tagString);
+        }
       }
     },
   });
