@@ -10,7 +10,9 @@
   "devDependencies": {
     "prettier": "^3.3.3"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@codemirror/state": "^6.4.1"
+  },
   "workspaces": [
     "apps/*"
   ]

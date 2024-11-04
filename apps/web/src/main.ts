@@ -73,7 +73,7 @@ $activeFilePath
                   }
                 })
               )
-            : file.text().then((text) => codeEditorElement.loadText(text))
+            : codeEditorElement.loadFile(file)
         )
       );
 
