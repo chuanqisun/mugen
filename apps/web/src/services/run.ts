@@ -10,6 +10,8 @@ export async function run(userMessageId: number) {
   let currentArtifactPath: string | null = null;
   let shouldTrimStart = true; // trim whitespace immediately before tag inner html starts. This allows artifact to have a clean looking start
 
+  // due to potential race conditions, we have queue all the fs operations
+
   const parser = new Parser({
     onopentag: (name, attributes, isImplied) => {
       if (name === "standalone-artifact") {
@@ -47,13 +49,16 @@ export async function run(userMessageId: number) {
     },
     onclosetag: (name, isImplied) => {
       if (name === "standalone-artifact") {
-        currentArtifactPath = null;
+        if (currentArtifactPath) {
+          closeFile(currentArtifactPath);
+          currentArtifactPath = null;
+        }
       } else {
         if (isImplied) return;
 
         const tagString = `</${name}>`;
         if (currentArtifactPath) {
-          appendFile(currentArtifactPath, tagString).then(() => closeFile(currentArtifactPath!));
+          appendFile(currentArtifactPath, tagString);
         } else {
           appendAssistantMessage(userMessageId, tagString);
         }

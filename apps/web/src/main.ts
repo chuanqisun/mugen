@@ -1,10 +1,9 @@
-import { html, render } from "lit";
-import { repeat } from "lit/directives/repeat.js";
 import { defineCodeEditorElement } from "./elements/code-editor/code-editor-element";
 import { defineSettingsElement } from "./elements/settings-element";
+import { defineSpinnerElement } from "./elements/spinner";
+import { defineTabsElement } from "./elements/tabs-element";
 import { defineThreadElement } from "./elements/thread-element";
 import { runCommand } from "./services/command";
-import { $fs } from "./services/file-system";
 import { run } from "./services/run";
 import { addUserMessage } from "./services/thread";
 import { toTargetValueString } from "./utils/event";
@@ -13,6 +12,8 @@ import { $ } from "./utils/query";
 defineThreadElement();
 defineSettingsElement();
 defineCodeEditorElement();
+defineTabsElement();
+defineSpinnerElement();
 
 $("textarea")?.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
@@ -30,20 +31,20 @@ $("textarea")?.addEventListener("keydown", (event) => {
 });
 
 // debug only
-$fs.subscribe((a) => {
-  const artifacts = Object.values(a);
+// $fs.subscribe((a) => {
+//   const artifacts = Object.values(a);
 
-  render(
-    repeat(
-      artifacts,
-      (artifact) => artifact.path,
-      (artifact) => html`
-        <h2>${artifact.path}</h2>
-        <pre><code>${artifact.file.size}</code></pre>
-      `
-    ),
-    document.querySelector("main")!
-  );
+//   render(
+//     repeat(
+//       artifacts,
+//       (artifact) => artifact.path,
+//       (artifact) => html`
+//         <h2>${artifact.path}</h2>
+//         <pre><code>${artifact.file.size}</code></pre>
+//       `
+//     ),
+//     document.querySelector("main")!
+//   );
 
-  console.log({ artifacts: a });
-});
+//   console.log({ artifacts: a });
+// });

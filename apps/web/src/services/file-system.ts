@@ -1,4 +1,4 @@
-import { BehaviorSubject, ReplaySubject } from "rxjs";
+import { BehaviorSubject, concatMap, groupBy, mergeMap, ReplaySubject, Subject } from "rxjs";
 
 export interface VirtualFile {
   path: string;
@@ -22,67 +22,101 @@ export async function readFile(path: string) {
   return $fs.value[path];
 }
 
-export async function writeFile(path: string, content: string) {
-  const $stream = new ReplaySubject<TextFileUpdate>();
+const $fsInternalQueue = new Subject<{ path: string; transcaction: () => Promise<any> }>();
+$fsInternalQueue
+  .pipe(
+    groupBy(({ path }) => path),
+    // files can be written concurrently
+    mergeMap((tasksPerPath) =>
+      tasksPerPath.pipe(
+        // inside each file, write must be serial
+        concatMap((task) => task.transcaction().catch(() => null))
+      )
+    )
+  )
+  .subscribe();
 
-  $fs.next({
-    ...$fs.value,
-    [path]: {
-      ...$fs.value[path],
-      path,
-      file: new File([content], getFilename(path), { type: getMimeType(getExtension(path)) }),
-      stream: $stream,
+export async function writeFile(path: string, content: string) {
+  $fsInternalQueue.next({
+    path,
+    transcaction: async () => {
+      const $stream = new ReplaySubject<TextFileUpdate>();
+
+      $fs.next({
+        ...$fs.value,
+        [path]: {
+          ...$fs.value[path],
+          path,
+          file: new File([content], getFilename(path), { type: getMimeType(getExtension(path)) }),
+          stream: $stream,
+        },
+      });
+
+      $stream.next({ snapshot: content, delta: content });
     },
   });
-
-  $stream.next({ snapshot: content, delta: content });
 }
 
 export async function deleteFile(path: string) {
-  const existingFile = $fs.value[path];
-  if (existingFile) {
-    existingFile.stream?.complete();
-    $fs.next(Object.fromEntries(Object.entries($fs.value).filter(([key]) => key !== path)));
-  }
+  $fsInternalQueue.next({
+    path,
+    transcaction: async () => {
+      const existingFile = $fs.value[path];
+      if (existingFile) {
+        existingFile.stream?.complete();
+        $fs.next(Object.fromEntries(Object.entries($fs.value).filter(([key]) => key !== path)));
+      }
+    },
+  });
 }
 
 // TODO use efficient text encoded appending
 export async function appendFile(path: string, content: string) {
-  const vfile = $fs.value[path];
-  const text = vfile ? await vfile.file.text() : "";
-  const snapshot = text + content;
+  $fsInternalQueue.next({
+    path,
+    transcaction: async () => {
+      const vfile = $fs.value[path];
+      const text = vfile ? await vfile.file.text() : "";
+      const snapshot = text + content;
 
-  let $stream = $fs.value[path].stream;
-  if (!$stream) {
-    $stream = new ReplaySubject<TextFileUpdate>();
-    $stream.next({ snapshot, delta: snapshot });
-  } else {
-    $stream.next({ snapshot, delta: content });
-  }
+      let $stream = $fs.value[path].stream;
+      if (!$stream) {
+        $stream = new ReplaySubject<TextFileUpdate>();
+        $stream.next({ snapshot, delta: snapshot });
+      } else {
+        $stream.next({ snapshot, delta: content });
+      }
 
-  $fs.next({
-    ...$fs.value,
-    [path]: {
-      ...$fs.value[path],
-      file: new File([snapshot], getFilename(path), { type: getMimeType(getExtension(path)) }),
-      stream: $stream,
+      $fs.next({
+        ...$fs.value,
+        [path]: {
+          ...$fs.value[path],
+          file: new File([snapshot], getFilename(path), { type: getMimeType(getExtension(path)) }),
+          stream: $stream,
+        },
+      });
     },
   });
 }
 
 export async function closeFile(path: string) {
-  const vfile = $fs.value[path];
-  if (vfile?.stream) {
-    vfile.stream?.complete();
+  $fsInternalQueue.next({
+    path,
+    transcaction: async () => {
+      const vfile = $fs.value[path];
+      if (vfile?.stream) {
+        vfile.stream?.complete();
 
-    $fs.next({
-      ...$fs.value,
-      [path]: {
-        ...vfile,
-        stream: undefined,
-      },
-    });
-  }
+        $fs.next({
+          ...$fs.value,
+          [path]: {
+            ...vfile,
+            stream: undefined,
+          },
+        });
+      }
+    },
+  });
 }
 
 function getFilename(path: string) {
