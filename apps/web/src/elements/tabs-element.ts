@@ -11,7 +11,7 @@ export class TabsElement extends HTMLElement {
         Object.values(fs),
         (artifact) => artifact.path,
         (artifact) =>
-          html`<button @click=${() => this.handleClick(artifact.path)}>
+          html`<button @click=${() => this.openTab(artifact.path)}>
             ${artifact.path}
             ${when(
               artifact.stream,
@@ -28,7 +28,7 @@ export class TabsElement extends HTMLElement {
     this.$render.subscribe();
   }
 
-  handleClick(path: string) {
+  openTab(path: string) {
     this.dispatchEvent(new CustomEvent("openpath", { detail: path }));
   }
 }

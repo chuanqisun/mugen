@@ -9,3 +9,7 @@ export function preventDefault(e: Event) {
 export function toTargetValueString(e: Event) {
   return (e.target as HTMLInputElement).value ?? "";
 }
+
+export function toCustomEventDetail<T>(e: Event) {
+  return (e as CustomEvent<T>).detail;
+}

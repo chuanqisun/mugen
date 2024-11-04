@@ -57,6 +57,22 @@ export async function writeFile(path: string, content: string) {
   });
 }
 
+export async function writeFileSilent(path: string, content: string) {
+  $fsInternalQueue.next({
+    path,
+    transcaction: async () => {
+      $fs.next({
+        ...$fs.value,
+        [path]: {
+          ...$fs.value[path],
+          path,
+          file: new File([content], getFilename(path), { type: getMimeType(getExtension(path)) }),
+        },
+      });
+    },
+  });
+}
+
 export async function deleteFile(path: string) {
   $fsInternalQueue.next({
     path,
