@@ -41,6 +41,11 @@ dialog {
   }
 }
 
+.workbench-layout {
+  display: grid;
+  grid-template-rows: auto 1fr; /* tabs + editor */
+}
+
 /** UTILS */
 .rows {
   display: flex;

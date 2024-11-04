@@ -1,23 +1,24 @@
 import { Parser } from "htmlparser2";
-import { appendArtifactContent, createArtifact } from "./artifacts";
 import { $chat } from "./chat";
+import { appendFile, closeFile, writeFile } from "./file-system";
 import { $thread, appendAssistantMessage, createAssistantMessage } from "./thread";
 
 export async function run(userMessageId: number) {
   const currentItems = $thread.value.items;
   const runItems = currentItems.slice(0, currentItems.findIndex((item) => item.id === userMessageId) + 1);
 
-  let currentArtifactId: string | null = null;
+  let currentArtifactPath: string | null = null;
   let shouldTrimStart = true; // trim whitespace immediately before tag inner html starts. This allows artifact to have a clean looking start
 
   const parser = new Parser({
     onopentag: (name, attributes, isImplied) => {
       if (name === "standalone-artifact") {
-        currentArtifactId = createArtifact(attributes.path, "");
+        currentArtifactPath = attributes.path ?? "unnamed_response.txt";
+        const path = attributes.path;
+        writeFile(path, "");
         appendAssistantMessage(userMessageId, `[${attributes.path}]`);
       } else {
         /* treat other tags as plaintext */
-
         if (isImplied) return;
 
         const attributesString = Object.entries(attributes)
@@ -26,33 +27,33 @@ export async function run(userMessageId: number) {
 
         const tagString = `<${name}${attributesString.length ? ` ${attributesString}` : ""}>`;
 
-        if (currentArtifactId) {
-          appendArtifactContent(currentArtifactId, tagString);
+        if (currentArtifactPath) {
+          appendFile(currentArtifactPath, tagString);
         } else {
           appendAssistantMessage(userMessageId, tagString);
         }
       }
     },
     ontext: (text) => {
-      if (currentArtifactId) {
+      if (currentArtifactPath) {
         if (shouldTrimStart) {
           text = text.trimStart();
           shouldTrimStart = !text; // if text is empty, keep trimming
         }
-        appendArtifactContent(currentArtifactId, text);
+        appendFile(currentArtifactPath, text);
       } else {
         appendAssistantMessage(userMessageId, text);
       }
     },
     onclosetag: (name, isImplied) => {
       if (name === "standalone-artifact") {
-        currentArtifactId = null;
+        currentArtifactPath = null;
       } else {
         if (isImplied) return;
 
         const tagString = `</${name}>`;
-        if (currentArtifactId) {
-          appendArtifactContent(currentArtifactId, tagString);
+        if (currentArtifactPath) {
+          appendFile(currentArtifactPath, tagString).then(() => closeFile(currentArtifactPath!));
         } else {
           appendAssistantMessage(userMessageId, tagString);
         }
