@@ -38,6 +38,14 @@ export async function writeFile(path: string, content: string) {
   $stream.next({ snapshot: content, delta: content });
 }
 
+export async function deleteFile(path: string) {
+  const existingFile = $fs.value[path];
+  if (existingFile) {
+    existingFile.stream?.complete();
+    $fs.next(Object.fromEntries(Object.entries($fs.value).filter(([key]) => key !== path)));
+  }
+}
+
 // TODO use efficient text encoded appending
 export async function appendFile(path: string, content: string) {
   const vfile = $fs.value[path];
