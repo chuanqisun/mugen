@@ -17,6 +17,9 @@ export class ThreadElement extends HTMLElement {
             display: grid;
             gap: 8px;
           }
+          .message {
+            white-space: pre-wrap;
+          }
         </style>
         <div class="thread">
           ${repeat(
