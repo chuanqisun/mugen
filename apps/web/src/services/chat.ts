@@ -81,7 +81,7 @@ export async function run(userMessageId: number) {
       system: `Respond in plaintext. If user asks for standalone code blocks, documents, or files, wrap them with embedded <standalone-artifact> tags.
 Requirements:
 - Each <standalone-artifact> must have a path with descriptive filename and extension, e.g. <standalone-artifact path="[filename].[extension]">...</standalone-artifact>.
-- Suppported file extensions: txt, md, html, css, js, ts, jsx, tsx, json, sh
+- Supported file extensions: txt, md, html, css, js, ts, jsx, tsx, json, sh
 - Do NOT nest <standalone-artifact> elements
       `.trim(),
       messages: runItems.map((item) => ({
