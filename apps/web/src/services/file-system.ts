@@ -50,7 +50,7 @@ export async function readFile(path: string) {
   return $fs.value[path];
 }
 
-const $fsInternalQueue = new Subject<{ path: string; transcaction: () => Promise<any> }>();
+const $fsInternalQueue = new Subject<{ path: string; transaction: () => Promise<any> }>();
 $fsInternalQueue
   .pipe(
     groupBy(({ path }) => path),
@@ -58,7 +58,7 @@ $fsInternalQueue
     mergeMap((tasksPerPath) =>
       tasksPerPath.pipe(
         // inside each file, write must be serial
-        concatMap((task) => task.transcaction().catch(() => null))
+        concatMap((task) => task.transaction().catch(() => null))
       )
     )
   )
@@ -67,7 +67,7 @@ $fsInternalQueue
 export async function writeFile(path: string, content: string) {
   $fsInternalQueue.next({
     path,
-    transcaction: async () => {
+    transaction: async () => {
       const $stream = new ReplaySubject<TextFileUpdate>();
 
       $fs.next({
@@ -88,7 +88,7 @@ export async function writeFile(path: string, content: string) {
 export async function writeFileSilent(path: string, content: string) {
   $fsInternalQueue.next({
     path,
-    transcaction: async () => {
+    transaction: async () => {
       $fs.next({
         ...$fs.value,
         [path]: {
@@ -104,7 +104,7 @@ export async function writeFileSilent(path: string, content: string) {
 export async function deleteFile(path: string) {
   $fsInternalQueue.next({
     path,
-    transcaction: async () => {
+    transaction: async () => {
       const existingFile = $fs.value[path];
       if (existingFile) {
         existingFile.stream?.complete();
@@ -118,9 +118,9 @@ export async function deleteFile(path: string) {
 export async function appendFile(path: string, content: string) {
   $fsInternalQueue.next({
     path,
-    transcaction: async () => {
-      const vfile = $fs.value[path];
-      const text = vfile ? await vfile.file.text() : "";
+    transaction: async () => {
+      const virtualFile = $fs.value[path];
+      const text = virtualFile ? await virtualFile.file.text() : "";
       const snapshot = text + content;
 
       let $stream = $fs.value[path].stream;
@@ -146,15 +146,15 @@ export async function appendFile(path: string, content: string) {
 export async function closeFile(path: string) {
   $fsInternalQueue.next({
     path,
-    transcaction: async () => {
-      const vfile = $fs.value[path];
-      if (vfile?.stream) {
-        vfile.stream?.complete();
+    transaction: async () => {
+      const virtualFile = $fs.value[path];
+      if (virtualFile?.stream) {
+        virtualFile.stream?.complete();
 
         $fs.next({
           ...$fs.value,
           [path]: {
-            ...vfile,
+            ...virtualFile,
             stream: undefined,
           },
         });
