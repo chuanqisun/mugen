@@ -74,7 +74,7 @@ $activeFilePath
             ? stream.pipe(
                 tap((update) => {
                   if (update.snapshot === update.delta) {
-                    codeEditorElement.loadText(update.snapshot);
+                    codeEditorElement.loadText(file.name, update.snapshot);
                   } else {
                     codeEditorElement.appendText(update.delta);
                   }

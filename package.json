@@ -11,6 +11,12 @@
     "prettier": "^3.3.3"
   },
   "dependencies": {
+    "@codemirror/lang-css": "^6.3.0",
+    "@codemirror/lang-html": "^6.4.9",
+    "@codemirror/lang-javascript": "^6.2.2",
+    "@codemirror/lang-json": "^6.0.1",
+    "@codemirror/lang-markdown": "^6.3.0",
+    "@codemirror/lang-yaml": "^6.1.1",
     "@codemirror/state": "^6.4.1"
   },
   "workspaces": [
