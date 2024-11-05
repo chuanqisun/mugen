@@ -30,8 +30,30 @@ dialog {
 }
 
 /** COMPONENTS */
-.app-layout { }
+.app-layout {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
 
+  & > aside {
+    overflow-y: auto;
+    resize: horizontal;
+    border-inline-end: 1px solid var(--divider-color);
+  }
+}
+
+.workbench-layout {
+  display: grid;
+  grid-template-rows: auto 1fr; /* tabs + editor */
+}
+
+.preview-layout {
+  display: grid;
+  grid-template-rows: auto 1fr; /* menu + preview */
+
+  &[data-active="false"] {
+    display: none;
+  }
+}
 
 /** UTILS */
 .rows {
