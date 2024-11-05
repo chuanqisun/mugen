@@ -1,4 +1,4 @@
-import { distinctUntilKeyChanged, filter, fromEvent, map, of, share, startWith, switchMap, takeUntil, tap } from "rxjs";
+import { distinctUntilKeyChanged, filter, from, fromEvent, map, share, startWith, switchMap, take, takeUntil, tap } from "rxjs";
 import { CodeEditorElement, defineCodeEditorElement } from "./elements/code-editor/code-editor-element";
 import { definePreviewElement, PreviewElement } from "./elements/preview-element";
 import { defineSettingsElement } from "./elements/settings-element";
@@ -74,7 +74,12 @@ fromEvent(closePreviewButton, "click").pipe(tap(closePreview)).subscribe();
 
 $autoOpenPaths
   .pipe(
-    startWith(of("welcome.txt")),
+    startWith(
+      from(Object.values($fs.value)).pipe(
+        take(1),
+        map((value) => value.path)
+      )
+    ),
     switchMap(($path) => $path.pipe(takeUntil($manualOpenTab)))
   )
   .subscribe($activeFilePath);

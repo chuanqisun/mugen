@@ -12,6 +12,34 @@ export interface TextFileUpdate {
 }
 
 export const $fs = new BehaviorSubject<Record<string, VirtualFile>>({
+  "test.html": {
+    path: "test.html",
+    file: new File(
+      [
+        `
+<!doctype html>
+<head>
+  <title>Test</title>
+  <link rel="stylesheet" href="test.css" />
+</head>
+<body>
+hello html
+  <script type="module" src="test.js"></script>
+</body>
+      `.trim(),
+      ],
+      "test.html",
+      { type: "text/html" }
+    ),
+  },
+  "test.css": {
+    path: "test.css",
+    file: new File(["body { color: red; }"], "test.css", { type: "text/css" }),
+  },
+  "test.js": {
+    path: "test.js",
+    file: new File(["console.log('hello js')"], "test.js", { type: "text/javascript" }),
+  },
   "welcome.txt": {
     path: "welcome.txt",
     file: new File(["Welcome to Mugen"], "welcome.txt", { type: "text/plain" }),
