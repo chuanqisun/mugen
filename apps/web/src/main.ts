@@ -114,7 +114,12 @@ $previewPath
   )
   .subscribe();
 
-$previewHtml.pipe(tap((html) => previewElement.renderHTML(html))).subscribe();
+$previewHtml
+  .pipe(
+    filter(Boolean),
+    tap((html) => previewElement.renderHTML(html))
+  )
+  .subscribe();
 
 function runCommand(command: string) {
   switch (command) {

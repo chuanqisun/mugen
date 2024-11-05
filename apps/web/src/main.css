@@ -46,8 +46,13 @@ dialog {
   grid-template-rows: auto 1fr; /* tabs + editor */
 }
 
-.preview-layout[data-active="false"] {
-  display: none;
+.preview-layout {
+  display: grid;
+  grid-template-rows: auto 1fr; /* menu + preview */
+
+  &[data-active="false"] {
+    display: none;
+  }
 }
 
 /** UTILS */

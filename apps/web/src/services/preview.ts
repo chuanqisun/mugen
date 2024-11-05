@@ -1,4 +1,5 @@
-import { BehaviorSubject, map } from "rxjs";
+import { BehaviorSubject, switchMap } from "rxjs";
+import { readFile } from "./file-system";
 
 export const $previewPath = new BehaviorSubject<string | null>(null);
 
@@ -11,8 +12,20 @@ export function closePreview() {
 }
 
 export const $previewHtml = $previewPath.pipe(
-  map((path) => {
-    if (!path) return "";
-    return `<!DOCTYPE html><html><head></head><body>hello world</body></html>`;
+  switchMap(async (path) => {
+    if (!path) return null;
+
+    const entryType = path.split(".").pop();
+    switch (entryType) {
+      case "html": {
+        return readFile(path).then((virtualFile) => virtualFile.file.text());
+      }
+
+      default: {
+        return readFile(path).then(
+          async (virtualFile) => `<doctype html><html><head><title>${path}</title></head><body><pre>${await virtualFile.file.text()}</pre></body></html>`
+        );
+      }
+    }
   })
 );
