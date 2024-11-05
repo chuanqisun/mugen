@@ -5,12 +5,12 @@ import { defineSpinnerElement } from "./elements/spinner";
 import { defineTabsElement, TabsElement } from "./elements/tabs-element";
 import { defineThreadElement } from "./elements/thread-element";
 import { $activeFilePath } from "./services/buffer";
-import { runCommand } from "./services/command";
 import { $fs, writeFileSilent } from "./services/file-system";
 import { run } from "./services/run";
+import { $globalShortcut } from "./services/shortcut";
 import { $autoOpenPaths } from "./services/tab";
-import { addUserMessage } from "./services/thread";
-import { toCustomEventDetail, toTargetValueString } from "./utils/event";
+import { addUserMessage, clearThreadItems } from "./services/thread";
+import { preventDefault, toCustomEventDetail, toTargetValueString } from "./utils/event";
 import { $ } from "./utils/query";
 
 const tabsElement = $<TabsElement>("tabs-element")!;
@@ -36,6 +36,14 @@ $("textarea")?.addEventListener("keydown", (event) => {
     }
   }
 });
+
+$globalShortcut
+  .pipe(
+    filter(({ combo }) => combo === "Ctrl+KeyK"),
+    tap((e) => preventDefault(e.event)),
+    tap(() => $("textarea")!.focus())
+  )
+  .subscribe();
 
 const $manualOpenTab = fromEvent(tabsElement, "openpath").pipe(
   map((event) => toCustomEventDetail<string>(event)),
@@ -88,3 +96,31 @@ $activeFilePath
     })
   )
   .subscribe();
+
+function runCommand(command: string) {
+  switch (command) {
+    case "clear": {
+      clearThreadItems();
+      break;
+    }
+    case "?":
+    case "help": {
+      break;
+    }
+    case "login": {
+      document.querySelector<HTMLDialogElement>("#settings-dialog")!.showModal();
+      document.querySelector<HTMLInputElement>("#settings-dialog")!.onclose = () => {
+        const textarea = document.querySelector("textarea");
+        textarea?.blur();
+        textarea?.focus();
+      };
+      break;
+    }
+    case "run": {
+      const activePath = $activeFilePath.value;
+      if (!activePath) return;
+
+      break;
+    }
+  }
+}
