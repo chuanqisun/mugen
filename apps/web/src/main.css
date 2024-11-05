@@ -32,7 +32,7 @@ dialog {
 /** COMPONENTS */
 .app-layout {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto 1fr auto;
 
   & > aside {
     overflow-y: auto;
@@ -44,6 +44,10 @@ dialog {
 .workbench-layout {
   display: grid;
   grid-template-rows: auto 1fr; /* tabs + editor */
+}
+
+.preview-layout[data-active="false"] {
+  display: none;
 }
 
 /** UTILS */
