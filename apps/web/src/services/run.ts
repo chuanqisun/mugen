@@ -75,7 +75,9 @@ export async function run(userMessageId: number) {
     .stream({
       temperature: 0,
       max_tokens: 4_000,
-      model: "claude-3-haiku-20240307",
+      // model: "claude-3-5-haiku-latest",
+      model: "claude-3-haiku-20240307", // budget
+      // model: "claude-3-5-sonnet-latest" // frontier
       system: `Respond in plaintext. If user asks for standalone code blocks, documents, or files, wrap them with embedded <standalone-artifact> tags.
 Requirements:
 - Each <standalone-artifact> must have a path with descriptive filename and extension, e.g. <standalone-artifact path="[filename].[extension]">...</standalone-artifact>.
