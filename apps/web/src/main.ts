@@ -1,11 +1,22 @@
 import { filter, fromEvent, map, merge, share, Subject, tap } from "rxjs";
 import { defineSettingsElement } from "./elements/settings-element";
+import { createFileSystem } from "./services/file-system";
 import { parseKeyboardShortcut, preventDefault, stopPropagation, toTargetValueString } from "./utils/event";
 import { $ } from "./utils/query";
 import { parseCommand } from "./utils/string";
 
 /** Define custom elements */
 defineSettingsElement();
+
+/** Global variables */
+const fs = createFileSystem({
+  initialFiles: {
+    "/welcome.txt": {
+      path: "/welcome.txt",
+      file: new File(["Welcome to the chat!"], "welcome.txt"),
+    },
+  },
+});
 
 /** Element queries */
 const promptInputElement = $<HTMLInputElement>("#prompt-input")!;
@@ -54,6 +65,16 @@ const $handleKeyboardShortcut = $keyboardShortcut.pipe(
   })
 );
 
+const $updateMainThread = $textInputChatSubmission.pipe(
+  tap((content) => {
+    fs.appendFile("/main-thread.html", `<user-message>${content}</user-message>`);
+  })
+);
+
 /** I/O effects */
 $handleCommand.subscribe();
 $handleKeyboardShortcut.subscribe();
+$updateMainThread.subscribe();
+
+// debug
+fs.$debug.subscribe(console.log);
