@@ -11,7 +11,10 @@ export interface TextFileAppend {
   delta: string;
 }
 
-const $fs = new BehaviorSubject<Record<string, VirtualFileHandle>>({});
+export type VirtualFileSystemDict = Record<string, VirtualFileHandle>;
+export type ReactiveVirtualFileSystem = BehaviorSubject<VirtualFileSystemDict>;
+
+export const $fs = new BehaviorSubject<VirtualFileSystemDict>({});
 
 export async function readFile(path: string) {
   return $fs.value[path];
