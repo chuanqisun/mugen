@@ -12,7 +12,7 @@ const promptInputElement = $<HTMLInputElement>("#prompt-input")!;
 const settingsDialogElement = $<HTMLDialogElement>("#settings-dialog")!;
 
 /** Declare subjects */
-const $programmaticCommandSubmission = new Subject<string>();
+const $programmaticCommandBox = new Subject<string>();
 
 /** Stream processing */
 const $keyboardShortcut = fromEvent<KeyboardEvent>(document, "keydown").pipe(map(parseKeyboardShortcut), filter(Boolean));
@@ -29,10 +29,8 @@ const $textInputSubmission = fromEvent<KeyboardEvent>(promptInputElement, "keydo
 );
 
 const $textInputCommandSubmission = $textInputSubmission.pipe(filter((content) => content.startsWith("/")));
-
-const $parsedCommand = merge($textInputCommandSubmission, $programmaticCommandSubmission).pipe(map(parseCommand));
-
-const $chatSubmission = $textInputSubmission.pipe(filter((content) => !content.startsWith("/")));
+const $textInputChatSubmission = $textInputSubmission.pipe(filter((content) => !content.startsWith("/")));
+const $parsedCommand = merge($textInputCommandSubmission, $programmaticCommandBox).pipe(map(parseCommand));
 
 const $handleCommand = $parsedCommand.pipe(
   tap((parsed) => {
@@ -51,7 +49,7 @@ const $handleKeyboardShortcut = $keyboardShortcut.pipe(
     switch (parsed.combo) {
       case "Ctrl+KeyK":
         parsed.event.preventDefault();
-        return $programmaticCommandSubmission.next("/focusPrompt");
+        return $programmaticCommandBox.next("/focusPrompt");
     }
   })
 );
