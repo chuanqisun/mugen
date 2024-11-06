@@ -67,7 +67,7 @@ const $handleKeyboardShortcut = $keyboardShortcut.pipe(
 
 const $updateMainThread = $textInputChatSubmission.pipe(
   tap((content) => {
-    fs.appendFile("/main-thread.html", `<user-message>${content}</user-message>`);
+    fs.append("/main-thread.html", `<user-message>${content}</user-message>`);
   })
 );
 

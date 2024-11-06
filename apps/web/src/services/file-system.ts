@@ -17,7 +17,7 @@ export type ReactiveVirtualFileSystem = BehaviorSubject<VirtualFileSystemDict>;
 export function createFileSystem(options?: { initialFiles?: VirtualFileSystemDict }) {
   const $fs = new BehaviorSubject<VirtualFileSystemDict>(options?.initialFiles ?? {});
 
-  async function readFile(path: string) {
+  async function read(path: string) {
     return $fs.value[path];
   }
 
@@ -52,7 +52,7 @@ export function createFileSystem(options?: { initialFiles?: VirtualFileSystemDic
     return deferred.promise;
   }
 
-  async function writeFile(path: string, content: string) {
+  async function write(path: string, content: string) {
     return runTransaction(path, async () => {
       let existingStream = $fs.value[path]?.stream;
       if (!existingStream) {
@@ -76,20 +76,7 @@ export function createFileSystem(options?: { initialFiles?: VirtualFileSystemDic
     });
   }
 
-  async function writeFileSilent(path: string, content: string) {
-    return runTransaction(path, async () => {
-      $fs.next({
-        ...$fs.value,
-        [path]: {
-          ...$fs.value[path],
-          path,
-          file: new File([content], getFilename(path), { type: getMimeType(getExtension(path)) }),
-        },
-      });
-    });
-  }
-
-  async function deleteFile(path: string) {
+  async function remove(path: string) {
     return runTransaction(path, async () => {
       const existingFile = $fs.value[path];
       if (existingFile) {
@@ -100,7 +87,7 @@ export function createFileSystem(options?: { initialFiles?: VirtualFileSystemDic
   }
 
   // TODO use efficient text encoded appending
-  async function appendFile(path: string, content: string) {
+  async function append(path: string, content: string) {
     return runTransaction(path, async () => {
       const virtualFile = $fs.value[path];
       const text = virtualFile ? await virtualFile.file.text() : "";
@@ -125,7 +112,7 @@ export function createFileSystem(options?: { initialFiles?: VirtualFileSystemDic
     });
   }
 
-  async function closeFile(path: string) {
+  async function close(path: string) {
     return runTransaction(path, async () => {
       const virtualFile = $fs.value[path];
       if (virtualFile?.stream) {
@@ -144,12 +131,11 @@ export function createFileSystem(options?: { initialFiles?: VirtualFileSystemDic
 
   return {
     $debug: $fs,
-    readFile,
-    writeFile,
-    writeFileSilent,
-    deleteFile,
-    appendFile,
-    closeFile,
+    read,
+    write,
+    remove,
+    append,
+    close,
   };
 }
 
