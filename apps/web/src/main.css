@@ -30,8 +30,58 @@ dialog {
 }
 
 /** COMPONENTS */
-.app-layout { }
+.app-layout {
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
 
+.explorer-layout {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+
+  > :nth-child(1) {
+    border-inline-end: 1px solid var(--divider-color);
+
+    .resize-bar {
+      width: 200px;
+    }
+  }
+
+  > :nth-child(3) {
+    border-inline-start: 1px solid var(--divider-color);
+
+    .resize-bar {
+      width: calc((100vw - 200px) / 2);
+    }
+  }
+}
+
+.resize-bar {
+  resize: horizontal;
+  overflow-x: auto;
+  width: 100%;
+  transform: rotateX(180deg);
+
+  > * {
+    transform: rotateX(180deg);
+  }
+
+  &.resize-bar--mirrored {
+    transform: rotateX(180deg) rotateY(180deg);
+
+    > * {
+      transform: rotateX(180deg) rotateY(180deg);
+    }
+  }
+}
+
+.header-layout {
+  display: grid;
+  height: 32px;
+  grid-template-columns: auto 1fr;
+  border-bottom: 1px solid var(--divider-color);
+  position: relative;
+}
 
 /** UTILS */
 .rows {

@@ -9,31 +9,29 @@
 </head>
 
 <body class="app-layout">
-
-  <!-- CLI -->
-  <aside class="rows side-panel" style="width: 320px">
-    <thread-element></thread-element>
-    <textarea autofocus></textarea>
-  </aside>
-
-  <!-- Workbench -->
-  <main class="workbench-layout">
-    <tabs-element></tabs-element>
-    <code-editor-element></code-editor-element>
+  <header class="header-layout">
+    <button>Menu</button>
+    <input type="text" />
+  </header>
+  <main class="explorer-layout">
+    <nav>
+      <div class="resize-bar">
+        <div>Artifact tree</div>
+      </div>
+    </nav>
+    <section>
+      Source
+    </section>
+    <section>
+      <div class="resize-bar resize-bar--mirrored">
+        <div>Preview</div>
+      </div>
+    </section>
   </main>
-
-  <!-- Preview -->
-  <aside id="preview-container" class="preview-layout" data-active="false">
-    <div><button id="close-preview">Close</button></div>
-    <preview-element></preview-element>
-  </aside>
-
-
   <!-- overlay -->
   <dialog id="settings-dialog">
     <settings-element></settings-element>
   </dialog>
-
   <script src="./src/main.ts" type="module"></script>
 </body>
 
