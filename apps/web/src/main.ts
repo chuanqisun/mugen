@@ -1,6 +1,9 @@
-import { filter, fromEvent, map, merge, share, Subject, tap } from "rxjs";
+import type { TextDelta } from "@anthropic-ai/sdk/resources/messages.mjs";
+import { Parser } from "htmlparser2";
+import { concatMap, filter, from, fromEvent, map, merge, Observable, share, Subject, tap } from "rxjs";
 import { defineSettingsElement } from "./elements/settings-element";
 import { createFileSystem } from "./services/file-system";
+import { $chat } from "./services/llm";
 import { parseKeyboardShortcut, preventDefault, stopPropagation, toTargetValueString } from "./utils/event";
 import { $ } from "./utils/query";
 import { parseCommand } from "./utils/string";
@@ -71,10 +74,55 @@ const $updateMainThread = $textInputChatSubmission.pipe(
   })
 );
 
+const $htmlStream = $textInputChatSubmission.pipe(
+  concatMap((content) => {
+    const responseStream = $chat.value.messages.stream({
+      system: `Respond to user in valid innerHTML that can be used inside a <body> element. Make sure you respond nothing but valid HTML`.trim(),
+      messages: [{ role: "user", content }],
+      model: "claude-3-5-haiku-latest",
+      max_tokens: 1024,
+    });
+
+    let emitContainer = document.querySelector("#preview-container")!;
+
+    return new Observable<any>((subscriber) => {
+      const parser = new Parser({
+        onopentag(name, attributes, implied) {
+          const element = document.createElement(name);
+          for (const [key, value] of Object.entries(attributes)) {
+            element.setAttribute(key, value);
+          }
+          emitContainer.appendChild(element);
+          emitContainer = element;
+        },
+        ontext(text) {
+          emitContainer.append(document.createTextNode(text));
+        },
+        onclosetag(tagname, implied) {
+          emitContainer = emitContainer.parentElement!;
+        },
+      });
+
+      const sub = from(responseStream)
+        .pipe(
+          filter((chunk) => chunk.type === "content_block_delta"),
+          filter((contentBlockDelta) => contentBlockDelta.delta.type === "text_delta"),
+          map((contentBlockDelta) => (contentBlockDelta.delta as TextDelta).text),
+          tap((delta) => parser.write(delta))
+        )
+        .subscribe(subscriber);
+
+      return () => sub.unsubscribe();
+    });
+  })
+);
+
 /** I/O effects */
 $handleCommand.subscribe();
 $handleKeyboardShortcut.subscribe();
 $updateMainThread.subscribe();
+
+$htmlStream.subscribe();
 
 // debug
 fs.$debug.subscribe(console.log);
