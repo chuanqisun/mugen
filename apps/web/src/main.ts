@@ -1,6 +1,6 @@
 import type { TextDelta } from "@anthropic-ai/sdk/resources/messages.mjs";
 import { Parser } from "htmlparser2";
-import { concatMap, filter, from, fromEvent, map, merge, Observable, share, Subject, tap } from "rxjs";
+import { concatMap, filter, finalize, from, fromEvent, map, merge, Observable, share, Subject, tap } from "rxjs";
 import { defineSettingsElement } from "./elements/settings-element";
 import { createFileSystem } from "./services/file-system";
 import { $chat } from "./services/llm";
@@ -108,7 +108,8 @@ const $htmlStream = $textInputChatSubmission.pipe(
           filter((chunk) => chunk.type === "content_block_delta"),
           filter((contentBlockDelta) => contentBlockDelta.delta.type === "text_delta"),
           map((contentBlockDelta) => (contentBlockDelta.delta as TextDelta).text),
-          tap((delta) => parser.write(delta))
+          tap((delta) => parser.write(delta)),
+          finalize(() => parser.end())
         )
         .subscribe(subscriber);
 
