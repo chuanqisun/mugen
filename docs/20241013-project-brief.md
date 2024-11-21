@@ -8,3 +8,9 @@
 - **Concurrent**: Parallel dispatch of actions, powered by Elm architecture.
 - **Graph modeled**: Everything as node, connected by causal links
 - **Grain of the web**: HTML and URL as first class citizen. Easy to parser. Easy to traverse.
+
+## Metaphors
+
+- Shell: task and flow control for a kernel, with scripting
+- Notebook: sequential cells of computation
+- Browser: hypermedia and navigation
