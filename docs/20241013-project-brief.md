@@ -14,3 +14,10 @@
 - Shell: task and flow control for a kernel, with scripting
 - Notebook: sequential cells of computation
 - Browser: hypermedia and navigation
+
+## Design paradigms
+
+- Content generation: from nothing to a draft
+- Global editing: globally change the content, find and replace on steroids
+- Local editing: surgical retouch
+- Transfer: change one thing while using another as reference
