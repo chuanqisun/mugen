@@ -1,21 +1,17 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "useDefineForClassFields": true,
+    "target": "ESNext",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "module": "ESNext",
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "skipLibCheck": true,
 
     /* Bundler mode */
     "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
     "isolatedModules": true,
-    "moduleDetection": "force",
     "noEmit": true,
 
     /* Linting */
     "strict": true,
-    "noFallthroughCasesInSwitch": true,
     "verbatimModuleSyntax": true
   },
   "include": ["src"]
