@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mugen</title>
+  <link rel="stylesheet" href="./src/main.css" />
+</head>
+
+<body class="app-layout">
+  <header class="header-layout">
+    <button id="menu">Menu</button>
+    <input id="prompt-input" type="text">
+  </header>
+  <main class="explorer-layout">
+    <nav>
+      <file-tree-element></file-tree-element>
+    </nav>
+    <code-editor-element></code-editor-element>
+  </main>
+  <!-- overlay -->
+  <dialog id="settings-dialog">
+    <settings-element></settings-element>
+  </dialog>
+  <script src="./src/main.ts" type="module"></script>
+</body>
+
+</html>
