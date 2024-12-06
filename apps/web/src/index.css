@@ -2,6 +2,17 @@
   color-scheme: light dark;
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  font: inherit;
+}
+
+body {
+  font-family: monospace;
+}
+
 .canvas {
   --dot-color-internal: color-mix(in srgb, var(--dot-color, currentColor), transparent 60%);
   --grid-size--internal: var(--grid-size, 32px);
@@ -9,4 +20,9 @@
   background-image: radial-gradient(var(--dot-color-internal) 1px, transparent 0);
   background-size: var(--grid-size--internal) var(--grid-size--internal);
   background-position: -var(--grid-half-internal) -var(--grid-half-internal);
+}
+
+dialog {
+  width: calc(100% - 2rem);
+  max-width: 40rem;
 }
