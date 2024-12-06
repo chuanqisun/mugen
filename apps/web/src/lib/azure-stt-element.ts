@@ -1,4 +1,4 @@
-import { filter, map, Subject, tap } from "rxjs";
+import { filter, Subject, tap } from "rxjs";
 import { $ } from "./query";
 import type { SettingsElement } from "./settings-element";
 
@@ -6,16 +6,29 @@ export function defineAzureSttElement() {
   customElements.define("azure-stt-element", AzureSttElement);
 }
 
+export interface TrackedResult extends TranscribeResult {
+  id: number;
+}
+
+export interface TranscriptionEventDetail {
+  text: string;
+  id: number;
+}
+
 export class AzureSttElement extends HTMLElement {
+  #id = 0;
   #isStarted = false;
-  #transcription$ = new Subject<TranscribeResult>();
+  #transcription$ = new Subject<TrackedResult>();
   #abortController: AbortController | null = null;
   #mediaRecorderAsync = Promise.withResolvers<MediaRecorder>();
   #isMicrophoneStarted = false;
   #transcribe = this.#transcription$.pipe(
-    map((result) => result.combinedPhrases.at(0)?.text),
-    filter(Boolean),
-    tap((text) => this.dispatchEvent(new CustomEvent("transcription", { detail: text })))
+    filter((result) => !!result.combinedPhrases.at(0)?.text),
+    tap((result) => {
+      const text = result.combinedPhrases.at(0)!.text;
+      const id = result.id;
+      this.dispatchEvent(new CustomEvent("transcription", { detail: { text, id } }));
+    })
   );
 
   connectedCallback() {
@@ -32,6 +45,8 @@ export class AzureSttElement extends HTMLElement {
   public async start() {
     if (this.#isStarted) return;
     if (!this.#isMicrophoneStarted) this.startMicrophone();
+
+    const id = ++this.#id;
 
     const connection = $<SettingsElement>("settings-element")?.settings;
     if (!connection) throw new Error("Unable to get credentials from the <settings-element>. Did you forget to provide them?");
@@ -51,10 +66,10 @@ export class AzureSttElement extends HTMLElement {
       onSpeechEnded: () => console.log("[azure-stt] speech ended"),
       onTextStarted: () => console.log("[azure-stt] text started"),
     })
-      .then((result) => {
-        this.#transcription$.next(result);
-      })
+      .then((result) => this.#transcription$.next({ id, ...result }))
       .catch((e) => console.log("Transcribe handled error", e));
+
+    return id;
   }
 
   public async stop() {
@@ -81,7 +96,7 @@ export class AzureSttElement extends HTMLElement {
 }
 
 interface TranscribeOptions {
-  locale?: "en-US";
+  locales?: string[];
   profanityFilterMode?: "None" | "Masked" | "Removed" | "Tags";
   speechRegion: string;
   speechKey: string;
@@ -119,7 +134,7 @@ interface TranscribeResult {
 }
 
 async function transcribe(options: TranscribeOptions): Promise<TranscribeResult> {
-  const { speechKey: accessToken, locale = "en-US", profanityFilterMode = "None", mediaRecorder } = options;
+  const { speechKey: accessToken, locales = ["en-US"], profanityFilterMode = "None", mediaRecorder } = options;
 
   let audioStream: ReadableStream;
   let writer: ReadableStreamDefaultController;
@@ -142,7 +157,7 @@ async function transcribe(options: TranscribeOptions): Promise<TranscribeResult>
   const boundary = "----WebKitFormBoundary" + Math.random().toString(36).substring(2);
 
   const definition = JSON.stringify({
-    locales: [...new Set([locale, "en-US", "de-DE", "ja-JP", "zh-CN", "es-ES", "fr-FR"])],
+    locales: [...new Set(locales)],
   });
 
   const formDataParts = [

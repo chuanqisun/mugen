@@ -1,6 +1,6 @@
 import { fromEvent, map, tap } from "rxjs";
 import "./index.css";
-import { AzureSttElement, defineAzureSttElement } from "./lib/azure-stt-element";
+import { AzureSttElement, defineAzureSttElement, type TranscriptionEventDetail } from "./lib/azure-stt-element";
 import { toCustomEventDetail } from "./lib/event";
 import { defineNodeElement } from "./lib/node-element";
 import { defineOpenaiElement } from "./lib/openai-element";
@@ -19,7 +19,15 @@ const dialog = $("dialog")!;
 const body = document.body;
 
 const openDialog$ = fromEvent(menuButton, "click").pipe(tap(() => dialog.showModal()));
-const transcribe$ = fromEvent(azureSttElement, "transcription").pipe(map(toCustomEventDetail<string>), tap(console.log));
+const transcribe$ = fromEvent(azureSttElement, "transcription").pipe(
+  map(toCustomEventDetail<TranscriptionEventDetail>),
+  tap((detail) => {
+    const { id, text } = detail;
+    const node = $<HTMLElement>(`[task-id="${id}"]`);
+    if (!node) return;
+    node.textContent = text;
+  })
+);
 
 openDialog$.subscribe();
 transcribe$.subscribe();
@@ -38,7 +46,11 @@ document.addEventListener("keyup", (event) => {
   }
 });
 
-body.addEventListener("mousedown", (event) => {
+fromEvent(body, "mouseup")
+  .pipe(tap(() => azureSttElement.stop()))
+  .subscribe();
+
+body.addEventListener("mousedown", async (event) => {
   event.preventDefault();
 
   const bodyStyles = getComputedStyle(document.body);
@@ -50,9 +62,11 @@ body.addEventListener("mousedown", (event) => {
   const startY = event.clientY;
 
   if (!isSpacedown) {
-    azureSttElement.start();
+    const id = await azureSttElement.start();
+    if (!id) return;
     nodes.append(
       $new("node-element", {
+        "task-id": id.toString(),
         style: `--x: ${startX - prevX}px; --y: ${startY - prevY}px;`,
       })
     );
@@ -75,8 +89,6 @@ body.addEventListener("mousedown", (event) => {
   };
 
   const handleMouseUp = (event: MouseEvent) => {
-    azureSttElement.stop();
-
     event.preventDefault();
     body.removeEventListener("mousemove", handleMouseMove);
     body.removeEventListener("mouseup", handleMouseUp);
