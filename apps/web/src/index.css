@@ -2,6 +2,11 @@
   color-scheme: light dark;
 }
 
+* {
+  margin: 0;
+  padding: 0;
+}
+
 *,
 *::before,
 *::after {
@@ -11,6 +16,11 @@
 
 body {
   font-family: monospace;
+  min-height: 100vh;
+}
+
+button {
+  padding: 0.25rem 0.5rem;
 }
 
 .canvas {
@@ -19,10 +29,18 @@ body {
   --grid-half--internal: round(down, calc(var(--grid-size--internal) / 2), 1px);
   background-image: radial-gradient(var(--dot-color-internal) 1px, transparent 0);
   background-size: var(--grid-size--internal) var(--grid-size--internal);
-  background-position: -var(--grid-half-internal) -var(--grid-half-internal);
+  background-position: calc(-1 * var(--grid-half-internal)) calc(-1 * var(--grid-half-internal));
 }
 
 dialog {
+  padding: 1rem;
+  margin: auto;
   width: calc(100% - 2rem);
   max-width: 40rem;
+}
+
+.toolbar {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
 }
