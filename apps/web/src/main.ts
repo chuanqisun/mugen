@@ -16,7 +16,6 @@ const menuButton = $<HTMLButtonElement>("#menu")!;
 const dialog = $("dialog")!;
 
 const openDialog$ = fromEvent(menuButton, "click").pipe(tap(() => dialog.showModal()));
-
 const transcribe$ = fromEvent(azureSttElement, "transcription").pipe(map(toCustomEventDetail<string>), tap(console.log));
 
 openDialog$.subscribe();
