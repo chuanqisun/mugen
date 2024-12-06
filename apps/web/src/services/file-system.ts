@@ -14,9 +14,9 @@ export interface TextFileAppend {
 export type VirtualFileSystemDict = Record<string, VirtualFileHandle>;
 export type ReactiveVirtualFileSystem = BehaviorSubject<VirtualFileSystemDict>;
 
-export function createFileSystem(options?: { initialFiles?: VirtualFileSystemDict }) {
-  const fs$ = new BehaviorSubject<VirtualFileSystemDict>(options?.initialFiles ?? {});
+export const fs$ = new BehaviorSubject<VirtualFileSystemDict>({});
 
+export function createFileSystem() {
   async function read(path: string) {
     return fs$.value[path];
   }

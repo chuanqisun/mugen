@@ -1,5 +1,6 @@
 import { filter, fromEvent, map, merge, share, Subject, tap } from "rxjs";
 import { defineCodeEditorElement } from "./elements/code-editor/code-editor-element";
+import { defineFileTreeElement } from "./elements/file-tree/file-tree-element";
 import { defineSettingsElement, SettingsElement } from "./elements/settings-element";
 import { createFileSystem } from "./services/file-system";
 import { setSettings } from "./services/settings";
@@ -10,16 +11,11 @@ import { parseCommand } from "./utils/string";
 /** Define custom elements */
 defineSettingsElement();
 defineCodeEditorElement();
+defineFileTreeElement();
 
 /** Global variables */
-const fs = createFileSystem({
-  initialFiles: {
-    "/welcome.txt": {
-      path: "/welcome.txt",
-      file: new File(["Welcome to the chat!"], "welcome.txt"),
-    },
-  },
-});
+const fs = createFileSystem();
+fs.write("/welcome.txt", "Welcome to the chat!");
 
 /** Element queries */
 const promptInputElement = $<HTMLInputElement>("#prompt-input")!;
@@ -62,6 +58,7 @@ const handleCommand$ = $parsedCommand.pipe(
       case "focusPrompt":
         return promptInputElement.focus();
       case "new":
+        fs.write(parsed.argsRaw ?? "new-file.txt", "");
         return;
     }
   })

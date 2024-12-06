@@ -42,9 +42,9 @@ dialog {
   > :nth-child(1) {
     border-inline-end: 1px solid var(--divider-color);
 
-    .resize-bar {
-      width: 200px;
-    }
+    width: 200px;
+    resize: horizontal;
+    overflow-y: auto;
   }
 
   > :nth-child(3) {
