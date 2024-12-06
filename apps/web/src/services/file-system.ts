@@ -15,10 +15,10 @@ export type VirtualFileSystemDict = Record<string, VirtualFileHandle>;
 export type ReactiveVirtualFileSystem = BehaviorSubject<VirtualFileSystemDict>;
 
 export function createFileSystem(options?: { initialFiles?: VirtualFileSystemDict }) {
-  const $fs = new BehaviorSubject<VirtualFileSystemDict>(options?.initialFiles ?? {});
+  const fs$ = new BehaviorSubject<VirtualFileSystemDict>(options?.initialFiles ?? {});
 
   async function read(path: string) {
-    return $fs.value[path];
+    return fs$.value[path];
   }
 
   const $fsInternalQueue = new Subject<{ path: string; transaction: () => Promise<any> }>();
@@ -54,7 +54,7 @@ export function createFileSystem(options?: { initialFiles?: VirtualFileSystemDic
 
   async function write(path: string, content: string) {
     return runTransaction(path, async () => {
-      let existingStream = $fs.value[path]?.stream;
+      let existingStream = fs$.value[path]?.stream;
       if (!existingStream) {
         existingStream = new BehaviorSubject<TextFileAppend>({
           snapshot: content,
@@ -64,10 +64,10 @@ export function createFileSystem(options?: { initialFiles?: VirtualFileSystemDic
         existingStream.next({ snapshot: content, delta: content });
       }
 
-      $fs.next({
-        ...$fs.value,
+      fs$.next({
+        ...fs$.value,
         [path]: {
-          ...$fs.value[path],
+          ...fs$.value[path],
           path,
           file: new File([content], getFilename(path), { type: getMimeType(getExtension(path)) }),
           stream: existingStream,
@@ -78,10 +78,10 @@ export function createFileSystem(options?: { initialFiles?: VirtualFileSystemDic
 
   async function remove(path: string) {
     return runTransaction(path, async () => {
-      const existingFile = $fs.value[path];
+      const existingFile = fs$.value[path];
       if (existingFile) {
         existingFile.stream?.complete();
-        $fs.next(Object.fromEntries(Object.entries($fs.value).filter(([key]) => key !== path)));
+        fs$.next(Object.fromEntries(Object.entries(fs$.value).filter(([key]) => key !== path)));
       }
     });
   }
@@ -89,21 +89,21 @@ export function createFileSystem(options?: { initialFiles?: VirtualFileSystemDic
   // TODO use efficient text encoded appending
   async function append(path: string, content: string) {
     return runTransaction(path, async () => {
-      const virtualFile = $fs.value[path];
+      const virtualFile = fs$.value[path];
       const text = virtualFile ? await virtualFile.file.text() : "";
       const snapshot = text + content;
 
-      let stream = $fs.value[path]?.stream;
+      let stream = fs$.value[path]?.stream;
       if (!stream) {
         stream = new BehaviorSubject<TextFileAppend>({ snapshot, delta: snapshot });
       } else {
         stream.next({ snapshot, delta: content });
       }
 
-      $fs.next({
-        ...$fs.value,
+      fs$.next({
+        ...fs$.value,
         [path]: {
-          ...$fs.value[path],
+          ...fs$.value[path],
           path,
           file: new File([snapshot], getFilename(path), { type: getMimeType(getExtension(path)) }),
           stream,
@@ -114,12 +114,12 @@ export function createFileSystem(options?: { initialFiles?: VirtualFileSystemDic
 
   async function close(path: string) {
     return runTransaction(path, async () => {
-      const virtualFile = $fs.value[path];
+      const virtualFile = fs$.value[path];
       if (virtualFile?.stream) {
         virtualFile.stream?.complete();
 
-        $fs.next({
-          ...$fs.value,
+        fs$.next({
+          ...fs$.value,
           [path]: {
             ...virtualFile,
             stream: undefined,
@@ -130,7 +130,7 @@ export function createFileSystem(options?: { initialFiles?: VirtualFileSystemDic
   }
 
   return {
-    $debug: $fs,
+    debug$: fs$,
     read,
     write,
     remove,

@@ -1,28 +1,30 @@
 import { html, render } from "lit";
-import { fromEvent, map, tap } from "rxjs";
-import { $apiKey, setApiKey } from "../services/auth";
-import { toTargetValueString } from "../utils/event";
+import { fromEvent, tap } from "rxjs";
+import { settings$ } from "../services/settings";
 
 export class SettingsElement extends HTMLElement {
+  #submit$ = fromEvent(this, "submit").pipe(
+    tap((event) => {
+      const formData = new FormData(event.target as HTMLFormElement);
+      this.dispatchEvent(new CustomEvent("settingschange", { detail: Object.fromEntries(formData) }));
+    })
+  );
+
   connectedCallback() {
     render(
       html`
-        <div class="rows">
-          <label>API Key</label>
-          <input name="api-key" type="password" />
-          <form method="dialog">
-            <button>OK</button>
-          </form>
-        </div>
+        <form class="rows" method="dialog">
+          <label>Claude</label>
+          <input name="claudeApiKey" type="password" .value=${settings$.value["claudeApiKey"] ?? ""} />
+          <label>OpenAI</label>
+          <input name="openaiApiKey" type="password" .value=${settings$.value["openaiApiKey"] ?? ""} />
+          <button>OK</button>
+        </form>
       `,
       this
     );
 
-    // static elements
-    const apiKeyInput = this.querySelector(`[name="api-key"]`) as HTMLInputElement;
-    // initialize api key input
-    apiKeyInput.value = $apiKey.value;
-    fromEvent<KeyboardEvent>(apiKeyInput, "input").pipe(map(toTargetValueString), tap(setApiKey)).subscribe();
+    this.#submit$.subscribe();
   }
 }
 

@@ -10,7 +10,7 @@
 
 <body class="app-layout">
   <header class="header-layout">
-    <button>Menu</button>
+    <button id="menu">Menu</button>
     <input id="prompt-input" type="text">
   </header>
   <main class="explorer-layout">
@@ -19,15 +19,7 @@
         <div>Environment</div>
       </div>
     </nav>
-    <section>
-      Source
-    </section>
-    <section>
-      <div class="resize-bar resize-bar--mirrored">
-        <div>Preview</div>
-      </div>
-      <div id="preview-container">pending...</div>
-    </section>
+    <code-editor-element></code-editor-element>
   </main>
   <!-- overlay -->
   <dialog id="settings-dialog">

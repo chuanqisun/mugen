@@ -5,7 +5,6 @@ code-editor-element {
 
 .cm-editor {
   height: 100%;
-  border: 1px solid rgb(118, 118, 118);
   overflow: auto;
 
   &.cm-focused {
