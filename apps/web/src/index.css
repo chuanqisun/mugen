@@ -15,8 +15,11 @@
 }
 
 body {
+  --x: 0;
+  --y: 0;
   font-family: monospace;
   min-height: 100vh;
+  overflow: hidden;
 }
 
 button {
@@ -29,7 +32,12 @@ button {
   --grid-half--internal: round(down, calc(var(--grid-size--internal) / 2), 1px);
   background-image: radial-gradient(var(--dot-color-internal) 1px, transparent 0);
   background-size: var(--grid-size--internal) var(--grid-size--internal);
-  background-position: calc(-1 * var(--grid-half-internal)) calc(-1 * var(--grid-half-internal));
+  background-position: var(--x) var(--y);
+}
+
+.cover-screen {
+  position: fixed;
+  inset: 0;
 }
 
 dialog {
@@ -37,6 +45,10 @@ dialog {
   margin: auto;
   width: calc(100% - 2rem);
   max-width: 40rem;
+}
+
+#nodes {
+  transform: translate(var(--x), var(--y));
 }
 
 .toolbar {
