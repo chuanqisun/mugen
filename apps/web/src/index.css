@@ -1,3 +1,12 @@
 :root {
   color-scheme: light dark;
 }
+
+.canvas {
+  --dot-color-internal: color-mix(in srgb, var(--dot-color, currentColor), transparent 60%);
+  --grid-size--internal: var(--grid-size, 32px);
+  --grid-half--internal: round(down, calc(var(--grid-size--internal) / 2), 1px);
+  background-image: radial-gradient(var(--dot-color-internal) 1px, transparent 0);
+  background-size: var(--grid-size--internal) var(--grid-size--internal);
+  background-position: -var(--grid-half-internal) -var(--grid-half-internal);
+}
