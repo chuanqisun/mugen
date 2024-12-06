@@ -4,7 +4,7 @@ import { AzureSttElement, defineAzureSttElement } from "./lib/azure-stt-element"
 import { toCustomEventDetail } from "./lib/event";
 import { defineNodeElement } from "./lib/node-element";
 import { defineOpenaiElement } from "./lib/openai-element";
-import { $ } from "./lib/query";
+import { $, $new } from "./lib/query";
 import { defineSettingsElement } from "./lib/settings-element";
 
 defineOpenaiElement();
@@ -16,6 +16,7 @@ const azureSttElement = $<AzureSttElement>("azure-stt-element")!;
 const menuButton = $<HTMLButtonElement>("#menu")!;
 const nodes = $<HTMLElement>("#nodes")!;
 const dialog = $("dialog")!;
+const body = document.body;
 
 const openDialog$ = fromEvent(menuButton, "click").pipe(tap(() => dialog.showModal()));
 const transcribe$ = fromEvent(azureSttElement, "transcription").pipe(map(toCustomEventDetail<string>), tap(console.log));
@@ -23,7 +24,21 @@ const transcribe$ = fromEvent(azureSttElement, "transcription").pipe(map(toCusto
 openDialog$.subscribe();
 transcribe$.subscribe();
 
-$("body")?.addEventListener("mousedown", (event) => {
+let isSpacedown = false;
+
+document.addEventListener("keydown", (event) => {
+  if (event.code === "Space") {
+    isSpacedown = true;
+  }
+});
+
+document.addEventListener("keyup", (event) => {
+  if (event.code === "Space") {
+    isSpacedown = false;
+  }
+});
+
+body.addEventListener("mousedown", (event) => {
   event.preventDefault();
 
   const bodyStyles = getComputedStyle(document.body);
@@ -33,6 +48,16 @@ $("body")?.addEventListener("mousedown", (event) => {
 
   const startX = event.clientX;
   const startY = event.clientY;
+
+  if (!isSpacedown) {
+    azureSttElement.start();
+    nodes.append(
+      $new("node-element", {
+        style: `--x: ${startX - prevX}px; --y: ${startY - prevY}px;`,
+      })
+    );
+    return;
+  }
 
   const handleMouseMove = (event: MouseEvent) => {
     event.preventDefault();
@@ -44,19 +69,21 @@ $("body")?.addEventListener("mousedown", (event) => {
 
   const handleMouseout = (event: MouseEvent) => {
     event.preventDefault();
-    $("body")?.removeEventListener("mousemove", handleMouseMove);
-    $("body")?.removeEventListener("mouseup", handleMouseUp);
+    body.removeEventListener("mousemove", handleMouseMove);
+    body.removeEventListener("mouseup", handleMouseUp);
     window.removeEventListener("mouseout", handleMouseout);
   };
 
   const handleMouseUp = (event: MouseEvent) => {
+    azureSttElement.stop();
+
     event.preventDefault();
-    $("body")?.removeEventListener("mousemove", handleMouseMove);
-    $("body")?.removeEventListener("mouseup", handleMouseUp);
+    body.removeEventListener("mousemove", handleMouseMove);
+    body.removeEventListener("mouseup", handleMouseUp);
     window.removeEventListener("mouseleave", handleMouseout);
   };
 
-  $("body")?.addEventListener("mousemove", handleMouseMove);
-  $("body")?.addEventListener("mouseup", handleMouseUp, { once: true });
+  body.addEventListener("mousemove", handleMouseMove);
+  body.addEventListener("mouseup", handleMouseUp, { once: true });
   window.addEventListener("mouseout", handleMouseout, { once: true });
 });

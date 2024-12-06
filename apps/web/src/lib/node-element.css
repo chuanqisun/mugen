@@ -1,4 +1,4 @@
 node-element {
-  position: absolute;
+  position: fixed;
   transform: translate(var(--x), var(--y));
 }
