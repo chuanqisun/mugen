@@ -2,7 +2,7 @@ import { fromEvent, map, tap } from "rxjs";
 import "./index.css";
 import { AzureSttElement, defineAzureSttElement, type TranscriptionEventDetail } from "./lib/azure-stt-element";
 import { toCustomEventDetail } from "./lib/event";
-import { defineNodeElement } from "./lib/node-element";
+import { defineNodeElement, NodeElement } from "./lib/node-element";
 import { defineOpenaiElement } from "./lib/openai-element";
 import { $, $new } from "./lib/query";
 import { defineSettingsElement } from "./lib/settings-element";
@@ -25,6 +25,12 @@ const transcribe$ = fromEvent(azureSttElement, "transcription").pipe(
     const { id, text } = detail;
     const node = $<HTMLElement>(`[task-id="${id}"]`);
     if (!node) return;
+
+    if (!text) {
+      node.remove();
+      return;
+    }
+
     node.textContent = text;
   })
 );
@@ -32,23 +38,32 @@ const transcribe$ = fromEvent(azureSttElement, "transcription").pipe(
 openDialog$.subscribe();
 transcribe$.subscribe();
 
-let isSpacedown = false;
-
-document.addEventListener("keydown", (event) => {
+document.addEventListener("keydown", async (event) => {
   if (event.code === "Space") {
-    isSpacedown = true;
+    const id = await azureSttElement.start();
+    if (!id) return;
+
+    // drop in the center of the viewport
+
+    const bodyStyles = getComputedStyle(document.body);
+    const prevX = parseInt(bodyStyles.getPropertyValue("--x"));
+    const prevY = parseInt(bodyStyles.getPropertyValue("--y"));
+    const { width, height } = body.getBoundingClientRect();
+
+    nodes.append(
+      $new<NodeElement>("node-element", {
+        "task-id": id.toString(),
+        style: `--x: ${width / 2 - prevX}px; --y: ${height / 2 - prevY}px;`,
+      })
+    );
   }
 });
 
 document.addEventListener("keyup", (event) => {
   if (event.code === "Space") {
-    isSpacedown = false;
+    azureSttElement.stop();
   }
 });
-
-fromEvent(body, "mouseup")
-  .pipe(tap(() => azureSttElement.stop()))
-  .subscribe();
 
 body.addEventListener("mousedown", async (event) => {
   event.preventDefault();
@@ -60,18 +75,6 @@ body.addEventListener("mousedown", async (event) => {
 
   const startX = event.clientX;
   const startY = event.clientY;
-
-  if (!isSpacedown) {
-    const id = await azureSttElement.start();
-    if (!id) return;
-    nodes.append(
-      $new("node-element", {
-        "task-id": id.toString(),
-        style: `--x: ${startX - prevX}px; --y: ${startY - prevY}px;`,
-      })
-    );
-    return;
-  }
 
   const handleMouseMove = (event: MouseEvent) => {
     event.preventDefault();

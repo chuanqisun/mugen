@@ -1,4 +1,4 @@
-import { filter, Subject, tap } from "rxjs";
+import { Subject, tap } from "rxjs";
 import { $ } from "./query";
 import type { SettingsElement } from "./settings-element";
 
@@ -6,8 +6,9 @@ export function defineAzureSttElement() {
   customElements.define("azure-stt-element", AzureSttElement);
 }
 
-export interface TrackedResult extends TranscribeResult {
+export interface TrackedResult {
   id: number;
+  text: string;
 }
 
 export interface TranscriptionEventDetail {
@@ -22,14 +23,7 @@ export class AzureSttElement extends HTMLElement {
   #abortController: AbortController | null = null;
   #mediaRecorderAsync = Promise.withResolvers<MediaRecorder>();
   #isMicrophoneStarted = false;
-  #transcribe = this.#transcription$.pipe(
-    filter((result) => !!result.combinedPhrases.at(0)?.text),
-    tap((result) => {
-      const text = result.combinedPhrases.at(0)!.text;
-      const id = result.id;
-      this.dispatchEvent(new CustomEvent("transcription", { detail: { text, id } }));
-    })
-  );
+  #transcribe = this.#transcription$.pipe(tap((result) => this.dispatchEvent(new CustomEvent("transcription", { detail: result }))));
 
   connectedCallback() {
     this.#transcribe.subscribe();
@@ -66,8 +60,11 @@ export class AzureSttElement extends HTMLElement {
       onSpeechEnded: () => console.log("[azure-stt] speech ended"),
       onTextStarted: () => console.log("[azure-stt] text started"),
     })
-      .then((result) => this.#transcription$.next({ id, ...result }))
-      .catch((e) => console.log("Transcribe handled error", e));
+      .then((result) => this.#transcription$.next({ id, text: result.combinedPhrases.at(0)?.text ?? "" }))
+      .catch((e) => {
+        this.#transcription$.next({ id, text: "" });
+        console.error("Transcription error", e);
+      });
 
     return id;
   }
