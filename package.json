@@ -4,10 +4,13 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "npm run dev -w apps/web",
-    "build": "npm run build -w apps/web"
+    "dev": "concurrently npm:dev:*",
+    "dev:server": "npm run dev -w apps/server",
+    "dev:web": "npm run dev -w apps/web",
+    "build:web": "npm run build -w apps/web"
   },
   "devDependencies": {
+    "concurrently": "^9.1.0",
     "prettier": "^3.3.3"
   },
   "dependencies": {
