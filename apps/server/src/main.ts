@@ -1,6 +1,6 @@
 import { initTRPC } from "@trpc/server";
 import { createHTTPServer } from "@trpc/server/adapters/standalone";
-import z from "zod";
+import * as z from "zod";
 
 export type AppRouter = typeof appRouter;
 
@@ -17,3 +17,5 @@ const server = createHTTPServer({
 });
 
 server.listen(3000);
+
+console.log("mugen server running on http://localhost:3000");
