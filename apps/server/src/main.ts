@@ -1,46 +1,38 @@
 import cors from "@fastify/cors";
-import { exec, spawn } from "child_process";
+import { spawn } from "child_process";
 import Fastify from "fastify";
 import { FastifySSEPlugin } from "fastify-sse-v2";
+
+let shell = spawn("sh");
 
 async function main() {
   const fastify = Fastify();
   fastify.register(cors);
   fastify.register(FastifySSEPlugin);
 
-  fastify.post("/spawn", {}, (request, reply) => {
+  fastify.post("/stdin", {}, (request, reply) => {
     const command = (request.body as any).command;
-    const [programName, ...args] = command.split(" ");
-    console.log({ programName, args });
-
-    const proc = spawn(programName, args);
-    proc.stdout.on("data", (data) => {
-      const textData = data.toString();
-      reply.sse({ data: textData });
-    });
-    proc.stderr.on("data", (data) => console.error(data.toString()));
-    proc.on("error", (err) => console.error(err));
-    proc.on("close", (_code) => {
-      reply.sse({ event: "close" });
-    });
+    shell.stdin.write(command);
   });
 
-  fastify.post("/exec", {}, (request, reply) => {
-    const command = (request.body as any).command;
+  fastify.get("/stdout", {}, (request, reply) => {
+    const handleData = (data: any) => {
+      reply.sse({ data: data.toString() });
+    };
 
-    exec(command, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`error: ${error.message}`);
-        reply.sse({ event: "close" });
-        return;
-      }
-      if (stderr) {
-        console.error(`stderr: ${stderr}`);
-        return;
-      }
-      console.log(`stdout: ${stdout}`);
-      reply.sse({ data: stdout });
-      reply.sse({ event: "close" });
+    shell.stdout.on("data", handleData);
+
+    shell.on("close", () => {
+      console.log("shell closed!");
+    });
+
+    shell.on("error", (err) => {
+      console.error(err);
+      console.log("shell error!");
+    });
+
+    request.raw.on("close", () => {
+      shell.stdout.off("data", handleData);
     });
   });
 

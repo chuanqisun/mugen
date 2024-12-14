@@ -1,6 +1,7 @@
 import "./style.css";
 
-import { filter, fromEvent, tap } from "rxjs";
+import { concatMap, filter, fromEvent, tap } from "rxjs";
+import { fromFetch } from "rxjs/fetch";
 import { $ } from "./lib/dom";
 import { handleSSEResponse } from "./lib/sse";
 
@@ -8,34 +9,35 @@ const backendHost = "http://localhost:3000";
 const stdout = $<HTMLElement>("#stdout")!;
 const input = $("textarea")!;
 
+// subscribe to stdout
+const stdout$ = fromFetch(`${backendHost}/stdout`).pipe(
+  concatMap(handleSSEResponse),
+  tap((event) => {
+    if (event.data) {
+      stdout.innerText += event.data;
+      stdout.innerText += "\n";
+    }
+  })
+);
+
 // enter to submit
-const submitCommand$ = fromEvent(input, "keydown").pipe(
+const stdin$ = fromEvent(input, "keydown").pipe(
   filter((e) => (e as KeyboardEvent).key === "Enter"),
   tap((e) => e.preventDefault()),
   tap(() => {
-    const command = input.value;
-
-    stdout.innerText += `$ ${command}\n`;
-
+    const command = `${input.value}\n`;
+    stdout.innerText += `$ ${command}`;
     input.value = "";
 
-    const sse = fetch(`${backendHost}/exec`, {
+    fetch(`${backendHost}/stdin`, {
       method: "POST",
       body: JSON.stringify({ command }),
       headers: {
         "Content-Type": "application/json",
       },
-    }).then(handleSSEResponse);
-
-    sse.then(async (events) => {
-      for await (const event of events) {
-        if (event.data) {
-          stdout.innerText += event.data;
-          stdout.innerText += "\n";
-        }
-      }
     });
   })
 );
 
-submitCommand$.subscribe();
+stdout$.subscribe();
+stdin$.subscribe();
