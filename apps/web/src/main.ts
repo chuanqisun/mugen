@@ -1,43 +1,51 @@
 import "./style.css";
 
-import { concatMap, filter, fromEvent, tap } from "rxjs";
-import { fromFetch } from "rxjs/fetch";
+import { get, set } from "idb-keyval";
 import { $ } from "./lib/dom";
-import { handleSSEResponse } from "./lib/sse";
 
 const backendHost = "http://localhost:3000";
 const stdout = $<HTMLElement>("#stdout")!;
 const input = $("textarea")!;
 
-// subscribe to stdout
-const stdout$ = fromFetch(`${backendHost}/stdout`).pipe(
-  concatMap(handleSSEResponse),
-  tap((event) => {
-    if (event.data) {
-      stdout.innerText += event.data;
-      stdout.innerText += "\n";
+// auto load cwd if exists
+load();
+
+async function load() {
+  const handle = await get("cwd");
+  if (!handle) return;
+
+  clear(stdout);
+  ls(stdout, handle);
+}
+
+window.addEventListener("click", async () => {
+  const target = (event?.target as HTMLElement)?.closest("[data-action]");
+  const action = target?.getAttribute("data-action");
+  if (!action) return;
+  switch (action) {
+    case "open": {
+      const cwd = await get("cwd");
+      const directoryHandle = await window.showDirectoryPicker({
+        startIn: cwd,
+        mode: "readwrite",
+      });
+
+      // save in indexedDB
+      set("cwd", directoryHandle);
+
+      clear(stdout);
+      ls(stdout, directoryHandle);
     }
-  })
-);
+  }
+});
 
-// enter to submit
-const stdin$ = fromEvent(input, "keydown").pipe(
-  filter((e) => (e as KeyboardEvent).key === "Enter"),
-  tap((e) => e.preventDefault()),
-  tap(() => {
-    const command = `${input.value}\n`;
-    stdout.innerText += `$ ${command}`;
-    input.value = "";
+export function clear(stdout: HTMLElement) {
+  stdout.textContent = "";
+}
 
-    fetch(`${backendHost}/stdin`, {
-      method: "POST",
-      body: JSON.stringify({ command }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-  })
-);
-
-stdout$.subscribe();
-stdin$.subscribe();
+export async function ls(stdout: HTMLElement, handle: FileSystemDirectoryHandle) {
+  for await (const entry of handle.values()) {
+    console.log(entry.name);
+    stdout.textContent += `${entry.name}\n`;
+  }
+}
