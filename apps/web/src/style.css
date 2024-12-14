@@ -11,3 +11,10 @@ body {
 *::after {
   box-sizing: border-box;
 }
+
+dialog {
+  padding: 1rem;
+  margin: auto;
+  width: calc(100% - 2rem);
+  max-width: 40rem;
+}
