@@ -9,11 +9,17 @@
 </head>
 
 <body>
-  <button data-action="menu">Menu</button>
+  <div class="rows">
+    <menu>
+      <button data-action="menu">Menu</button>
+      <button data-action="restore">Restore</button>
+      <button data-action="open">Open</button>
+    </menu>
+    <textarea id="input"></textarea>
+    <div id="thread"></div>
+    <pre id="stdout"></pre>
+  </div>
   <dialog><settings-element></settings-element></dialog>
-  <button data-action="open">Open</button>
-  <pre id="stdout"></pre>
-  <textarea id="input"></textarea>
   <script type="module" src="/src/main.ts"></script>
 </body>
 

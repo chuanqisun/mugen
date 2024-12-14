@@ -1,20 +1,22 @@
 import "./style.css";
 
 import { get, set } from "idb-keyval";
-import { fromEvent, merge, tap } from "rxjs";
+import { html, render } from "lit";
+import { repeat } from "lit/directives/repeat.js";
+import { fromEvent, map, merge, tap } from "rxjs";
 import { $ } from "./lib/dom";
 import { user } from "./lib/messages";
 import { OpenAILLMProvider } from "./lib/openai-llm-provider";
 import { defineSettingsElement } from "./lib/settings-element";
+import { appendItem, thread$ } from "./lib/thread";
+import { clear, load, ls } from "./lib/web-fs";
 
 defineSettingsElement();
 
 const stdout = $<HTMLElement>("#stdout")!;
+const thread = $<HTMLElement>("#thread")!;
 const input = $("textarea")!;
 const llm = new OpenAILLMProvider();
-
-// auto load cwd if exists
-load();
 
 const inputSubmit$ = fromEvent(input, "keydown").pipe(
   tap(async (event) => {
@@ -27,12 +29,22 @@ const inputSubmit$ = fromEvent(input, "keydown").pipe(
 
     input.value = "";
 
+    // open thread.json file
+    const cwd = (await get("cwd")) as FileSystemDirectoryHandle;
+    if (!cwd) return;
+
+    const fileHandle = await cwd.getFileHandle("thread.json", {
+      create: true,
+    });
+
     const aoai = llm.getClient();
     const task = await aoai.chat.completions.create({
       stream: true,
       messages: [user`${prompt}`],
       model: "gpt-4o",
     });
+
+    appendItem(user`${prompt}`);
 
     for await (const chunk of task) {
       stdout.textContent += chunk.choices[0]?.delta?.content || "";
@@ -46,6 +58,10 @@ const topLevelClick$ = fromEvent(window, "click").pipe(
     const action = target?.getAttribute("data-action");
     if (!action) return;
     switch (action) {
+      case "restore": {
+        load(stdout);
+        break;
+      }
       case "open": {
         const cwd = await get("cwd");
         const directoryHandle = await window.showDirectoryPicker({
@@ -70,23 +86,15 @@ const topLevelClick$ = fromEvent(window, "click").pipe(
   })
 );
 
-merge(inputSubmit$, topLevelClick$).subscribe();
+const renderThread$ = thread$.pipe(
+  map((thread) =>
+    repeat(
+      thread,
+      (item) => item.id,
+      (item) => html`<div>${item.role}: ${item.content}</div>`
+    )
+  ),
+  tap((html) => render(html, thread))
+);
 
-// refactor to FS
-async function load() {
-  const handle = await get("cwd");
-  if (!handle) return;
-
-  clear(stdout);
-  ls(stdout, handle);
-}
-
-function clear(stdout: HTMLElement) {
-  stdout.textContent = "";
-}
-
-async function ls(stdout: HTMLElement, handle: FileSystemDirectoryHandle) {
-  for await (const entry of handle.values()) {
-    stdout.textContent += `${entry.name}\n`;
-  }
-}
+merge(inputSubmit$, topLevelClick$, renderThread$).subscribe();
