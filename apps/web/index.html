@@ -14,10 +14,13 @@
       <button data-action="menu">Menu</button>
       <button data-action="new-workspace">New</button>
     </menu>
-    <div id="recent"></div>
+    <details open>
+      <summary>Workspaces</summary>
+      <div id="recent"></div>
+      <pre id="stdout"></pre>
+    </details>
     <textarea id="input"></textarea>
     <div id="thread"></div>
-    <pre id="stdout"></pre>
   </div>
   <dialog><settings-element></settings-element></dialog>
   <script type="module" src="/src/main.ts"></script>
