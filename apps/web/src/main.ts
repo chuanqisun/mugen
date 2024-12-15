@@ -29,11 +29,7 @@ input.addEventListener("keydown", async (e) => {
     const response = await aoai.chat.completions.create({
       stream: true,
       messages: [
-        system`Respond with <assistant-message>. <assistant-message> can only have these children:
-<think> for reasoning thoughts against complex tasks.
-<say> for speaking to user. The innerText must be colloquial utterances.
-<artifact filename="..." mime-type="..."> for showing standalone text. The innerText must be valid syntax for the mime-type.
-        `,
+        system`Wrap your response in <assistant-message>`,
         ...[...$all("[data-role]")].map(
           (div) => ({
             role: div.getAttribute("data-role") as "assistant" | "user",
