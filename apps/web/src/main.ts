@@ -5,12 +5,12 @@ import { html, render } from "lit";
 import { repeat } from "lit/directives/repeat.js";
 import { fromEvent, map, merge, tap } from "rxjs";
 import { $ } from "./lib/dom";
+import { ls } from "./lib/file-utils";
 import { user } from "./lib/messages";
 import { OpenAILLMProvider } from "./lib/openai-llm-provider";
 import { defineSettingsElement } from "./lib/settings-element";
 import { appendItem, thread$ } from "./lib/thread";
-import { clear, ls } from "./lib/web-fs";
-import { WorkspaceService } from "./lib/workspaces";
+import { WorkspaceService } from "./lib/workspace-service";
 
 defineSettingsElement();
 
@@ -27,7 +27,7 @@ const renderRecent$ = workspaceService.workspaces$.pipe(
     repeat(
       workspaces ?? [],
       (item) => item.id,
-      (item) => html`<button data-action="load-workspace" data-workspace=${item.id}>${item.handle.name}</button>`
+      (item) => html`<button data-action="load-workspace" data-workspace=${item.id}>${item.handle.name}${item.isCurrent ? "*" : ""}</button>`
     )
   ),
   tap((html) => render(html, recent))
@@ -73,7 +73,7 @@ const topLevelClick$ = fromEvent(window, "click").pipe(
     const action = target?.getAttribute("data-action");
     if (!action) return;
     switch (action) {
-      case "open": {
+      case "new-workspace": {
         const directoryHandle = await window.showDirectoryPicker({ mode: "readwrite" });
         workspaceService.add(directoryHandle);
         break;
@@ -85,8 +85,7 @@ const topLevelClick$ = fromEvent(window, "click").pipe(
         const opened = await workspaceService.open(workspaceId);
 
         if (opened) {
-          clear(stdout);
-          ls(stdout, opened);
+          stdout.textContent = await ls(stdout, opened);
         }
 
         break;

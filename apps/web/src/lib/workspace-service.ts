@@ -1,22 +1,12 @@
 import { get, set } from "idb-keyval";
 import { BehaviorSubject } from "rxjs";
-import { getPermissionedHandle } from "./web-fs";
+import { getPermissionedHandle } from "./file-utils";
 
 export interface Workspace {
   id: string;
   handle: FileSystemDirectoryHandle;
   lastAccessed: number;
   isCurrent?: boolean;
-}
-
-export async function getWorkspaces() {
-  const workspaces: Workspace[] = (await get("workspaces")) ?? [];
-  return workspaces;
-}
-
-export async function addWorkspace(handle: FileSystemDirectoryHandle) {
-  const workspaces: Workspace[] = (await get("workspaces")) ?? [];
-  set("workspaces", [...workspaces, { id: crypto.randomUUID(), handle, lastAccessed: Date.now() } satisfies Workspace]);
 }
 
 export class WorkspaceService {
