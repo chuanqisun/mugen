@@ -11,7 +11,7 @@ export async function load(stdout: HTMLElement) {
   const handle = await get("cwd");
   if (!handle) return;
 
-  const allowed = await verifyPermission(handle, "readwrite");
+  const allowed = await getPermissionedHandle(handle, "readwrite");
   if (!allowed) return;
 
   clear(stdout);
@@ -28,16 +28,15 @@ export async function ls(stdout: HTMLElement, handle: FileSystemDirectoryHandle)
   }
 }
 
-async function verifyPermission(fileHandle: FileSystemHandle, mode?: FileSystemPermissionMode): Promise<boolean> {
+export async function getPermissionedHandle<T extends FileSystemHandle>(fileHandle: T, mode?: FileSystemPermissionMode): Promise<T | null> {
   const options: FileSystemHandlePermissionDescriptor = mode ? { mode } : {};
 
   if ((await fileHandle.queryPermission(options)) === "granted") {
-    return true;
+    return fileHandle;
   }
-  // Request permission. If the user grants permission, return true.
+
   if ((await fileHandle.requestPermission(options)) === "granted") {
-    return true;
+    return fileHandle;
   }
-  // The user didn't grant permission, so return false.
-  return false;
+  return null;
 }

@@ -1,6 +1,6 @@
 import "./style.css";
 
-import { get, set } from "idb-keyval";
+import { get } from "idb-keyval";
 import { html, render } from "lit";
 import { repeat } from "lit/directives/repeat.js";
 import { fromEvent, map, merge, tap } from "rxjs";
@@ -9,14 +9,29 @@ import { user } from "./lib/messages";
 import { OpenAILLMProvider } from "./lib/openai-llm-provider";
 import { defineSettingsElement } from "./lib/settings-element";
 import { appendItem, thread$ } from "./lib/thread";
-import { clear, load, ls } from "./lib/web-fs";
+import { clear, ls } from "./lib/web-fs";
+import { WorkspaceService } from "./lib/workspaces";
 
 defineSettingsElement();
 
 const stdout = $<HTMLElement>("#stdout")!;
 const thread = $<HTMLElement>("#thread")!;
 const input = $("textarea")!;
+const recent = $<HTMLElement>("#recent")!;
 const llm = new OpenAILLMProvider();
+
+const workspaceService = new WorkspaceService();
+
+const renderRecent$ = workspaceService.workspaces$.pipe(
+  map((workspaces) =>
+    repeat(
+      workspaces ?? [],
+      (item) => item.id,
+      (item) => html`<button data-action="load-workspace" data-workspace=${item.id}>${item.handle.name}</button>`
+    )
+  ),
+  tap((html) => render(html, recent))
+);
 
 const inputSubmit$ = fromEvent(input, "keydown").pipe(
   tap(async (event) => {
@@ -58,22 +73,22 @@ const topLevelClick$ = fromEvent(window, "click").pipe(
     const action = target?.getAttribute("data-action");
     if (!action) return;
     switch (action) {
-      case "restore": {
-        load(stdout);
+      case "open": {
+        const directoryHandle = await window.showDirectoryPicker({ mode: "readwrite" });
+        workspaceService.add(directoryHandle);
         break;
       }
-      case "open": {
-        const cwd = await get("cwd");
-        const directoryHandle = await window.showDirectoryPicker({
-          startIn: cwd,
-          mode: "readwrite",
-        });
 
-        // save in indexedDB
-        set("cwd", directoryHandle);
+      case "load-workspace": {
+        const workspaceId = target?.getAttribute("data-workspace");
+        if (!workspaceId) return;
+        const opened = await workspaceService.open(workspaceId);
 
-        clear(stdout);
-        ls(stdout, directoryHandle);
+        if (opened) {
+          clear(stdout);
+          ls(stdout, opened);
+        }
+
         break;
       }
 
@@ -97,4 +112,5 @@ const renderThread$ = thread$.pipe(
   tap((html) => render(html, thread))
 );
 
+renderRecent$.subscribe();
 merge(inputSubmit$, topLevelClick$, renderThread$).subscribe();
