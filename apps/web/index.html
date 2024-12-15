@@ -8,26 +8,23 @@
   <title>Mugen</title>
 </head>
 
-<body>
-  <div class="rows">
+<body class="app-layout">
+  <header>
     <menu>
-      <button data-action="menu">Menu</button>
+      <button data-action="open-menu">Menu</button>
+      <button data-action="upload">Upload</button>
     </menu>
-    <fieldset>
-      <legend>Events</legend>
-      <div id="events"></div>
-    </fieldset>
-    <fieldset>
-      <legend>Tasks</legend>
-      <div id="tasks"></div>
-    </fieldset>
-    <fieldset>
-      <legend>Artifact</legend>
-      <div id="artifact"></div>
-    </fieldset>
+  </header>
+  <main>
+    <div id="stdout"></div>
     <textarea id="input"></textarea>
-    <div id="thread"></div>
-  </div>
+  </main>
+  <aside>
+    <menu>
+      <button data-action="clear-objects">Clear</button>
+    </menu>
+    <div id="objects"></div>
+  </aside>
   <dialog><settings-element></settings-element></dialog>
   <script type="module" src="/src/main.ts"></script>
 </body>

@@ -17,6 +17,26 @@ body {
   padding: 0;
 }
 
+.app-layout {
+  display: grid;
+  grid-template:
+    "header header" auto
+    "main aside" auto
+    "main aside" 1fr / 1fr auto;
+
+  header {
+    grid-area: header;
+  }
+
+  main {
+    grid-area: main;
+  }
+
+  aside {
+    grid-area: aside;
+  }
+}
+
 button {
   padding: 0.25rem 0.5rem;
 }
