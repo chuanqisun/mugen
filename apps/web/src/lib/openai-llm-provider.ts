@@ -1,10 +1,10 @@
+import { get } from "idb-keyval";
 import { AzureOpenAI, OpenAI } from "openai";
-import { $ } from "./dom";
-import { SettingsElement } from "./settings-element";
+import { type Settings } from "./settings-element";
 
 export class OpenAILLMProvider extends EventTarget {
-  getClient(provider: "aoai" | "openai" = "aoai") {
-    const settings = $<SettingsElement>("settings-element")?.settings;
+  async getClient(provider: "aoai" | "openai" = "aoai") {
+    const settings = await get<Settings>("settings");
     if (!settings) throw new Error("Settings not found");
 
     if (provider === "aoai") {

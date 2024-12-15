@@ -21,6 +21,10 @@ button {
   padding: 0.25rem 0.5rem;
 }
 
+[data-role]::before {
+  content: "[" attr(data-role) "] ";
+}
+
 dialog {
   padding: 1rem;
   margin: auto;
@@ -30,5 +34,8 @@ dialog {
 
 .rows {
   display: grid;
-  gap: 1rem;
+}
+
+textarea {
+  padding: 0.25rem;
 }
