@@ -83,6 +83,7 @@ Respond in a custom xml language. You can only use the following tags:
 
 <speak>Your verbal response. Use this for short simple response.</speak>
 <show mime-type="..." name="...>Standalone text response. You can show formatted source code or rich text</show>
+<script type="module">A JavaScript program that performs an action desired by the user</script>
 <think>Your private thoughts. Think before you speak, show, or script when the task is complex.</think>
 
 When you use <show>, only these mime-types are supported: text/plain, text/markdown, text/html, application/javascript, application/json. Pick the most suitable type for the task.
