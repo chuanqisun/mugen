@@ -4,10 +4,12 @@ import { html, render } from "lit";
 import { repeat } from "lit/directives/repeat.js";
 import { fromEvent, map, tap } from "rxjs";
 import { defineCodeEditorElement } from "./code-editor/code-editor-element";
-import { InMemoryFileStore } from "./environment/in-memory-file-store";
+import { FileStore } from "./environment/in-memory-file-store";
 import { Journal } from "./environment/journal";
+import { handleClearFiles } from "./handlers/handle-clear-files";
 import { handleOpenMenu } from "./handlers/handle-open-menu";
 import { handleSwitchTab } from "./handlers/handle-switch-tab";
+import { handleUploadFiles } from "./handlers/handle-upload-files";
 import { system } from "./llm/messages";
 import { OpenAILLMProvider } from "./llm/openai-llm-provider";
 import { defineSettingsElement } from "./settings/settings-element";
@@ -20,7 +22,7 @@ const input = $<HTMLTextAreaElement>("#input")!;
 const thread = $<HTMLElement>("#thread")!;
 const files = $<HTMLElement>("#files")!;
 const openai = new OpenAILLMProvider();
-const fileStore = new InMemoryFileStore();
+const fileStore = new FileStore();
 const journal = new Journal();
 
 const renderThread$ = journal.getEntries$().pipe(
@@ -158,14 +160,8 @@ const windowClick$ = fromEvent(window, "click").pipe(
   tap((e) => {
     handleOpenMenu(e);
     handleSwitchTab(e);
-
-    if (e.action === "upload-files") {
-      fileStore.addFileInteractive();
-    }
-
-    if (e.action === "clear-files") {
-      fileStore.clearFiles();
-    }
+    handleUploadFiles(e, fileStore);
+    handleClearFiles(e, fileStore);
   })
 );
 

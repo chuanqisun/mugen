@@ -6,7 +6,7 @@ export interface EditableFile extends File {
   buffer?: string;
 }
 
-export class InMemoryFileStore extends EventTarget {
+export class FileStore extends EventTarget {
   #objects$ = new BehaviorSubject<Record<string, EditableFile>>({});
 
   async addFileInteractive() {
