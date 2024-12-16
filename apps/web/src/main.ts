@@ -104,12 +104,9 @@ input.addEventListener("keydown", async (e) => {
       return text;
     }
 
-    async function listFiles() {
-      const vFiles = Object.entries(fileSystem.listFiles());
-
-      if (!vFiles.length) return "No files found";
-      return vFiles.map(([path, vFile]) => `${path} (${vFile.file.size} bytes)`).join("\n");
-    }
+    const fileList = Object.entries(fileSystem.listFiles())
+      .map(([path, vFile]) => `${path} (${vFile.file.size} bytes)`)
+      .join("\n");
 
     const aoai = await openai.getClient("aoai");
     const task = await aoai.beta.chat.completions.runTools({
@@ -130,18 +127,6 @@ input.addEventListener("keydown", async (e) => {
             },
           },
         },
-        {
-          type: "function",
-          function: {
-            function: listFiles,
-            description: "List all file names in the environment",
-            parse: JSON.parse,
-            parameters: {
-              type: "object",
-              properties: {},
-            },
-          },
-        },
       ],
       messages: [
         system`
@@ -155,7 +140,23 @@ use <write-file path="filename.ext" mime-type="mime/type">standalone file conten
 
 In <write-file>, only these mime-types are supported: text/plain, text/html, text/css, text/javascript, text/markdown, text/yaml, text/json, text/csv
         `,
-        ...journal.getHistoryMessages(),
+        ...journal.getHistoryMessages().map((item, i, arr) =>
+          i === arr.length - 1
+            ? {
+                ...item,
+                content: `
+${
+  fileList
+    ? `<speak>I have the following files</speak>
+<file-list>
+${fileList}
+</file-list>}\n`
+    : ""
+}${item.content}
+          `,
+              }
+            : item
+        ),
       ],
       model: "gpt-4o",
     });
@@ -201,10 +202,11 @@ In <write-file>, only these mime-types are supported: text/plain, text/html, tex
       },
       onclosetag(name, isImplied) {
         if (isImplied) return;
-        if (!currentObjectPath) return;
 
         const tagString = `</${name}>`;
         journal.appendMessageContent(assistantMessageId, tagString);
+
+        if (!currentObjectPath) return;
 
         if (name === "write-file") {
           fileSystem.closeFile(currentObjectPath);
