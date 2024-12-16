@@ -14,6 +14,15 @@
     "vite": "^6.0.1"
   },
   "dependencies": {
+    "@codemirror/lang-css": "^6.3.1",
+    "@codemirror/lang-html": "^6.4.9",
+    "@codemirror/lang-javascript": "^6.2.2",
+    "@codemirror/lang-json": "^6.0.1",
+    "@codemirror/lang-yaml": "^6.1.2",
+    "@codemirror/state": "^6.5.0",
+    "@codemirror/theme-one-dark": "^6.1.2",
+    "@codemirror/view": "^6.35.3",
+    "codemirror": "^6.0.1",
     "idb-keyval": "^6.2.1",
     "lit": "^3.2.1",
     "openai": "^4.76.3",

@@ -64,6 +64,11 @@ dialog {
   }
 }
 
+.main-panel {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
 menu {
   display: flex;
   flex-wrap: wrap;

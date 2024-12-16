@@ -2,6 +2,7 @@ import "./style.css";
 
 import { html, render } from "lit";
 import { debounceTime, fromEvent, map, tap } from "rxjs";
+import { defineCodeEditorElement } from "./code-editor/code-editor-element";
 import { handleOpenMenu } from "./handlers/handle-open-menu";
 import { $, $all, $new, getDetail, parseActionEvent } from "./lib/dom";
 import { Environment, type ObjectsChangeEventDetail, type ThreadChangeEventDetail } from "./lib/environment";
@@ -10,6 +11,7 @@ import { OpenAILLMProvider } from "./lib/openai-llm-provider";
 import { defineSettingsElement } from "./lib/settings-element";
 
 defineSettingsElement();
+defineCodeEditorElement();
 
 const input = $<HTMLTextAreaElement>("#input")!;
 const stdout = $<HTMLElement>("#stdout")!;
