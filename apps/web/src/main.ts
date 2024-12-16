@@ -173,14 +173,6 @@ Chat with the user. You can use writeFile, readFile, and listFiles in an environ
       model: "gpt-4o",
     });
 
-    // DEBUG file io
-    // task.on("tool_calls.function.arguments.delta", (delta) => {
-    //   console.log("delta", delta);
-    // });
-    // task.on("tool_calls.function.arguments.done", (done) => {
-    //   console.log("final", done);
-    // });
-
     const assistantMessageId = journal.createAssistantMessage(userMessageId);
 
     for await (const chunk of task) {
