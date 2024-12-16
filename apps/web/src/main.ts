@@ -23,7 +23,7 @@ fromEvent(env, "threadchange")
     debounceTime(1000),
     map(getDetail<ThreadChangeEventDetail>),
     tap((doc) => {
-      console.log(doc.body.outerHTML);
+      // console.log(doc.body.outerHTML);
     })
   )
   .subscribe();
@@ -76,7 +76,7 @@ input.addEventListener("keydown", async (e) => {
     }
 
     const aoai = await openai.getClient("aoai");
-    const response = await aoai.beta.chat.completions.runTools({
+    const task = await aoai.beta.chat.completions.runTools({
       stream: true,
       tools: [
         {
@@ -126,7 +126,7 @@ input.addEventListener("keydown", async (e) => {
       ],
       messages: [
         system`
-Chat with the user. You can create standalone text response with the writeFile tool. Use it for showing rich text or formated source code.
+Chat with the user. You can use writeFile, readFile, and listFiles in an environment shared with the user.
         `,
         // TODO collect history from thread, not stdout
         ...[...$all("[data-role]")].map((div) => ({
@@ -140,7 +140,15 @@ Chat with the user. You can create standalone text response with the writeFile t
     const assitantElement = $new("div", { "data-role": "assistant", "data-id": id.toString() });
     stdout.append(assitantElement);
 
-    for await (const chunk of response) {
+    // DEBUG file io
+    // task.on("tool_calls.function.arguments.delta", (delta) => {
+    //   console.log("delta", delta);
+    // });
+    // task.on("tool_calls.function.arguments.done", (done) => {
+    //   console.log("final", done);
+    // });
+
+    for await (const chunk of task) {
       assitantElement.append(chunk.choices[0]?.delta?.content ?? "");
       env.appendAssistantResponse(execId, chunk.choices[0]?.delta?.content ?? "");
     }
