@@ -25,10 +25,12 @@ body {
 
   main {
     grid-area: main;
+    min-height: 0;
   }
 
   aside {
     grid-area: aside;
+    min-height: 0;
   }
 }
 
@@ -38,6 +40,10 @@ body {
   background-color: var(--side-panel-background);
   width: 300px;
   padding: 0.25rem;
+
+  > :nth-child(2) {
+    overflow-y: auto;
+  }
 }
 
 button {

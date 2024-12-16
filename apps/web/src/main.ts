@@ -1,14 +1,16 @@
 import "./style.css";
 
 import { html, render } from "lit";
+import { repeat } from "lit/directives/repeat.js";
 import { fromEvent, map, tap } from "rxjs";
 import { defineCodeEditorElement } from "./code-editor/code-editor-element";
-import { InMemoryFileStore, type ObjectsChangeEventDetail } from "./environment/environment";
+import { InMemoryFileStore, type ObjectsChangeEventDetail } from "./environment/in-memory-file-store";
+import { Journal } from "./environment/journal";
 import { handleOpenMenu } from "./handlers/handle-open-menu";
 import { system } from "./llm/messages";
 import { OpenAILLMProvider } from "./llm/openai-llm-provider";
 import { defineSettingsElement } from "./settings/settings-element";
-import { $, $all, $new, getDetail, parseActionEvent } from "./utils/dom";
+import { $, getDetail, parseActionEvent } from "./utils/dom";
 
 defineSettingsElement();
 defineCodeEditorElement();
@@ -17,8 +19,18 @@ const input = $<HTMLTextAreaElement>("#input")!;
 const thread = $<HTMLElement>("#thread")!;
 const openai = new OpenAILLMProvider();
 const fileStore = new InMemoryFileStore();
+const journal = new Journal();
 
-let taskId = 0;
+const renderThread$ = journal.getEntries$().pipe(
+  map((items) =>
+    repeat(
+      items,
+      (item) => item.id,
+      (item) => html` <div>${item.role === "user" ? ">" : ""} ${item.content}</div> `
+    )
+  ),
+  tap((temp) => render(temp, thread))
+);
 
 fromEvent(fileStore, "objectschange")
   .pipe(
@@ -42,8 +54,7 @@ input.addEventListener("keydown", async (e) => {
     if (!prompt) return;
 
     input.value = "";
-    const id = ++taskId;
-    thread.append($new("div", { "data-role": "user" }, [`${prompt}`]));
+    const userMessageId = journal.createUserMessage(prompt);
 
     function writeFile(props: { filename: string; mimeType: string; content: string }) {
       const file = new File([props.content], props.filename, { type: props.mimeType });
@@ -119,17 +130,10 @@ input.addEventListener("keydown", async (e) => {
         system`
 Chat with the user. You can use writeFile, readFile, and listFiles in an environment shared with the user.
         `,
-        // TODO collect history from thread, not stdout
-        ...[...$all("[data-role]")].map((div) => ({
-          role: div.getAttribute("data-role") as "assistant" | "user",
-          content: div.textContent ?? "",
-        })),
+        ...journal.getHistoryMessages(),
       ],
       model: "gpt-4o",
     });
-
-    const assitantElement = $new("div", { "data-role": "assistant", "data-id": id.toString() });
-    thread.append(assitantElement);
 
     // DEBUG file io
     // task.on("tool_calls.function.arguments.delta", (delta) => {
@@ -139,9 +143,13 @@ Chat with the user. You can use writeFile, readFile, and listFiles in an environ
     //   console.log("final", done);
     // });
 
+    const assistantMessageId = journal.createAssistantMessage(userMessageId);
+
     for await (const chunk of task) {
-      assitantElement.append(chunk.choices[0]?.delta?.content ?? "");
+      journal.appendMessageContent(assistantMessageId, chunk.choices[0]?.delta?.content ?? "");
     }
+
+    journal.setMessageIsFinal(assistantMessageId);
   }
 });
 
@@ -161,3 +169,4 @@ const windowClick$ = fromEvent(window, "click").pipe(
 );
 
 windowClick$.subscribe();
+renderThread$.subscribe();
