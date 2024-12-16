@@ -60,6 +60,21 @@ input.addEventListener("keydown", async (e) => {
       return `File written: ${file.name} (${file.size} bytes)`;
     }
 
+    async function readFile(props: { filename: string }) {
+      const file = env.getFile(props.filename);
+      if (!file) return `File not found: ${props.filename}`;
+
+      const text = await file.text();
+      return text;
+    }
+
+    async function listFiles() {
+      const files = env.listFiles();
+
+      if (!files.length) return "No files found";
+      return files.map((file) => `${file.name} (${file.size} bytes)`).join("\n");
+    }
+
     const aoai = await openai.getClient("aoai");
     const response = await aoai.beta.chat.completions.runTools({
       stream: true,
@@ -78,6 +93,33 @@ input.addEventListener("keydown", async (e) => {
                 mimeType: { type: "string" },
                 content: { type: "string" },
               },
+            },
+          },
+        },
+        {
+          type: "function",
+          function: {
+            function: readFile,
+            description: "Read a text file from the environment",
+            parse: JSON.parse,
+            parameters: {
+              type: "object",
+              required: ["filename"],
+              properties: {
+                filename: { type: "string" },
+              },
+            },
+          },
+        },
+        {
+          type: "function",
+          function: {
+            function: listFiles,
+            description: "List all file names in the environment",
+            parse: JSON.parse,
+            parameters: {
+              type: "object",
+              properties: {},
             },
           },
         },
