@@ -1,5 +1,6 @@
 :root {
-  color-scheme: light dark;
+  color-scheme: dark;
+  --side-panel-background: #222;
 }
 
 body {
@@ -34,7 +35,9 @@ body {
 .side-panel {
   display: grid;
   grid-template-rows: auto 1fr auto;
-  border-right: 1px solid currentColor;
+  background-color: var(--side-panel-background);
+  width: 300px;
+  padding: 0.25rem;
 }
 
 button {
@@ -54,6 +57,16 @@ dialog {
 
 .input-group {
   display: grid;
+
+  textarea {
+    resize: none;
+    height: 4rem;
+  }
+}
+
+menu {
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .rows {
