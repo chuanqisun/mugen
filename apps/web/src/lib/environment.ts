@@ -24,6 +24,11 @@ export class Environment extends EventTarget {
     }
   }
 
+  addFile(file: File) {
+    this.#objects$.next({ ...this.#objects$.value, [file.name]: file });
+    this.dispatchEvent(new CustomEvent("objectschange", { detail: this.#objects$.value }));
+  }
+
   clearObjects() {
     this.#objects$.next({});
     this.dispatchEvent(new CustomEvent("objectschange", { detail: this.#objects$.value }));

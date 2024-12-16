@@ -51,11 +51,13 @@ input.addEventListener("keydown", async (e) => {
 
     input.value = "";
     const id = ++taskId;
-    stdout.append($new("div", { "data-role": "user" }, [`<speak>${prompt}</speak>`]));
+    stdout.append($new("div", { "data-role": "user" }, [`${prompt}`]));
     const execId = env.exec(prompt);
 
-    function readFile(props: { filename: string }) {
-      return `Hello world!`;
+    function writeFile(props: { filename: string; mimeType: string; content: string }) {
+      const file = new File([props.content], props.filename, { type: props.mimeType });
+      env.addFile(file);
+      return `File written: ${file.name} (${file.size} bytes)`;
     }
 
     const aoai = await openai.getClient("aoai");
@@ -65,13 +67,16 @@ input.addEventListener("keydown", async (e) => {
         {
           type: "function",
           function: {
-            function: readFile,
-            description: "Read a file uploaded by the user",
+            function: writeFile,
+            description: "Write a text file to the environment",
             parse: JSON.parse,
             parameters: {
               type: "object",
+              required: ["filename", "mimeType", "content"],
               properties: {
                 filename: { type: "string" },
+                mimeType: { type: "string" },
+                content: { type: "string" },
               },
             },
           },
@@ -79,15 +84,7 @@ input.addEventListener("keydown", async (e) => {
       ],
       messages: [
         system`
-Respond in a custom xml language. You can only use the following tags:
-
-<speak>Your verbal response. Use this for short simple response.</speak>
-<show mime-type="..." name="...>Standalone text response. You can show formatted source code or rich text</show>
-<script type="module">A JavaScript program that performs an action desired by the user</script>
-<think>Your private thoughts. Think before you speak, show, or script when the task is complex.</think>
-
-When you use <show>, only these mime-types are supported: text/plain, text/markdown, text/html, application/javascript, application/json. Pick the most suitable type for the task.
-When you use <script>, you have access to modern JavaScript APIs.
+Chat with the user. You can create standalone text response with the writeFile tool. Use it for showing rich text or formated source code.
         `,
         // TODO collect history from thread, not stdout
         ...[...$all("[data-role]")].map((div) => ({
