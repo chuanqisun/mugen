@@ -1,13 +1,15 @@
-import { BehaviorSubject } from "rxjs";
+import { BehaviorSubject, ReplaySubject } from "rxjs";
 
 export type ObjectsChangeEventDetail = Record<string, File>;
 
 export interface EditableFile extends File {
-  buffer?: string;
+  updateStream?: ReplaySubject<string>;
 }
 
 export class FileStore extends EventTarget {
-  #objects$ = new BehaviorSubject<Record<string, EditableFile>>({});
+  #objects$ = new BehaviorSubject<Record<string, EditableFile>>({
+    "REAMD.md": new File(["# Welcome to the editor"], "REAMD.md", { type: "text/markdown" }),
+  });
 
   async addFileInteractive() {
     const [file] = await window.showOpenFilePicker();
@@ -36,27 +38,5 @@ export class FileStore extends EventTarget {
 
   clearFiles() {
     this.#objects$.next({});
-  }
-
-  async loadBuffer(filename: string) {
-    const file = this.#objects$.value[filename];
-    if (!file) {
-      console.warn(`File not found: ${filename}`);
-      return;
-    }
-    this.#objects$.next({ ...this.#objects$.value, [filename]: { ...file, buffer: await file.text() } });
-  }
-
-  async flushBuffer(filename: string) {
-    const file = this.#objects$.value[filename];
-    if (!file) {
-      console.warn(`File not found: ${filename}`);
-      return;
-    }
-    if (!file.buffer) {
-      console.warn(`File buffer not found: ${filename}`);
-      return;
-    }
-    this.#objects$.next({ ...this.#objects$.value, [filename]: new File([file.buffer], filename, { type: file.type }) });
   }
 }

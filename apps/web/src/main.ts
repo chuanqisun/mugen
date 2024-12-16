@@ -3,10 +3,11 @@ import "./style.css";
 import { html, render } from "lit";
 import { repeat } from "lit/directives/repeat.js";
 import { fromEvent, map, tap } from "rxjs";
-import { defineCodeEditorElement } from "./code-editor/code-editor-element";
+import { CodeEditorElement, defineCodeEditorElement } from "./code-editor/code-editor-element";
 import { FileStore } from "./environment/in-memory-file-store";
 import { Journal } from "./environment/journal";
 import { handleClearFiles } from "./handlers/handle-clear-files";
+import { handleOpenFile } from "./handlers/handle-open-file";
 import { handleOpenMenu } from "./handlers/handle-open-menu";
 import { handleSwitchTab } from "./handlers/handle-switch-tab";
 import { handleUploadFiles } from "./handlers/handle-upload-files";
@@ -21,6 +22,8 @@ defineCodeEditorElement();
 const input = $<HTMLTextAreaElement>("#input")!;
 const thread = $<HTMLElement>("#thread")!;
 const files = $<HTMLElement>("#files")!;
+const codeEditor = $<CodeEditorElement>("code-editor-element")!;
+
 const openai = new OpenAILLMProvider();
 const fileStore = new FileStore();
 const journal = new Journal();
@@ -42,7 +45,7 @@ const renderFiles$ = fileStore.getFiles$().pipe(
     repeat(
       files,
       (file) => file.name,
-      (file) => html` <div>${file.name} (${file.size} bytes)</div> `
+      (file) => html` <button data-action="open-file" data-file="${file.name}">${file.name} (${file.size} bytes)</button> `
     )
   ),
   tap((temp) => render(temp, files))
@@ -162,6 +165,7 @@ const windowClick$ = fromEvent(window, "click").pipe(
     handleSwitchTab(e);
     handleUploadFiles(e, fileStore);
     handleClearFiles(e, fileStore);
+    handleOpenFile(e, fileStore, codeEditor);
   })
 );
 
