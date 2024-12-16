@@ -4,19 +4,21 @@ import { html, render } from "lit";
 import { repeat } from "lit/directives/repeat.js";
 import { fromEvent, map, tap } from "rxjs";
 import { defineCodeEditorElement } from "./code-editor/code-editor-element";
-import { InMemoryFileStore, type ObjectsChangeEventDetail } from "./environment/in-memory-file-store";
+import { InMemoryFileStore } from "./environment/in-memory-file-store";
 import { Journal } from "./environment/journal";
 import { handleOpenMenu } from "./handlers/handle-open-menu";
+import { handleSwitchTab } from "./handlers/handle-switch-tab";
 import { system } from "./llm/messages";
 import { OpenAILLMProvider } from "./llm/openai-llm-provider";
 import { defineSettingsElement } from "./settings/settings-element";
-import { $, getDetail, parseActionEvent } from "./utils/dom";
+import { $, parseActionEvent } from "./utils/dom";
 
 defineSettingsElement();
 defineCodeEditorElement();
 
 const input = $<HTMLTextAreaElement>("#input")!;
 const thread = $<HTMLElement>("#thread")!;
+const files = $<HTMLElement>("#files")!;
 const openai = new OpenAILLMProvider();
 const fileStore = new InMemoryFileStore();
 const journal = new Journal();
@@ -32,19 +34,17 @@ const renderThread$ = journal.getEntries$().pipe(
   tap((temp) => render(temp, thread))
 );
 
-fromEvent(fileStore, "objectschange")
-  .pipe(
-    map(getDetail<ObjectsChangeEventDetail>),
-    map(
-      (objects) => html`
-        <ul>
-          ${Object.entries(objects).map(([name, file]) => html` <li>${name} (${file.size} bytes)</li> `)}
-        </ul>
-      `
-    ),
-    tap((temp) => render(temp, $<HTMLElement>("#objects")!))
-  )
-  .subscribe();
+const renderFiles$ = fileStore.getFiles$().pipe(
+  map((files) => Object.values(files)),
+  map((files) =>
+    repeat(
+      files,
+      (file) => file.name,
+      (file) => html` <div>${file.name} (${file.size} bytes)</div> `
+    )
+  ),
+  tap((temp) => render(temp, files))
+);
 
 input.addEventListener("keydown", async (e) => {
   if (e.key === "Enter") {
@@ -157,12 +157,13 @@ const windowClick$ = fromEvent(window, "click").pipe(
   map(parseActionEvent),
   tap((e) => {
     handleOpenMenu(e);
+    handleSwitchTab(e);
 
-    if (e.action === "upload") {
+    if (e.action === "upload-files") {
       fileStore.addFileInteractive();
     }
 
-    if (e.action === "clear-objects") {
+    if (e.action === "clear-files") {
       fileStore.clearFiles();
     }
   })
@@ -170,3 +171,4 @@ const windowClick$ = fromEvent(window, "click").pipe(
 
 windowClick$.subscribe();
 renderThread$.subscribe();
+renderFiles$.subscribe();

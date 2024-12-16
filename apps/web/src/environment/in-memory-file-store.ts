@@ -2,8 +2,12 @@ import { BehaviorSubject } from "rxjs";
 
 export type ObjectsChangeEventDetail = Record<string, File>;
 
+export interface EditableFile extends File {
+  buffer?: string;
+}
+
 export class InMemoryFileStore extends EventTarget {
-  #objects$ = new BehaviorSubject<Record<string, File>>({});
+  #objects$ = new BehaviorSubject<Record<string, EditableFile>>({});
 
   async addFileInteractive() {
     const [file] = await window.showOpenFilePicker();
@@ -11,6 +15,10 @@ export class InMemoryFileStore extends EventTarget {
       this.#objects$.next({ ...this.#objects$.value, [file.name]: await file.getFile() });
       this.dispatchEvent(new CustomEvent<ObjectsChangeEventDetail>("objectschange", { detail: this.#objects$.value }));
     }
+  }
+
+  getFiles$() {
+    return this.#objects$.asObservable();
   }
 
   addFile(file: File) {
@@ -28,5 +36,27 @@ export class InMemoryFileStore extends EventTarget {
 
   clearFiles() {
     this.#objects$.next({});
+  }
+
+  async loadBuffer(filename: string) {
+    const file = this.#objects$.value[filename];
+    if (!file) {
+      console.warn(`File not found: ${filename}`);
+      return;
+    }
+    this.#objects$.next({ ...this.#objects$.value, [filename]: { ...file, buffer: await file.text() } });
+  }
+
+  async flushBuffer(filename: string) {
+    const file = this.#objects$.value[filename];
+    if (!file) {
+      console.warn(`File not found: ${filename}`);
+      return;
+    }
+    if (!file.buffer) {
+      console.warn(`File buffer not found: ${filename}`);
+      return;
+    }
+    this.#objects$.next({ ...this.#objects$.value, [filename]: new File([file.buffer], filename, { type: file.type }) });
   }
 }
