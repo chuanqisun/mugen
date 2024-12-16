@@ -1,5 +1,5 @@
 import { BehaviorSubject } from "rxjs";
-import { $new } from "./dom";
+import { $new } from "../utils/dom";
 
 export type ThreadChangeEventDetail = Document;
 export type ObjectsChangeEventDetail = Record<string, File>;

@@ -1,6 +1,6 @@
 import { get } from "idb-keyval";
 import { AzureOpenAI, OpenAI } from "openai";
-import { type Settings } from "./settings-element";
+import { type Settings } from "../settings/settings-element";
 
 export class OpenAILLMProvider extends EventTarget {
   async getClient(provider: "aoai" | "openai" = "aoai") {

@@ -4,17 +4,17 @@ import { html, render } from "lit";
 import { debounceTime, fromEvent, map, tap } from "rxjs";
 import { defineCodeEditorElement } from "./code-editor/code-editor-element";
 import { handleOpenMenu } from "./handlers/handle-open-menu";
-import { $, $all, $new, getDetail, parseActionEvent } from "./lib/dom";
 import { Environment, type ObjectsChangeEventDetail, type ThreadChangeEventDetail } from "./lib/environment";
-import { system } from "./lib/messages";
-import { OpenAILLMProvider } from "./lib/openai-llm-provider";
-import { defineSettingsElement } from "./lib/settings-element";
+import { system } from "./llm/messages";
+import { OpenAILLMProvider } from "./llm/openai-llm-provider";
+import { defineSettingsElement } from "./settings/settings-element";
+import { $, $all, $new, getDetail, parseActionEvent } from "./utils/dom";
 
 defineSettingsElement();
 defineCodeEditorElement();
 
 const input = $<HTMLTextAreaElement>("#input")!;
-const stdout = $<HTMLElement>("#stdout")!;
+const thread = $<HTMLElement>("#thread")!;
 const openai = new OpenAILLMProvider();
 const env = new Environment();
 
@@ -53,7 +53,7 @@ input.addEventListener("keydown", async (e) => {
 
     input.value = "";
     const id = ++taskId;
-    stdout.append($new("div", { "data-role": "user" }, [`${prompt}`]));
+    thread.append($new("div", { "data-role": "user" }, [`${prompt}`]));
     const execId = env.exec(prompt);
 
     function writeFile(props: { filename: string; mimeType: string; content: string }) {
@@ -140,7 +140,7 @@ Chat with the user. You can use writeFile, readFile, and listFiles in an environ
     });
 
     const assitantElement = $new("div", { "data-role": "assistant", "data-id": id.toString() });
-    stdout.append(assitantElement);
+    thread.append(assitantElement);
 
     // DEBUG file io
     // task.on("tool_calls.function.arguments.delta", (delta) => {
