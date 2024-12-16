@@ -1,7 +1,7 @@
-import type { FileStore } from "../environment/in-memory-file-store";
+import type { FileSystem } from "../environment/file-system";
 import { type ParsedActionEvent } from "../utils/dom";
 
-export function handleClearFiles(e: ParsedActionEvent, fileStore: FileStore) {
+export function handleClearFiles(e: ParsedActionEvent, fileStore: FileSystem) {
   if (e.action !== "clear-files") return;
 
   fileStore.clearFiles();

@@ -1,11 +1,12 @@
 import "./style.css";
 
+import { Parser } from "htmlparser2";
 import { html, render } from "lit";
 import { repeat } from "lit/directives/repeat.js";
 import { distinctUntilKeyChanged, filter, fromEvent, map, switchMap, tap } from "rxjs";
 import { $activeFilePath } from "./code-editor/buffer";
 import { CodeEditorElement, defineCodeEditorElement } from "./code-editor/code-editor-element";
-import { FileStore } from "./environment/in-memory-file-store";
+import { FileSystem } from "./environment/file-system";
 import { Journal } from "./environment/journal";
 import { handleClearFiles } from "./handlers/handle-clear-files";
 import { handleOpenFile } from "./handlers/handle-open-file";
@@ -27,7 +28,7 @@ const codeEditor = $<CodeEditorElement>("code-editor-element")!;
 const filename = $<HTMLElement>("#filename")!;
 
 const openai = new OpenAILLMProvider();
-const fileStore = new FileStore();
+const fileSystem = new FileSystem();
 const journal = new Journal();
 
 const renderThread$ = journal.getEntries$().pipe(
@@ -41,13 +42,14 @@ const renderThread$ = journal.getEntries$().pipe(
   tap((temp) => render(temp, thread))
 );
 
-const renderFiles$ = fileStore.getFiles$().pipe(
-  map((files) => Object.values(files)),
+const renderFiles$ = fileSystem.getFiles$().pipe(
+  tap((files) => console.log("files changed", files)),
+  map((files) => Object.entries(files)),
   map((files) =>
     repeat(
       files,
-      (file) => file.name,
-      (file) => html` <button data-action="open-file" data-file="${file.name}">${file.name} (${file.size} bytes)</button> `
+      ([path]) => path,
+      ([path, vFile]) => html` <button data-action="open-file" data-file="${path}">${path} (${vFile.file.size} bytes)</button> `
     )
   ),
   tap((temp) => render(temp, files))
@@ -56,21 +58,21 @@ const renderFiles$ = fileStore.getFiles$().pipe(
 const openActiveFile$ = $activeFilePath.pipe(
   filter((path) => path !== null),
   switchMap((path) => {
-    const distinctStreams = fileStore.getFiles$().pipe(
+    const distinctStreams = fileSystem.getFiles$().pipe(
       map((fs) => fs[path]),
-      distinctUntilKeyChanged("updateStream"),
-      switchMap((file) =>
-        file.updateStream
-          ? file.updateStream.pipe(
+      distinctUntilKeyChanged("update$"),
+      switchMap((vFile) =>
+        vFile.update$
+          ? vFile.update$.pipe(
               tap((update) => {
                 if (update.snapshot === update.delta) {
-                  codeEditor.loadText(file.name, update.snapshot);
+                  codeEditor.loadText(vFile.file.name, update.snapshot);
                 } else {
                   codeEditor.appendText(update.delta);
                 }
               })
             )
-          : codeEditor.loadFile(file)
+          : codeEditor.loadFile(vFile.file)
       )
     );
 
@@ -94,14 +96,8 @@ input.addEventListener("keydown", async (e) => {
     input.value = "";
     const userMessageId = journal.createUserMessage(prompt);
 
-    function writeFile(props: { filename: string; mimeType: string; content: string }) {
-      const file = new File([props.content], props.filename, { type: props.mimeType });
-      fileStore.addFile(file);
-      return `File written: ${file.name} (${file.size} bytes)`;
-    }
-
     async function readFile(props: { filename: string }) {
-      const file = fileStore.getFile(props.filename);
+      const file = fileSystem.getFile(props.filename);
       if (!file) return `File not found: ${props.filename}`;
 
       const text = await file.text();
@@ -109,33 +105,16 @@ input.addEventListener("keydown", async (e) => {
     }
 
     async function listFiles() {
-      const files = fileStore.listFiles();
+      const vFiles = Object.entries(fileSystem.listFiles());
 
-      if (!files.length) return "No files found";
-      return files.map((file) => `${file.name} (${file.size} bytes)`).join("\n");
+      if (!vFiles.length) return "No files found";
+      return vFiles.map(([path, vFile]) => `${path} (${vFile.file.size} bytes)`).join("\n");
     }
 
     const aoai = await openai.getClient("aoai");
     const task = await aoai.beta.chat.completions.runTools({
       stream: true,
       tools: [
-        {
-          type: "function",
-          function: {
-            function: writeFile,
-            description: "Write a text file to the environment",
-            parse: JSON.parse,
-            parameters: {
-              type: "object",
-              required: ["filename", "mimeType", "content"],
-              properties: {
-                filename: { type: "string" },
-                mimeType: { type: "string" },
-                content: { type: "string" },
-              },
-            },
-          },
-        },
         {
           type: "function",
           function: {
@@ -166,7 +145,15 @@ input.addEventListener("keydown", async (e) => {
       ],
       messages: [
         system`
-Chat with the user. You can use writeFile, readFile, and listFiles in an environment shared with the user.
+Chat with the user. To get user provided files, use readFile and listFiles tools 
+ 
+Respond in custom xml. Any text in your response MUST be wrapped in one of these tags. Text outside of these tags will be removed.
+
+use <speak>short utterance</speak> to provide simple response. Long response should use <write-file> instead.
+use <think>your private thoughts</think> to reason before performaning any complex task.
+use <write-file path="filename.ext" mime-type="mime/type">standalone file content</write-file> to respond with rich text or formated code. You can use <speak> to provide additional context.
+
+In <write-file>, only these mime-types are supported: text/plain, text/html, text/css, text/javascript, text/markdown, text/yaml, text/json, text/csv
         `,
         ...journal.getHistoryMessages(),
       ],
@@ -175,9 +162,64 @@ Chat with the user. You can use writeFile, readFile, and listFiles in an environ
 
     const assistantMessageId = journal.createAssistantMessage(userMessageId);
 
+    let currentObjectPath: string | null = null;
+    let shouldTrimStart = true; // trim whitespace immediately before tag inner html starts. This allows artifact to have a clean looking start
+
+    const parser = new Parser({
+      onopentag(name, attributes, isImplied) {
+        if (isImplied) return;
+
+        const attributesString = Object.entries(attributes)
+          .map(([key, value]) => `${key}="${value}"`)
+          .join(" ");
+
+        const tagString = `<${name}${attributesString.length ? ` ${attributesString}` : ""}>`;
+
+        if (currentObjectPath) {
+          fileSystem.appendFile(currentObjectPath, tagString);
+        } else {
+          /* treat other tags as plaintext */
+          journal.appendMessageContent(assistantMessageId, tagString);
+        }
+
+        if (name === "write-file") {
+          currentObjectPath = attributes.path ?? "new-file.txt";
+          fileSystem.writeFile(currentObjectPath, "");
+          shouldTrimStart = true;
+        }
+      },
+      ontext(text) {
+        if (currentObjectPath) {
+          if (shouldTrimStart) {
+            text = text.trimStart();
+            shouldTrimStart = !text; // if text is empty, keep trimming
+          }
+          fileSystem.appendFile(currentObjectPath, text);
+        } else {
+          journal.appendMessageContent(assistantMessageId, text);
+        }
+      },
+      onclosetag(name, isImplied) {
+        if (isImplied) return;
+        if (!currentObjectPath) return;
+
+        const tagString = `</${name}>`;
+        journal.appendMessageContent(assistantMessageId, tagString);
+
+        if (name === "write-file") {
+          fileSystem.closeFile(currentObjectPath);
+          currentObjectPath = null;
+          shouldTrimStart = true;
+        } else {
+          fileSystem.appendFile(currentObjectPath, tagString);
+        }
+      },
+    });
+
     for await (const chunk of task) {
-      journal.appendMessageContent(assistantMessageId, chunk.choices[0]?.delta?.content ?? "");
+      parser.write(chunk.choices[0]?.delta?.content ?? "");
     }
+    parser.end();
 
     journal.setMessageIsFinal(assistantMessageId);
   }
@@ -188,9 +230,9 @@ const windowClick$ = fromEvent(window, "click").pipe(
   tap((e) => {
     handleOpenMenu(e);
     handleSwitchTab(e);
-    handleUploadFiles(e, fileStore);
-    handleClearFiles(e, fileStore);
-    handleOpenFile(e, fileStore, codeEditor);
+    handleUploadFiles(e, fileSystem);
+    handleClearFiles(e, fileSystem);
+    handleOpenFile(e, fileSystem, codeEditor);
   })
 );
 

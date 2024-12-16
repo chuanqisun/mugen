@@ -35,7 +35,7 @@ export class Journal extends EventTarget {
   getHistoryMessages() {
     return this.#journalEntries.value.map((entry) => ({
       role: entry.role,
-      content: entry.content,
+      content: entry.role === "user" ? `<speak>${entry.content}<speak>` : entry.content,
     }));
   }
 
