@@ -2,7 +2,8 @@ import "./style.css";
 
 import { html, render } from "lit";
 import { repeat } from "lit/directives/repeat.js";
-import { fromEvent, map, tap } from "rxjs";
+import { distinctUntilKeyChanged, filter, fromEvent, map, switchMap, tap } from "rxjs";
+import { $activeFilePath } from "./code-editor/buffer";
 import { CodeEditorElement, defineCodeEditorElement } from "./code-editor/code-editor-element";
 import { FileStore } from "./environment/in-memory-file-store";
 import { Journal } from "./environment/journal";
@@ -23,6 +24,7 @@ const input = $<HTMLTextAreaElement>("#input")!;
 const thread = $<HTMLElement>("#thread")!;
 const files = $<HTMLElement>("#files")!;
 const codeEditor = $<CodeEditorElement>("code-editor-element")!;
+const filename = $<HTMLElement>("#filename")!;
 
 const openai = new OpenAILLMProvider();
 const fileStore = new FileStore();
@@ -49,6 +51,37 @@ const renderFiles$ = fileStore.getFiles$().pipe(
     )
   ),
   tap((temp) => render(temp, files))
+);
+
+const openActiveFile$ = $activeFilePath.pipe(
+  filter((path) => path !== null),
+  switchMap((path) => {
+    const distinctStreams = fileStore.getFiles$().pipe(
+      map((fs) => fs[path]),
+      distinctUntilKeyChanged("updateStream"),
+      switchMap((file) =>
+        file.updateStream
+          ? file.updateStream.pipe(
+              tap((update) => {
+                if (update.snapshot === update.delta) {
+                  codeEditor.loadText(file.name, update.snapshot);
+                } else {
+                  codeEditor.appendText(update.delta);
+                }
+              })
+            )
+          : codeEditor.loadFile(file)
+      )
+    );
+
+    return distinctStreams;
+  })
+);
+
+const renderFilename$ = $activeFilePath.pipe(
+  tap((path) => {
+    filename.textContent = path;
+  })
 );
 
 input.addEventListener("keydown", async (e) => {
@@ -172,3 +205,5 @@ const windowClick$ = fromEvent(window, "click").pipe(
 windowClick$.subscribe();
 renderThread$.subscribe();
 renderFiles$.subscribe();
+openActiveFile$.subscribe();
+renderFilename$.subscribe();

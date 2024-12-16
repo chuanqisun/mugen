@@ -1,3 +1,4 @@
+import { loadFileToBuffer } from "../code-editor/buffer";
 import type { CodeEditorElement } from "../code-editor/code-editor-element";
 import type { FileStore } from "../environment/in-memory-file-store";
 import { type ParsedActionEvent } from "../utils/dom";
@@ -11,5 +12,5 @@ export function handleOpenFile(e: ParsedActionEvent, fileStore: FileStore, codeE
   const file = fileStore.getFile(fileName);
   if (!file) return;
 
-  codeEditor.loadFile(file);
+  loadFileToBuffer(fileName);
 }

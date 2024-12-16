@@ -3,12 +3,17 @@ import { BehaviorSubject, ReplaySubject } from "rxjs";
 export type ObjectsChangeEventDetail = Record<string, File>;
 
 export interface EditableFile extends File {
-  updateStream?: ReplaySubject<string>;
+  updateStream?: ReplaySubject<TextFileUpdate>;
+}
+
+export interface TextFileUpdate {
+  delta: string;
+  snapshot: string;
 }
 
 export class FileStore extends EventTarget {
   #objects$ = new BehaviorSubject<Record<string, EditableFile>>({
-    "REAMD.md": new File(["# Welcome to the editor"], "REAMD.md", { type: "text/markdown" }),
+    "README.md": new File(["# Welcome to the editor"], "README.md", { type: "text/markdown" }),
   });
 
   async addFileInteractive() {
