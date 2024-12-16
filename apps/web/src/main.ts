@@ -1,10 +1,10 @@
 import "./style.css";
 
 import { html, render } from "lit";
-import { debounceTime, fromEvent, map, tap } from "rxjs";
+import { fromEvent, map, tap } from "rxjs";
 import { defineCodeEditorElement } from "./code-editor/code-editor-element";
+import { InMemoryFileStore, type ObjectsChangeEventDetail } from "./environment/environment";
 import { handleOpenMenu } from "./handlers/handle-open-menu";
-import { Environment, type ObjectsChangeEventDetail, type ThreadChangeEventDetail } from "./lib/environment";
 import { system } from "./llm/messages";
 import { OpenAILLMProvider } from "./llm/openai-llm-provider";
 import { defineSettingsElement } from "./settings/settings-element";
@@ -16,21 +16,11 @@ defineCodeEditorElement();
 const input = $<HTMLTextAreaElement>("#input")!;
 const thread = $<HTMLElement>("#thread")!;
 const openai = new OpenAILLMProvider();
-const env = new Environment();
+const fileStore = new InMemoryFileStore();
 
 let taskId = 0;
 
-fromEvent(env, "threadchange")
-  .pipe(
-    debounceTime(1000),
-    map(getDetail<ThreadChangeEventDetail>),
-    tap((doc) => {
-      // console.log(doc.body.outerHTML);
-    })
-  )
-  .subscribe();
-
-fromEvent(env, "objectschange")
+fromEvent(fileStore, "objectschange")
   .pipe(
     map(getDetail<ObjectsChangeEventDetail>),
     map(
@@ -54,16 +44,15 @@ input.addEventListener("keydown", async (e) => {
     input.value = "";
     const id = ++taskId;
     thread.append($new("div", { "data-role": "user" }, [`${prompt}`]));
-    const execId = env.exec(prompt);
 
     function writeFile(props: { filename: string; mimeType: string; content: string }) {
       const file = new File([props.content], props.filename, { type: props.mimeType });
-      env.addFile(file);
+      fileStore.addFile(file);
       return `File written: ${file.name} (${file.size} bytes)`;
     }
 
     async function readFile(props: { filename: string }) {
-      const file = env.getFile(props.filename);
+      const file = fileStore.getFile(props.filename);
       if (!file) return `File not found: ${props.filename}`;
 
       const text = await file.text();
@@ -71,7 +60,7 @@ input.addEventListener("keydown", async (e) => {
     }
 
     async function listFiles() {
-      const files = env.listFiles();
+      const files = fileStore.listFiles();
 
       if (!files.length) return "No files found";
       return files.map((file) => `${file.name} (${file.size} bytes)`).join("\n");
@@ -152,7 +141,6 @@ Chat with the user. You can use writeFile, readFile, and listFiles in an environ
 
     for await (const chunk of task) {
       assitantElement.append(chunk.choices[0]?.delta?.content ?? "");
-      env.appendAssistantResponse(execId, chunk.choices[0]?.delta?.content ?? "");
     }
   }
 });
@@ -163,11 +151,11 @@ const windowClick$ = fromEvent(window, "click").pipe(
     handleOpenMenu(e);
 
     if (e.action === "upload") {
-      env.upload();
+      fileStore.addFileInteractive();
     }
 
     if (e.action === "clear-objects") {
-      env.clearObjects();
+      fileStore.clearFiles();
     }
   })
 );
