@@ -9,22 +9,19 @@
 </head>
 
 <body class="app-layout">
-  <header>
+
+  <aside class="side-panel">
     <menu>
       <button data-action="open-menu">Menu</button>
+    </menu>
+    <div id="thread"></div>
+    <div class="input-group">
+      <textarea id="input"></textarea>
       <button data-action="upload">Upload</button>
-    </menu>
-  </header>
-  <main>
-    <div id="stdout"></div>
-    <textarea id="input"></textarea>
-  </main>
-  <aside>
-    <menu>
-      <button data-action="clear-objects">Clear</button>
-    </menu>
-    <div id="objects"></div>
+    </div>
   </aside>
+  <main>
+  </main>
   <dialog><settings-element></settings-element></dialog>
   <script type="module" src="/src/main.ts"></script>
 </body>
