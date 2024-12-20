@@ -130,13 +130,15 @@ input.addEventListener("keydown", async (e) => {
       ],
       messages: [
         system`
-Chat with the user. To get user provided files, use readFile and listFiles tools 
+Chat with the user.
+
+If deemed necessary by the task, you may read user uploaded file with the readFile tool.
  
 Respond in custom xml. Any text in your response MUST be wrapped in one of these tags. Text outside of these tags will be removed.
 
-use <speak>short utterance</speak> to provide simple response. Long response should use <write-file> instead.
-use <think>your private thoughts</think> to reason before performaning any complex task.
-use <write-file path="filename.ext" mime-type="mime/type">standalone file content</write-file> to respond with rich text or formated code. You can use <speak> to provide additional context.
+<speak>short utterance</speak> to provide simple response. Long response should use <write-file> instead.
+<think>your private thoughts</think> to reason before performaning any complex task.
+<write-file path="filename.ext" mime-type="mime/type">standalone content</write-file> to respond with rich text or formated code. You can use <speak> to provide additional context for the standalone content.
 
 In <write-file>, only these mime-types are supported: text/plain, text/html, text/css, text/javascript, text/markdown, text/yaml, text/json, text/csv
         `,
