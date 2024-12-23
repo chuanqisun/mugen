@@ -1,0 +1,6 @@
+settings-element {
+  form {
+    display: grid;
+    gap: 8px;
+  }
+}

@@ -4,7 +4,6 @@ import { javascript } from "@codemirror/lang-javascript";
 import { json } from "@codemirror/lang-json";
 import { markdown } from "@codemirror/lang-markdown";
 import { yaml } from "@codemirror/lang-yaml";
-import { languages } from "@codemirror/language-data";
 import { Compartment } from "@codemirror/state";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { highlightActiveLine } from "@codemirror/view";
@@ -105,7 +104,7 @@ function getLanguageReconfig(filename: string) {
     case "css":
       return dynamicLanguage.reconfigure(css());
     case "md":
-      return dynamicLanguage.reconfigure(markdown({ codeLanguages: languages }));
+      return dynamicLanguage.reconfigure(markdown());
     case "json":
       return dynamicLanguage.reconfigure(json());
     case "yaml":

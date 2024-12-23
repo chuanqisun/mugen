@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mugen</title>
+</head>
+
+<body class="app-layout">
+  <aside class="side-panel">
+    <menu>
+      <button data-action="open-menu">Menu</button>
+      <button data-action="switch-tab" data-target="side-panel:thread">Thread</button>
+      <button data-action="switch-tab" data-target="side-panel:files">Files</button>
+    </menu>
+    <div id="thread" data-tab="side-panel:thread"></div>
+    <div id="files" data-tab="side-panel:files" hidden>
+      <menu>
+        <button data-action="upload-files">Upload</button>
+        <button data-action="clear-files">Clear</button>
+      </menu>
+    </div>
+    <div class="input-group">
+      <textarea id="input"></textarea>
+      <menu>
+        <button data-action="upload-files">Files</button>
+        <button data-action="upload-images">Images</button>
+        <button data-action="hold-to-talk">Microphone</button>
+      </menu>
+    </div>
+  </aside>
+  <main class="main-panel">
+    <menu>
+      <button>Run</button>
+      <span id="filename"></span>
+    </menu>
+    <code-editor-element></code-editor-element>
+    <div>Console</div>
+  </main>
+  <dialog><settings-element></settings-element></dialog>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>
