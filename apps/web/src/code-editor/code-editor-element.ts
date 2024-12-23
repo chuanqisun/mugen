@@ -7,9 +7,10 @@ import { yaml } from "@codemirror/lang-yaml";
 import { languages } from "@codemirror/language-data";
 import { Compartment } from "@codemirror/state";
 import { oneDark } from "@codemirror/theme-one-dark";
-import { highlightActiveLine } from "@codemirror/view";
+import { highlightActiveLine, keymap } from "@codemirror/view";
 import { EditorView, minimalSetup } from "codemirror";
 
+import { OpenAILLMProvider } from "../llm/openai-llm-provider";
 import "./code-editor-element.css";
 
 const dynamicLanguage = new Compartment();
@@ -20,11 +21,75 @@ export function defineCodeEditorElement() {
 
 export class CodeEditorElement extends HTMLElement {
   private editorView!: EditorView;
+  private openai = new OpenAILLMProvider();
 
   connectedCallback() {
-    this.editorView = createCodeEditorView({
-      container: this,
-      onChange: (value) => this.dispatchEvent(new CustomEvent("change", { detail: value })),
+    this.editorView = new EditorView({
+      extensions: [
+        keymap.of([
+          {
+            key: "Ctrl-Enter",
+            run: (view) => {
+              this.openai.getClient().then(async (client) => {
+                const text = view.state.doc.toString();
+                const doc = new DOMParser().parseFromString(text, "text/html");
+                const messages = [...doc.querySelectorAll("system,user,assistant")].map((e) => ({
+                  role: e.tagName.toLowerCase(),
+                  content: e.textContent,
+                }));
+
+                // insert <assistant> tag
+                view.dispatch({
+                  changes: {
+                    from: view.state.doc.length,
+                    to: view.state.doc.length,
+                    insert: "<user>\n<assistant>",
+                  },
+                });
+
+                const responseStream = await client.chat.completions.create({
+                  stream: true,
+                  messages: messages as any[],
+                  model: "gpt-4o",
+                });
+
+                for await (const completion of responseStream) {
+                  view.dispatch({
+                    changes: {
+                      from: view.state.doc.length,
+                      to: view.state.doc.length,
+                      insert: completion.choices.at(0)?.delta?.content ?? "",
+                    },
+                  });
+                }
+
+                // insert: "</assistant>";
+                view.dispatch({
+                  changes: {
+                    from: view.state.doc.length,
+                    to: view.state.doc.length,
+                    insert: "</assistant>\n<user>",
+                  },
+                });
+              });
+
+              console.log("will complete");
+              return true;
+            },
+          },
+        ]),
+        minimalSetup,
+        oneDark,
+        dynamicLanguage.of([]),
+        highlightActiveLine(),
+        EditorView.lineWrapping,
+        EditorView.focusChangeEffect.of((state, focusing) => {
+          if (focusing) return null;
+          this.dispatchEvent(new CustomEvent("change", { detail: state.doc.toString() }));
+          return null;
+        }),
+      ],
+      parent: this,
     });
   }
 
@@ -66,30 +131,6 @@ export class CodeEditorElement extends HTMLElement {
 
     this.value = text;
   }
-}
-
-interface SourceEditorProps {
-  container: HTMLElement;
-  onChange: (value: string) => void;
-}
-function createCodeEditorView(props: SourceEditorProps) {
-  const view = new EditorView({
-    extensions: [
-      minimalSetup,
-      oneDark,
-      dynamicLanguage.of([]),
-      highlightActiveLine(),
-      EditorView.lineWrapping,
-      EditorView.focusChangeEffect.of((state, focusing) => {
-        if (focusing) return null;
-        props.onChange?.(state.doc.toString());
-        return null;
-      }),
-    ],
-    parent: props.container,
-  });
-
-  return view;
 }
 
 function getLanguageReconfig(filename: string) {
