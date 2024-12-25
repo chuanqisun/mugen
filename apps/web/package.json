@@ -9,7 +9,6 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@types/wicg-file-system-access": "^2023.10.5",
     "typescript": "~5.6.2",
     "vite": "^6.0.1"
   },
@@ -24,9 +23,6 @@
     "@codemirror/theme-one-dark": "^6.1.2",
     "@codemirror/view": "^6.35.3",
     "codemirror": "^6.0.1",
-    "htmlparser2": "^9.1.0",
-    "idb-keyval": "^6.2.1",
-    "lit": "^3.2.1",
     "openai": "^4.76.3",
     "rxjs": "^7.8.1"
   }

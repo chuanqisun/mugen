@@ -7,10 +7,9 @@ import { yaml } from "@codemirror/lang-yaml";
 import { languages } from "@codemirror/language-data";
 import { Compartment } from "@codemirror/state";
 import { oneDark } from "@codemirror/theme-one-dark";
-import { highlightActiveLine, keymap } from "@codemirror/view";
+import { highlightActiveLine } from "@codemirror/view";
 import { EditorView, minimalSetup } from "codemirror";
 
-import { OpenAILLMProvider } from "../llm/openai-llm-provider";
 import "./code-editor-element.css";
 
 const dynamicLanguage = new Compartment();
@@ -21,63 +20,10 @@ export function defineCodeEditorElement() {
 
 export class CodeEditorElement extends HTMLElement {
   private editorView!: EditorView;
-  private openai = new OpenAILLMProvider();
 
   connectedCallback() {
     this.editorView = new EditorView({
       extensions: [
-        keymap.of([
-          {
-            key: "Ctrl-Enter",
-            run: (view) => {
-              this.openai.getClient().then(async (client) => {
-                const text = view.state.doc.toString();
-                const doc = new DOMParser().parseFromString(text, "text/html");
-                const messages = [...doc.querySelectorAll("system,user,assistant")].map((e) => ({
-                  role: e.tagName.toLowerCase(),
-                  content: e.textContent,
-                }));
-
-                // insert <assistant> tag
-                view.dispatch({
-                  changes: {
-                    from: view.state.doc.length,
-                    to: view.state.doc.length,
-                    insert: "<user>\n<assistant>",
-                  },
-                });
-
-                const responseStream = await client.chat.completions.create({
-                  stream: true,
-                  messages: messages as any[],
-                  model: "gpt-4o",
-                });
-
-                for await (const completion of responseStream) {
-                  view.dispatch({
-                    changes: {
-                      from: view.state.doc.length,
-                      to: view.state.doc.length,
-                      insert: completion.choices.at(0)?.delta?.content ?? "",
-                    },
-                  });
-                }
-
-                // insert: "</assistant>";
-                view.dispatch({
-                  changes: {
-                    from: view.state.doc.length,
-                    to: view.state.doc.length,
-                    insert: "</assistant>\n<user>",
-                  },
-                });
-              });
-
-              console.log("will complete");
-              return true;
-            },
-          },
-        ]),
         minimalSetup,
         oneDark,
         dynamicLanguage.of([]),
