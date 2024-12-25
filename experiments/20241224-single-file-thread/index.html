@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mugen</title>
+  </head>
+
+  <body class="app-layout">
+    <aside class="side-panel">
+      <menu>
+        <button data-action="open-menu">Menu</button>
+      </menu>
+    </aside>
+    <main class="main-panel">
+      <menu>
+        <button>Run</button>
+        <span id="filename"></span>
+      </menu>
+      <code-editor-element></code-editor-element>
+      <div>Console</div>
+    </main>
+    <dialog><settings-element></settings-element></dialog>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
