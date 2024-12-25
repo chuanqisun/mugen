@@ -27,11 +27,6 @@ body {
     grid-area: main;
     min-height: 0;
   }
-
-  aside {
-    grid-area: aside;
-    min-height: 0;
-  }
 }
 
 .side-panel {
@@ -50,24 +45,11 @@ button {
   padding: 0rem 0.25rem;
 }
 
-[data-role]::before {
-  content: "[" attr(data-role) "] ";
-}
-
 dialog {
   padding: 1rem;
   margin: auto;
   width: calc(100% - 2rem);
   max-width: 40rem;
-}
-
-.input-group {
-  display: grid;
-
-  textarea {
-    resize: none;
-    height: 4rem;
-  }
 }
 
 .main-panel {
@@ -84,10 +66,26 @@ menu {
   flex-wrap: wrap;
 }
 
-.rows {
-  display: grid;
+message-element {
+  display: block;
+  border-left: 2px solid var(--message-indicator-color);
+
+  &[data-role="system"] {
+    --message-indicator-color: #f7a468;
+  }
+
+  &[data-role="user"] {
+    --message-indicator-color: rgb(110, 182, 241);
+  }
+
+  &[data-role="assistant"] {
+    --message-indicator-color: rgb(221, 117, 247);
+  }
 }
 
-textarea {
-  padding: 0.25rem;
+.thread-list {
+  min-height: 0;
+  display: grid;
+  gap: 0.25rem;
+  align-content: start;
 }

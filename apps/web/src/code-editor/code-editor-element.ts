@@ -19,9 +19,14 @@ export function defineCodeEditorElement() {
 }
 
 export class CodeEditorElement extends HTMLElement {
+  static observedAttributes = ["data-lang"];
+
   private editorView!: EditorView;
 
   connectedCallback() {
+    const textContent = this.textContent || "";
+    this.textContent = "";
+
     this.editorView = new EditorView({
       extensions: [
         minimalSetup,
@@ -36,6 +41,21 @@ export class CodeEditorElement extends HTMLElement {
         }),
       ],
       parent: this,
+    });
+
+    this.value = textContent;
+
+    this.updateLanguage(this.getAttribute("data-lang") ?? "");
+  }
+
+  attributeChangedCallback(name: string, _oldValue: string, newValue: string) {
+    if (name === "data-lang") this.updateLanguage(newValue);
+  }
+
+  updateLanguage(lang: string) {
+    getLanguageSupport(lang).then((lang) => {
+      const reconfig = dynamicLanguage.reconfigure(lang);
+      this.editorView.dispatch({ effects: reconfig });
     });
   }
 
@@ -53,13 +73,6 @@ export class CodeEditorElement extends HTMLElement {
     return this.editorView.state.doc.toString();
   }
 
-  async loadFile(file: File) {
-    const reconfig = getLanguageReconfig(file.name);
-    this.editorView.dispatch({ effects: reconfig });
-
-    return file.text().then((text) => (this.value = text));
-  }
-
   appendText(text: string) {
     const length = this.editorView.state.doc.length;
     this.editorView.dispatch({
@@ -70,35 +83,28 @@ export class CodeEditorElement extends HTMLElement {
       },
     });
   }
-
-  loadText(filename: string, text: string) {
-    const reconfig = getLanguageReconfig(filename);
-    this.editorView.dispatch({ effects: reconfig });
-
-    this.value = text;
-  }
 }
 
-function getLanguageReconfig(filename: string) {
-  const ext = filename.split(".").pop();
+async function getLanguageSupport(filenameOrExtension: string) {
+  const ext = filenameOrExtension.split(".").pop();
   switch (ext) {
     case "html":
-      return dynamicLanguage.reconfigure(html());
+      return html();
     case "js":
     case "ts":
     case "jsx":
     case "tsx":
-      return dynamicLanguage.reconfigure(javascript({ jsx: true, typescript: true }));
+      return javascript({ jsx: true, typescript: true });
     case "css":
-      return dynamicLanguage.reconfigure(css());
+      return css();
     case "md":
-      return dynamicLanguage.reconfigure(markdown({ codeLanguages: languages }));
+      return markdown({ codeLanguages: languages });
     case "json":
-      return dynamicLanguage.reconfigure(json());
+      return json();
     case "yaml":
     case "yml":
-      return dynamicLanguage.reconfigure(yaml());
+      return yaml();
     default:
-      return dynamicLanguage.reconfigure([]);
+      return (await languages.find((lang) => lang.extensions.includes(ext ?? ""))?.load()) ?? [];
   }
 }
