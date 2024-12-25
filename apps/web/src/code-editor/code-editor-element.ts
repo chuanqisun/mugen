@@ -1,9 +1,5 @@
-import { css } from "@codemirror/lang-css";
-import { html } from "@codemirror/lang-html";
 import { javascript } from "@codemirror/lang-javascript";
-import { json } from "@codemirror/lang-json";
 import { markdown } from "@codemirror/lang-markdown";
-import { yaml } from "@codemirror/lang-yaml";
 import { languages } from "@codemirror/language-data";
 import { Compartment } from "@codemirror/state";
 import { oneDark } from "@codemirror/theme-one-dark";
@@ -88,22 +84,13 @@ export class CodeEditorElement extends HTMLElement {
 async function getLanguageSupport(filenameOrExtension: string) {
   const ext = filenameOrExtension.split(".").pop();
   switch (ext) {
-    case "html":
-      return html();
     case "js":
     case "ts":
     case "jsx":
     case "tsx":
       return javascript({ jsx: true, typescript: true });
-    case "css":
-      return css();
     case "md":
       return markdown({ codeLanguages: languages });
-    case "json":
-      return json();
-    case "yaml":
-    case "yml":
-      return yaml();
     default:
       return (await languages.find((lang) => lang.extensions.includes(ext ?? ""))?.load()) ?? [];
   }
