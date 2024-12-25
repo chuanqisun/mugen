@@ -2,7 +2,7 @@ import { AzureOpenAI, OpenAI } from "openai";
 import { SettingsElement } from "../settings/settings-element";
 import { $ } from "../utils/dom";
 
-export class OpenAILLMProvider extends EventTarget {
+export class LlmProvider extends EventTarget {
   async getClient(provider: "aoai" | "openai" = "aoai") {
     const settings = $<SettingsElement>("settings-element")?.settings;
     if (!settings) throw new Error("Settings not found");

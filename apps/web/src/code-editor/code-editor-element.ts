@@ -3,7 +3,7 @@ import { markdown } from "@codemirror/lang-markdown";
 import { languages } from "@codemirror/language-data";
 import { Compartment } from "@codemirror/state";
 import { oneDark } from "@codemirror/theme-one-dark";
-import { highlightActiveLine } from "@codemirror/view";
+import { highlightActiveLine, keymap } from "@codemirror/view";
 import { EditorView, minimalSetup } from "codemirror";
 
 import "./code-editor-element.css";
@@ -25,6 +25,15 @@ export class CodeEditorElement extends HTMLElement {
 
     this.editorView = new EditorView({
       extensions: [
+        keymap.of([
+          {
+            key: "Ctrl-Enter",
+            run: () => {
+              this.dispatchEvent(new CustomEvent("run-message", { bubbles: true }));
+              return true;
+            },
+          },
+        ]),
         minimalSetup,
         oneDark,
         dynamicLanguage.of([]),
@@ -41,7 +50,7 @@ export class CodeEditorElement extends HTMLElement {
 
     this.value = textContent;
 
-    this.updateLanguage(this.getAttribute("data-lang") ?? "");
+    this.updateLanguage(this.getAttribute("data-lang") ?? "md");
   }
 
   attributeChangedCallback(name: string, _oldValue: string, newValue: string) {
