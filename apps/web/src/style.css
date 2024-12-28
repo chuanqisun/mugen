@@ -67,7 +67,8 @@ menu {
 }
 
 message-element {
-  display: block;
+  display: grid;
+  gap: 2px;
   border-left: 2px solid var(--message-indicator-color);
 
   &[data-role="system"] {
@@ -80,6 +81,15 @@ message-element {
 
   &[data-role="assistant"] {
     --message-indicator-color: rgb(221, 117, 247);
+  }
+
+  code-editor-element[data-lang]::before {
+    content: attr(data-lang);
+    display: block;
+    background-color: var(--message-indicator-color);
+    color: black;
+    width: max-content;
+    font-size: 0.75rem;
   }
 }
 

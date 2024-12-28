@@ -3,7 +3,7 @@ import { markdown } from "@codemirror/lang-markdown";
 import { languages } from "@codemirror/language-data";
 import { Compartment } from "@codemirror/state";
 import { oneDark } from "@codemirror/theme-one-dark";
-import { highlightActiveLine, keymap } from "@codemirror/view";
+import { keymap } from "@codemirror/view";
 import { EditorView, minimalSetup } from "codemirror";
 
 import "./code-editor-element.css";
@@ -37,7 +37,7 @@ export class CodeEditorElement extends HTMLElement {
         minimalSetup,
         oneDark,
         dynamicLanguage.of([]),
-        highlightActiveLine(),
+        // highlightActiveLine(),
         EditorView.lineWrapping,
         EditorView.focusChangeEffect.of((state, focusing) => {
           if (focusing) return null;
@@ -94,7 +94,9 @@ async function getLanguageSupport(filenameOrExtension: string) {
   const ext = filenameOrExtension.split(".").pop();
   switch (ext) {
     case "js":
+    case "javascript":
     case "ts":
+    case "typescript":
     case "jsx":
     case "tsx":
       return javascript({ jsx: true, typescript: true });
