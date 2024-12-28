@@ -2,17 +2,17 @@ import { syntaxTree } from "@codemirror/language";
 import { Decoration, EditorView, ViewPlugin, ViewUpdate, WidgetType, type DecorationSet } from "@codemirror/view";
 import { $new } from "../utils/dom";
 
-export const codeblockPlugin = ViewPlugin.fromClass(
+export const blockActionPlugin = ViewPlugin.fromClass(
   class {
     decorations: DecorationSet;
 
     constructor(view: EditorView) {
-      this.decorations = blockCommands(view);
+      this.decorations = actionBarDecorationSet(view);
     }
 
     update(update: ViewUpdate) {
       if (update.docChanged || update.viewportChanged || syntaxTree(update.startState) != syntaxTree(update.state))
-        this.decorations = blockCommands(update.view);
+        this.decorations = actionBarDecorationSet(update.view);
     }
   },
   {
@@ -27,8 +27,8 @@ export const codeblockPlugin = ViewPlugin.fromClass(
   }
 );
 
-class CodeblockWidget extends WidgetType {
-  eq(other: CodeblockWidget) {
+class BlockActionWidget extends WidgetType {
+  eq(_other: BlockActionWidget) {
     // command bars are always the same
     return true;
   }
@@ -42,7 +42,7 @@ class CodeblockWidget extends WidgetType {
   }
 }
 
-function blockCommands(view: EditorView) {
+function actionBarDecorationSet(view: EditorView) {
   let widgets = [] as any[];
   for (let { from, to } of view.visibleRanges) {
     const pushSites = [] as { name: string; from: number; to: number }[];
@@ -66,7 +66,7 @@ function blockCommands(view: EditorView) {
       if (node.name === "CodeMark" && nextNode?.name === "CodeInfo" && node.to === nextNode?.from) continue;
 
       const deco = Decoration.widget({
-        widget: new CodeblockWidget(),
+        widget: new BlockActionWidget(),
         side: 1,
       });
 
