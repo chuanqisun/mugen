@@ -6,7 +6,6 @@ import { handleOpenMenu } from "./handlers/handle-open-menu";
 import { LlmProvider } from "./llm/llm-provider";
 import { defineSettingsElement } from "./settings/settings-element";
 import { $, $new, parseActionEvent } from "./utils/dom";
-import { MarkdownBlockParser } from "./utils/markdown";
 
 defineSettingsElement();
 defineCodeEditorElement();
@@ -25,7 +24,7 @@ const runMessage$ = fromEvent(threadElement, "run-message").pipe(
   tap(async (e) => {
     const messageElement = (e.target as HTMLElement).closest("message-element")!;
 
-    let targetEditor = $new<CodeEditorElement>("code-editor-element");
+    const targetEditor = $new<CodeEditorElement>("code-editor-element");
     const nextMessage = $new("message-element", { "data-role": "assistant" }, [targetEditor]);
     messageElement.insertAdjacentElement("afterend", nextMessage);
 
@@ -42,27 +41,9 @@ const runMessage$ = fromEvent(threadElement, "run-message").pipe(
       messages,
     });
 
-    const parser = new MarkdownBlockParser({
-      onOpenBlock: (info) => {
-        targetEditor = $new("code-editor-element", { "data-lang": info.language });
-        nextMessage.appendChild(targetEditor);
-      },
-      onCloseBlock: () => {
-        targetEditor.setAttribute("data-ended", "true");
-      },
-      onText: (text) => {
-        if (targetEditor.getAttribute("data-ended")) {
-          targetEditor = $new("code-editor-element");
-          nextMessage.appendChild(targetEditor);
-        }
-        targetEditor.appendText(text);
-      },
-    });
-
     for await (const chunk of response) {
-      parser.write(chunk.choices[0]?.delta?.content || "");
+      targetEditor.appendText(chunk.choices[0]?.delta?.content || "");
     }
-    parser.close();
   })
 );
 
