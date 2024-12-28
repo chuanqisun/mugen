@@ -20,8 +20,7 @@ export const blockActionPlugin = ViewPlugin.fromClass(
 
     eventHandlers: {
       mousedown: (e, view) => {
-        let target = e.target as HTMLElement;
-        if (target.nodeName == "INPUT" && target.parentElement!.classList.contains("cm-boolean-toggle")) console.log(view, view.posAtDOM(target));
+        // TODO emit the block lang and text content
       },
     },
   }
