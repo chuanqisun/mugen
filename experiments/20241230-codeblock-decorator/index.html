@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mugen</title>
+  </head>
+
+  <body class="app-layout">
+    <main class="main-panel">
+      <menu>
+        <button>Menu</button>
+        <button data-action="open-menu">Connections</button>
+      </menu>
+      <div id="thread" class="thread-list">
+        <message-element data-role="system">
+          <code-editor-element>You are a helpful assistant</code-editor-element>
+        </message-element>
+        <message-element data-role="user">
+          <code-editor-element></code-editor-element>
+        </message-element>
+      </div>
+      <div>console</div>
+    </main>
+    <dialog><settings-element></settings-element></dialog>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,101 @@
+:root {
+  color-scheme: dark;
+  --side-panel-background: #222;
+}
+
+body {
+  font-family: monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+.app-layout {
+  height: 100vh;
+  display: grid;
+  grid-template: "aside main" 1fr / auto 1fr;
+
+  main {
+    grid-area: main;
+    min-height: 0;
+  }
+}
+
+.side-panel {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background-color: var(--side-panel-background);
+  width: 300px;
+  padding: 0.25rem;
+
+  > :nth-child(2) {
+    overflow-y: auto;
+  }
+}
+
+button {
+  padding: 0rem 0.25rem;
+}
+
+dialog {
+  padding: 1rem;
+  margin: auto;
+  width: calc(100% - 2rem);
+  max-width: 40rem;
+}
+
+.main-panel {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+
+  > :nth-child(2) {
+    overflow-y: auto;
+  }
+}
+
+menu {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+message-element {
+  display: grid;
+  gap: 2px;
+  border-left: 2px solid var(--message-indicator-color);
+
+  &[data-role="system"] {
+    --message-indicator-color: #f7a468;
+  }
+
+  &[data-role="user"] {
+    --message-indicator-color: rgb(110, 182, 241);
+  }
+
+  &[data-role="assistant"] {
+    --message-indicator-color: rgb(221, 117, 247);
+  }
+
+  code-editor-element[data-lang]::before {
+    content: attr(data-lang);
+    display: block;
+    background-color: var(--message-indicator-color);
+    color: black;
+    width: max-content;
+    font-size: 0.75rem;
+  }
+}
+
+.thread-list {
+  min-height: 0;
+  display: grid;
+  gap: 0.25rem;
+  align-content: start;
+}
