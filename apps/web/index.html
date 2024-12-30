@@ -8,21 +8,25 @@
   </head>
 
   <body class="app-layout">
-    <main class="main-panel">
-      <menu>
-        <button>Menu</button>
-        <button data-action="open-menu">Connections</button>
-      </menu>
-      <div id="thread" class="thread-list">
+    <header>
+      <button data-action="open-menu">Connections</button>
+    </header>
+    <div class="app-columns">
+      <aside>
+        <div>Workspace</div>
+      </aside>
+      <main id="thread" class="thread-list">
         <message-element data-role="system">
           <code-editor-element>You are a helpful assistant</code-editor-element>
         </message-element>
         <message-element data-role="user">
           <code-editor-element></code-editor-element>
         </message-element>
-      </div>
-      <div>console</div>
-    </main>
+      </main>
+      <aside>
+        <div>Artifact</div>
+      </aside>
+    </div>
     <dialog><settings-element></settings-element></dialog>
     <script type="module" src="/src/main.ts"></script>
   </body>

@@ -6,7 +6,6 @@ import { oneDark } from "@codemirror/theme-one-dark";
 import { keymap } from "@codemirror/view";
 import { EditorView, minimalSetup } from "codemirror";
 
-import { blockActionPlugin } from "./block-action-widget";
 import "./code-editor-element.css";
 
 const dynamicLanguage = new Compartment();
@@ -38,7 +37,7 @@ export class CodeEditorElement extends HTMLElement {
         minimalSetup,
         oneDark,
         dynamicLanguage.of([]),
-        blockActionPlugin,
+        // blockActionPlugin,
         // highlightActiveLine(),
         EditorView.lineWrapping,
         EditorView.focusChangeEffect.of((state, focusing) => {
