@@ -15,14 +15,11 @@ export function defineCodeEditorElement() {
 }
 
 export class CodeEditorElement extends HTMLElement {
-  static observedAttributes = ["data-lang"];
+  static observedAttributes = ["data-lang", "value"];
 
-  private editorView!: EditorView;
+  private editorView: EditorView | null = null;
 
   connectedCallback() {
-    const textContent = this.textContent || "";
-    this.textContent = "";
-
     this.editorView = new EditorView({
       extensions: [
         keymap.of([
@@ -37,8 +34,6 @@ export class CodeEditorElement extends HTMLElement {
         minimalSetup,
         oneDark,
         dynamicLanguage.of([]),
-        // blockActionPlugin,
-        // highlightActiveLine(),
         EditorView.lineWrapping,
         EditorView.focusChangeEffect.of((state, focusing) => {
           if (focusing) return null;
@@ -49,24 +44,32 @@ export class CodeEditorElement extends HTMLElement {
       parent: this,
     });
 
-    this.value = textContent;
-
     this.updateLanguage(this.getAttribute("data-lang") ?? "md");
+
+    if (this.hasAttribute("value")) {
+      this.value = this.getAttribute("value") ?? "";
+    }
   }
 
   attributeChangedCallback(name: string, _oldValue: string, newValue: string) {
-    if (name === "data-lang") this.updateLanguage(newValue);
+    if (name === "data-lang") {
+      this.updateLanguage(newValue);
+    }
+
+    if (name === "value") {
+      this.value = newValue;
+    }
   }
 
   updateLanguage(lang: string) {
     getLanguageSupport(lang).then((lang) => {
       const reconfig = dynamicLanguage.reconfigure(lang);
-      this.editorView.dispatch({ effects: reconfig });
+      this.editorView?.dispatch({ effects: reconfig });
     });
   }
 
   set value(value: string) {
-    this.editorView.dispatch({
+    this.editorView?.dispatch({
       changes: {
         from: 0,
         to: this.editorView.state.doc.length,
@@ -76,12 +79,12 @@ export class CodeEditorElement extends HTMLElement {
   }
 
   get value() {
-    return this.editorView.state.doc.toString();
+    return this.editorView?.state.doc.toString() ?? "";
   }
 
   appendText(text: string) {
-    const length = this.editorView.state.doc.length;
-    this.editorView.dispatch({
+    const length = this.editorView?.state.doc.length ?? 0;
+    this.editorView?.dispatch({
       changes: {
         from: length,
         to: length,
