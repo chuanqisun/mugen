@@ -42,9 +42,9 @@ environmentViewer.textContent = `
     <goal>Provide help user</goal>
   </goals>
 </assistant>
-<output>
-  <file name="empty.md"></file>
-</output>
+<output-files>
+  <file name="welcome.txt">Welcome to the AI assistant system</file>
+</output-files>
 `.trim();
 
 const windowClick$ = fromEvent(window, "click").pipe(
@@ -86,7 +86,8 @@ Follow this process:
 1. Update the environment based on user's input. This is the only way for your to respond to the user.
    - Update <user> to model user's goals and thoughts.
    - Update <assistant> to model your own goals and thoughts.
-   - Update <output> to include any file content you want to show to the user.
+   - Update <output-files> to include any file content you want to show to the user.
+     You must wrap each file like this: <file name="filename.ext">...</file>
 2. Respond to user with a one short sentence confirming what you did, or reporting any errors.
 
 Here are the current journal entries:
@@ -94,9 +95,6 @@ ${eventsViewer.textContent}
 
 Here is the latest environment:
 ${environmentViewer.textContent}
-
-IMPORTANT:
-Say nothing after updating the environment. The ONLY way you can communicate with the user is by using the <output> element in the environment. 
         `,
         user`${prompt}`,
       ],
