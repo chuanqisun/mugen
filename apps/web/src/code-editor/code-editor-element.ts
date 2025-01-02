@@ -1,4 +1,3 @@
-import { javascript } from "@codemirror/lang-javascript";
 import { markdown } from "@codemirror/lang-markdown";
 import { languages } from "@codemirror/language-data";
 import { Compartment } from "@codemirror/state";
@@ -97,16 +96,13 @@ export class CodeEditorElement extends HTMLElement {
 async function getLanguageSupport(filenameOrExtension: string) {
   const ext = filenameOrExtension.split(".").pop();
   switch (ext) {
-    case "js":
-    case "javascript":
-    case "ts":
-    case "typescript":
-    case "jsx":
-    case "tsx":
-      return javascript({ jsx: true, typescript: true });
     case "md":
       return markdown({ codeLanguages: languages });
     default:
-      return (await languages.find((lang) => lang.extensions.includes(ext ?? ""))?.load()) ?? [];
+      return (
+        (await languages
+          .find((lang) => [lang.name.toLocaleLowerCase(), lang.alias.map((a) => a.toLocaleLowerCase()), ...lang.extensions].includes(ext ?? ""))
+          ?.load()) ?? []
+      );
   }
 }

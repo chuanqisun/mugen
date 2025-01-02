@@ -9,23 +9,21 @@
 
   <body class="app-layout">
     <header>
-      <button data-action="open-menu">Connections</button>
+      <button data-action="open-menu">Menu</button>
+      <form id="input-form">
+        <input name="prompt" type="text" />
+        <button>Submit</button>
+      </form>
     </header>
-    <form id="input-form">
-      <input name="prompt" type="text" />
-      <button>Submit</button>
-    </form>
     <div class="columns-layout">
       <div>
-        <b>Events</b>
-        <pre><code id="events-viewer"></code></pre>
+        <b>Files</b>
       </div>
-      <div>
-        <b>Envrionment</b>
-        <pre><code id="environment-viewer"></code></pre>
+      <div class="header-body-layout">
+        <input id="filename" type="text" readonly />
+        <code-editor-element></code-editor-element>
       </div>
     </div>
-    <pre><code></code></pre>
     <dialog><settings-element></settings-element></dialog>
     <script type="module" src="/src/main.ts"></script>
   </body>

@@ -27,7 +27,6 @@ export class MarkdownBlockParser {
 
     while ((newlineIndex = this.lineBuffer.indexOf("\n")) !== -1) {
       const line = this.lineBuffer.slice(0, newlineIndex);
-      console.log({ line });
       this.processLine(line);
       this.lineBuffer = this.lineBuffer.slice(newlineIndex + 1);
     }
@@ -54,6 +53,7 @@ export class MarkdownBlockParser {
       this.handleCodeBlock(trimmedLine);
     } else {
       this.buffer += line + "\n";
+      this.flushText();
     }
   }
 
@@ -83,8 +83,8 @@ export class MarkdownBlockParser {
   }
 
   private flushText() {
-    if (this.buffer.trim()) {
-      this.options.onText?.(this.buffer.trim(), { block: this.currentBlock ?? undefined });
+    if (this.buffer) {
+      this.options.onText?.(this.buffer, { block: this.currentBlock ?? undefined });
     }
     this.buffer = "";
   }
