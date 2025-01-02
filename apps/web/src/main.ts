@@ -18,13 +18,23 @@ const environmentViewer = $<HTMLElement>("#environment-viewer")!;
 
 function printTime() {
   const now = new Date();
-  return `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()} ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
+  // get 24 hour format HH:MM:SS from local ISO string
+  const time = now.toLocaleTimeString("en-US", {
+    hour12: false,
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+
+  return time;
 }
 
-eventsViewer.textContent = `<entry time="${printTime()}" actor="User">started the session</entry>`;
+eventsViewer.textContent = `[${printTime()}] User: started the session`;
 
 environmentViewer.textContent = `
-<user></user>
+<user>
+  <goals></goals>
+</user>
 <assistant>
   <goals>
     <goal>Understand user</goal>
@@ -32,7 +42,9 @@ environmentViewer.textContent = `
     <goal>Provide help user</goal>
   </goals>
 </assistant>
-<output></output>
+<output>
+  <file name="empty.md"></file>
+</output>
 `.trim();
 
 const windowClick$ = fromEvent(window, "click").pipe(
@@ -42,29 +54,27 @@ const windowClick$ = fromEvent(window, "click").pipe(
   })
 );
 
+const appendEntry = (args: { actor: "User" | "Assistant"; event: string }) => {
+  const time = printTime();
+  const entryXML = `[${time}] ${args.actor}: ${args.event}`.trim();
+  eventsViewer.textContent += `\n${entryXML}`;
+};
+
 const formSubmission$ = fromEvent(inputForm, "submit").pipe(
   tap(preventDefault),
   tap(async (e) => {
     const prompt = (new FormData(inputForm).get("prompt") as string).trim();
     inputForm.reset();
-    console.log(prompt);
-
-    function appendEntry(args: { actor: "User" | "Assistant"; event: string }) {
-      const time = printTime();
-
-      const entryXML = `
-<entry time="${time}" actor="${args.actor}">${args.event}</entry>
-      `.trim();
-
-      eventsViewer.textContent += `\n${entryXML}`;
-
-      return `Added: ${entryXML}`;
-    }
 
     function updateEnvironment(args: { latestXML: string }) {
       environmentViewer.textContent = args.latestXML;
       return `Environment updated`;
     }
+
+    appendEntry({
+      actor: "User",
+      event: prompt,
+    });
 
     const openai = await llm.getClient();
     const task = openai.beta.chat.completions.runTools({
@@ -73,12 +83,11 @@ const formSubmission$ = fromEvent(inputForm, "submit").pipe(
         system`
 You are an AI assistant. Your goal is to understand user, update the environment, and provide help. You must interact with the user by updating the environment.
 Follow this process:
-1. Append an entry to the events journal, summarizing the user's input into one short record.
-2. Update the environment based on user's input. This is the only way for your to respond to the user.
+1. Update the environment based on user's input. This is the only way for your to respond to the user.
    - Update <user> to model user's goals and thoughts.
    - Update <assistant> to model your own goals and thoughts.
-   - Update <output> to include any data or information you want to show to the user.
-3. Add an entry to the events journal, summarizing what changes you've made to the environment into one short record.
+   - Update <output> to include any file content you want to show to the user.
+2. Respond to user with a one short sentence confirming what you did, or reporting any errors.
 
 Here are the current journal entries:
 ${eventsViewer.textContent}
@@ -92,22 +101,6 @@ Say nothing after updating the environment. The ONLY way you can communicate wit
         user`${prompt}`,
       ],
       tools: [
-        {
-          type: "function",
-          function: {
-            function: appendEntry,
-            description: "Append an entry to the events journal",
-            parse: JSON.parse,
-            parameters: {
-              type: "object",
-              required: ["actor", "event"],
-              properties: {
-                actor: { enum: ["User", "Assistant"] },
-                event: { type: "string" },
-              },
-            },
-          },
-        },
         {
           type: "function",
           function: {
@@ -127,6 +120,10 @@ Say nothing after updating the environment. The ONLY way you can communicate wit
     });
 
     const final = await task.finalContent();
+    appendEntry({
+      actor: "Assistant",
+      event: final ?? "No response",
+    });
 
     console.log("final response", final);
   })
