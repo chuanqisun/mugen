@@ -26,17 +26,23 @@ body,
 
 .app-layout {
   display: grid;
-  grid-template-rows: auto 1fr;
-}
-
-.app-columns {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  min-height: 0;
+  overflow: auto;
+  align-content: start;
 }
 
 button {
   padding: 0rem 0.25rem;
+}
+
+.columns-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 100%;
+
+  > * {
+    overflow: auto;
+    min-width: 0;
+  }
 }
 
 dialog {
@@ -44,12 +50,4 @@ dialog {
   margin: auto;
   width: calc(100% - 2rem);
   max-width: 60rem;
-}
-
-.thread-layout {
-  display: grid;
-  gap: 0.5rem;
-  align-content: start;
-  overflow: auto;
-  min-height: 0;
 }
