@@ -9,20 +9,13 @@
 
   <body class="app-layout">
     <header>
-      <button data-action="open-menu">Menu</button>
       <form id="input-form">
+        <button type="button" data-action="open-menu">Menu</button>
         <input name="prompt" type="text" />
         <button>Submit</button>
       </form>
     </header>
-    <div class="columns-layout">
-      <div>
-        <b>Files</b>
-      </div>
-      <div class="header-body-layout">
-        <div id="blocks"></div>
-      </div>
-    </div>
+    <div id="blocks"></div>
     <dialog><settings-element></settings-element></dialog>
     <script type="module" src="/src/main.ts"></script>
   </body>
