@@ -29,6 +29,8 @@ const formSubmission$ = fromEvent(inputForm, "submit").pipe(
     const prompt = (new FormData(inputForm).get("prompt") as string).trim();
     inputForm.reset();
 
+    blocks.append($new("div", {}, ["input.txt"]), $new("code-editor-element", { "data-lang": "txt", value: prompt }));
+
     const openai = await llm.getClient();
     const task = await openai.chat.completions.create({
       stream: true,
