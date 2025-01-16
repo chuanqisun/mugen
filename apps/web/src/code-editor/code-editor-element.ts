@@ -1,9 +1,11 @@
+import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { markdown } from "@codemirror/lang-markdown";
+import { defaultHighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { languages } from "@codemirror/language-data";
 import { Compartment } from "@codemirror/state";
 import { oneDark } from "@codemirror/theme-one-dark";
-import { keymap } from "@codemirror/view";
-import { EditorView, minimalSetup } from "codemirror";
+import { drawSelection, EditorView, highlightSpecialChars, keymap } from "@codemirror/view";
+import { blockEditorKeymap } from "./extensions";
 
 import "./code-editor-element.css";
 
@@ -21,16 +23,11 @@ export class CodeEditorElement extends HTMLElement {
   connectedCallback() {
     this.editorView = new EditorView({
       extensions: [
-        keymap.of([
-          {
-            key: "Ctrl-Enter",
-            run: () => {
-              this.dispatchEvent(new CustomEvent("run-message", { bubbles: true }));
-              return true;
-            },
-          },
-        ]),
-        minimalSetup,
+        highlightSpecialChars(),
+        history(),
+        drawSelection(),
+        syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+        keymap.of([...blockEditorKeymap(this), ...defaultKeymap, ...historyKeymap]),
         oneDark,
         dynamicLanguage.of([]),
         EditorView.lineWrapping,
