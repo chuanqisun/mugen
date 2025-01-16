@@ -8,15 +8,11 @@
   </head>
 
   <body class="app-layout">
-    <header>
-      <form id="input-form">
-        <button type="button" data-action="open-menu">Menu</button>
-        <input name="prompt" type="text" />
-        <button>Submit</button>
-      </form>
-    </header>
+    <menu>
+      <button data-action="open-menu">Menu</button>
+    </menu>
     <div id="blocks">
-      <div>Input.txt</div>
+      <div contenteditable="plaintext-only">Input.txt</div>
       <code-editor-element data-lang="txt" value=""></code-editor-element>
     </div>
     <dialog><settings-element></settings-element></dialog>
