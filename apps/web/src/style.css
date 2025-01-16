@@ -43,5 +43,5 @@ dialog {
   padding: 1rem;
   margin: auto;
   width: calc(100% - 2rem);
-  max-width: 60rem;
+  max-width: 40rem;
 }
