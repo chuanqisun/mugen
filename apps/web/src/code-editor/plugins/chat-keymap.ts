@@ -1,6 +1,6 @@
 import { type KeyBinding } from "@codemirror/view";
 
-export const blockEditorKeymap = (eventTarget: EventTarget) =>
+export const chatKeymap = (eventTarget: EventTarget) =>
   [
     {
       key: "Ctrl-Enter",

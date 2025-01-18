@@ -5,7 +5,7 @@ import { languages } from "@codemirror/language-data";
 import { Compartment } from "@codemirror/state";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { drawSelection, EditorView, highlightSpecialChars, keymap } from "@codemirror/view";
-import { blockEditorKeymap } from "./extensions";
+import { chatKeymap } from "./plugins/chat-keymap";
 
 import "./code-editor-element.css";
 
@@ -27,7 +27,7 @@ export class CodeEditorElement extends HTMLElement {
         history(),
         drawSelection(),
         syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
-        keymap.of([...blockEditorKeymap(this), ...defaultKeymap, ...historyKeymap]),
+        keymap.of([...chatKeymap(this), ...defaultKeymap, ...historyKeymap]),
         oneDark,
         dynamicLanguage.of([]),
         EditorView.lineWrapping,

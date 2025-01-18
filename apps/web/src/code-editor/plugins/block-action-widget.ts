@@ -1,6 +1,6 @@
 import { syntaxTree } from "@codemirror/language";
 import { Decoration, EditorView, ViewPlugin, ViewUpdate, WidgetType, type DecorationSet } from "@codemirror/view";
-import { $new } from "../utils/dom";
+import { $new } from "../../utils/dom";
 
 export const blockActionPlugin = ViewPlugin.fromClass(
   class {
