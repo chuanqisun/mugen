@@ -1,6 +1,6 @@
 import type { BaseCredential } from "../model-providers/base";
 import { createProvider } from "../model-providers/factory";
-import { deleteCredential, listCredentials, upsertCredentials } from "./connections-store";
+import { connectionStore } from "./connections-store";
 import "./settings-element.css";
 import templateHtml from "./settings-element.html?raw";
 
@@ -31,7 +31,7 @@ export class SettingsElement extends HTMLElement {
 
       targetForm.reset();
 
-      const updatedConnections = upsertCredentials(parsed);
+      const updatedConnections = connectionStore.upsertCredentials(parsed);
       existingConnections.innerHTML = renderCredentials(updatedConnections);
     });
 
@@ -42,7 +42,7 @@ export class SettingsElement extends HTMLElement {
       switch (action) {
         case "delete": {
           const deleteKey = targetActionTrigger?.getAttribute("data-delete")!;
-          const remaining = deleteCredential(deleteKey);
+          const remaining = connectionStore.deleteCredential(deleteKey);
           existingConnections.innerHTML = renderCredentials(remaining);
 
           break;
@@ -55,7 +55,7 @@ export class SettingsElement extends HTMLElement {
       }
     });
 
-    existingConnections.innerHTML = renderCredentials(listCredentials());
+    existingConnections.innerHTML = renderCredentials(connectionStore.listCredentials());
   }
 }
 
