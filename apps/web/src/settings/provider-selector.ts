@@ -23,12 +23,21 @@ export function useProviderSelector() {
   const updateActiveProvider$ = combineLatest([routeConnectionId.value$, options$]).pipe(
     tap(([latestId, connections]) => {
       const isSelectionInvalid = connections.length && !connections.find((c) => c.id === latestId);
+
+      const grouped = Object.entries(Object.groupBy(connections, (connection) => connection.displayGroup));
+
       render(
-        html`
-          ${!connections.length ? html`<option value="" disabled selected>No connection available</option>` : null}
-          ${isSelectionInvalid ? html`<option value="" disabled selected>Select a connection</option>` : null}
-          ${connections.map((connection) => html`<option value="${connection.id}" ?selected=${connection.id === latestId}>${connection.displayName}</option>`)}
-        `,
+        html` ${!connections.length ? html`<option value="" disabled selected>No connection available</option>` : null}
+        ${isSelectionInvalid ? html`<option value="" disabled selected>Select a connection</option>` : null}
+        ${grouped.map(
+          (group) => html`
+            ${html`<optgroup label="${group[0]}">
+              ${group[1]!.map(
+                (connection) => html` <option value="${connection.id}" ?selected=${connection.id === latestId}>${connection.displayName}</option>`
+              )}
+            </optgroup> `}
+          `
+        )}`,
         selectElement
       );
     }),
