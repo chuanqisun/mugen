@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mugen</title>
+  </head>
+
+  <body class="app-layout">
+    <menu>
+      <button data-action="open-menu">Menu</button>
+    </menu>
+    <div id="blocks">
+      <div contenteditable="plaintext-only">user-message.txt</div>
+      <code-editor-element data-lang="txt" value=""></code-editor-element>
+    </div>
+    <dialog><settings-element></settings-element></dialog>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

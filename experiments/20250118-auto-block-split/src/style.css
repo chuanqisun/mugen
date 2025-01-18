@@ -1,0 +1,47 @@
+:root {
+  color-scheme: dark;
+  --side-panel-background: #222;
+}
+
+body {
+  font-family: monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+.app-layout {
+  height: 100%;
+}
+
+.app-layout {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  align-content: start;
+
+  > :nth-child(2) {
+    min-height: 0;
+    overflow: auto;
+  }
+}
+
+button {
+  padding: 0rem 0.25rem;
+}
+
+dialog {
+  padding: 1rem;
+  margin: auto;
+  width: calc(100% - 2rem);
+  max-width: 40rem;
+}
