@@ -1,97 +1,77 @@
-import { BehaviorSubject, fromEvent, tap } from "rxjs";
-
+import type { BaseCredential } from "../model-providers/base";
+import { createProvider } from "../model-providers/factory";
+import { deleteCredential, listCredentials, upsertCredentials } from "./connections-store";
 import "./settings-element.css";
+import templateHtml from "./settings-element.html?raw";
 
 export function defineSettingsElement() {
   customElements.define("settings-element", SettingsElement);
 }
 
-export interface Settings {
-  claudeApiKey: string;
-  openaiApiKey: string;
-  aoaiEndpoint: string;
-  aoaiApiKey: string;
-  azureSpeechRegion: string;
-  azureSpeechKey: string;
-}
-
 export class SettingsElement extends HTMLElement {
   constructor() {
     super();
-    this.#loadSettings();
-    this.innerHTML = `
-      <form class="rows" method="dialog">
-        <label>Azure OpenAI endpoint</label>
-        <input name="aoaiEndpoint" type="url" placeholder="https://project-name.openai.azure.com/" />
-
-        <label>Azure OpenAI key</label>
-        <input name="aoaiApiKey" type="password" />
-
-        <label>Azure Speech region</label>
-        <input name="azureSpeechRegion" type="text" />
-
-        <label>Azure Speech key</label>
-        <input name="azureSpeechKey" type="password" />
-
-        <label>OpenAI key</label>
-        <input name="openaiApiKey" type="password" />
-
-        <label>Claude key</label>
-        <input name="claudeApiKey" type="password" />
-
-        <button>OK</button>
-      </form>
-    `;
-  }
-
-  settings$ = new BehaviorSubject<Settings>(this.#getInitialSettings());
-
-  #submit$ = fromEvent(this, "submit").pipe(
-    tap((event) => {
-      const settings = Object.fromEntries(new FormData(event.target as HTMLFormElement)) as any as Settings;
-      localStorage.setItem("settings", JSON.stringify(settings));
-      this.settings$.next(settings);
-    })
-  );
-
-  reflectSettings$ = this.settings$.pipe(
-    tap((settings) => {
-      for (const [key, value] of Object.entries(settings)) {
-        const input = this.querySelector<HTMLInputElement>(`input[name="${key}"]`);
-        if (input) {
-          input.value = value;
-        }
-      }
-    })
-  );
-
-  get settings() {
-    return this.settings$.value;
+    this.innerHTML = templateHtml;
   }
 
   connectedCallback() {
-    this.reflectSettings$.subscribe();
-    this.#submit$.subscribe();
-  }
+    const existingConnections = this.querySelector("#existing-connections")!;
 
-  #getInitialSettings() {
-    return {
-      aoaiEndpoint: "",
-      aoaiApiKey: "",
-      azureSpeechRegion: "",
-      azureSpeechKey: "",
-      openaiApiKey: "",
-      claudeApiKey: "",
-    };
-  }
+    this.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const targetForm = (e.target as HTMLElement)?.closest("form")!;
+      const isValid = targetForm.reportValidity();
+      if (!isValid) return;
 
-  async #loadSettings() {
-    const settingsRaw = localStorage.getItem("settings");
-    if (settingsRaw) {
-      try {
-        const parsed = JSON.parse(settingsRaw);
-        this.settings$.next(parsed);
-      } catch (e) {}
-    }
+      const type = targetForm.getAttribute("data-type")!;
+      const formData = new FormData(targetForm);
+
+      const provider = createProvider(type);
+      const parsed = provider.parseNewCredentialForm(formData);
+
+      targetForm.reset();
+
+      const updatedConnections = upsertCredentials(parsed);
+      existingConnections.innerHTML = renderCredentials(updatedConnections);
+    });
+
+    this.addEventListener("click", (e) => {
+      const targetActionTrigger = (e.target as HTMLElement)?.closest(`[data-action]`);
+      const action = targetActionTrigger?.getAttribute("data-action");
+
+      switch (action) {
+        case "delete": {
+          const deleteKey = targetActionTrigger?.getAttribute("data-delete")!;
+          const remaining = deleteCredential(deleteKey);
+          existingConnections.innerHTML = renderCredentials(remaining);
+
+          break;
+        }
+
+        case "close": {
+          this.closest("dialog")?.close();
+          break;
+        }
+      }
+    });
+
+    existingConnections.innerHTML = renderCredentials(listCredentials());
   }
+}
+
+function renderCredentials(credentials: BaseCredential[]) {
+  if (!credentials.length) return "There are no existing connections.";
+  return credentials
+    .map((credential) => {
+      const summary = createProvider(credential.type).getCredentialSummary(credential);
+
+      return `<div class="action-row">
+        <button data-action="delete" data-delete="${credential.id}">Delete</button>
+        <div>
+          <div><b>${summary.title}</b> (${summary.tagLine})</div>
+          <div>${summary.features}</div>
+        </div>
+      </div>`;
+    })
+    .join("");
 }

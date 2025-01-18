@@ -1,6 +1,66 @@
 settings-element {
+  display: grid;
+  gap: 8px;
+
+  .action-row {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+
   form {
     display: grid;
     gap: 8px;
+  }
+
+  .form-scroll {
+    max-height: min(calc(100vh - 120px), 600px);
+    overflow: auto;
+  }
+
+  .field {
+    display: grid;
+    gap: 4px;
+  }
+
+  .rows {
+    display: grid;
+    gap: 8px;
+  }
+
+  .tabbed-forms {
+    display: grid;
+    gap: 8px;
+
+    &:has([value="openai"]:checked) {
+      form:not([data-type="openai"]) {
+        display: none;
+      }
+    }
+
+    &:has([value="aoai"]:checked) {
+      form:not([data-type="aoai"]) {
+        display: none;
+      }
+    }
+
+    &:has([value="anthropic"]:checked) {
+      form:not([data-type="anthropic"]) {
+        display: none;
+      }
+    }
+
+    &:has([value="google-gen-ai"]:checked) {
+      form:not([data-type="google-gen-ai"]) {
+        display: none;
+      }
+    }
+  }
+
+  .radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
   }
 }

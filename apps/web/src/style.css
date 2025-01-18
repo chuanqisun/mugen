@@ -45,3 +45,7 @@ dialog {
   width: calc(100% - 2rem);
   max-width: 40rem;
 }
+
+fieldset {
+  padding: 1rem;
+}
