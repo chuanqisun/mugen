@@ -1,6 +1,6 @@
 import { handleOpenMenu } from "../settings/handle-open-menu";
 import { handleOpenStorage } from "../storage/handle-open-storage";
-import { openDirectory } from "../storage/storage-provider";
+import { openWorkspace } from "../storage/workspace";
 
 export interface Command {
   id: string;
@@ -16,7 +16,7 @@ const rawCommands: Command[] = [
     key: "ctrl+o",
     preventDefault: true,
     stopPropagation: true,
-    run: () => openDirectory(),
+    run: () => openWorkspace(),
   },
   {
     id: "ui.openConnectionsDialog",

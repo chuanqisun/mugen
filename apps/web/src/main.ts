@@ -4,8 +4,9 @@ import { allCommands, keyboardCommands } from "./commands/commands";
 import { activeProvider, useProviderSelector } from "./settings/provider-selector";
 import { defineSettingsElement } from "./settings/settings-element";
 import { defineStorageElement } from "./storage/storage-element";
+import { useWorkspaceSwitcher } from "./storage/workspace";
 import "./style.css";
-import { parseCommandEvent, parseKeyboardShortcut } from "./utils/dom";
+import { $, parseCommandEvent, parseKeyboardShortcut } from "./utils/dom";
 
 merge(useProviderSelector()).subscribe();
 
@@ -36,6 +37,8 @@ fromEvent(window, "click")
   .subscribe();
 
 activeProvider.pipe(tap(console.log)).subscribe();
+
+useWorkspaceSwitcher($("#workspace-switcher")!);
 
 defineSettingsElement();
 defineCodeEditorElement();
