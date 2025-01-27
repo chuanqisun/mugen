@@ -1,8 +1,6 @@
-import { $, type ParsedActionEvent } from "../utils/dom";
+import { $ } from "../utils/dom";
 
-export function handleOpenStorage(e: ParsedActionEvent) {
-  if (e.action !== "open-files") return;
-
+export function handleOpenStorage() {
   const dialog = $<HTMLDialogElement>("dialog:has(storage-element)")!;
   dialog.showModal();
 }

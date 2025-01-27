@@ -19,20 +19,20 @@ export const $new: CreateElement = (tag: string, attributes: Record<string, stri
 };
 
 /* Event processing */
-export interface ParsedActionEvent extends Event {
+export interface ParsedCommandEvent extends Event {
   trigger?: HTMLElement;
-  action?: string | null;
+  command?: string | null;
 }
 
-export function parseActionEvent(e: Event): ParsedActionEvent {
-  const actionTrigger = (e.target as HTMLElement).closest("[data-action]");
+export function parseCommandEvent(e: Event): ParsedCommandEvent {
+  const actionTrigger = (e.target as HTMLElement).closest("[data-command]");
   if (!actionTrigger) return e;
 
-  const action = actionTrigger.getAttribute("data-action");
+  const command = actionTrigger.getAttribute("data-command");
   return {
     ...e,
     trigger: actionTrigger as HTMLElement,
-    action,
+    command,
   };
 }
 
@@ -53,7 +53,11 @@ export function getDetail<T>(e: Event) {
 }
 
 export interface KeyboardShortcut {
-  /**  format: "[Ctrl+][Alt+][Shift+]<event.code>" https://www.toptal.com/developers/keycode */
+  /**
+   * format: "[ctrl+][alt+][shift+]<event.key>"
+   * event.key is all lowercase and with space spelt out as "space"
+   * Reference: https://www.toptal.com/developers/keycode
+   */
   combo: string;
   event: KeyboardEvent;
 }
@@ -66,6 +70,11 @@ export function isModifierKey(event: KeyboardEvent) {
 export function parseKeyboardShortcut(event: KeyboardEvent): KeyboardShortcut | null {
   if (isModifierKey(event)) return null;
 
-  const combo = [event.ctrlKey ? "Ctrl" : "", event.altKey ? "Alt" : "", event.shiftKey ? "Shift" : "", event.code].filter(Boolean).join("+");
+  const ctrlPrefix = event.metaKey || event.ctrlKey ? "ctrl+" : "";
+  const altPrefix = event.altKey ? "alt+" : "";
+  const shiftPrefix = event.shiftKey ? "shift+" : "";
+  const key = event.key === " " ? "space" : event.key.toLocaleLowerCase();
+  const combo = `${ctrlPrefix}${altPrefix}${shiftPrefix}${key}`;
+
   return { combo, event };
 }

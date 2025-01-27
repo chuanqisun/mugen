@@ -1,8 +1,6 @@
-import { $, type ParsedActionEvent } from "../utils/dom";
+import { $ } from "../utils/dom";
 
-export function handleOpenMenu(e: ParsedActionEvent) {
-  if (e.action !== "open-menu") return;
-
+export function handleOpenMenu() {
   const dialog = $<HTMLDialogElement>("dialog:has(settings-element)")!;
   dialog.showModal();
 }
