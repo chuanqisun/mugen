@@ -19,18 +19,22 @@ export const $new: CreateElement = (tag: string, attributes: Record<string, stri
 };
 
 /* Event processing */
-export interface ParsedCommandEvent extends Event {
+export interface ParsedCommandEvent {
+  event: Event;
   trigger?: HTMLElement;
   command?: string | null;
 }
 
 export function parseCommandEvent(e: Event): ParsedCommandEvent {
   const actionTrigger = (e.target as HTMLElement).closest("[data-command]");
-  if (!actionTrigger) return e;
+  if (!actionTrigger)
+    return {
+      event: e,
+    };
 
   const command = actionTrigger.getAttribute("data-command");
   return {
-    ...e,
+    event: e,
     trigger: actionTrigger as HTMLElement,
     command,
   };
