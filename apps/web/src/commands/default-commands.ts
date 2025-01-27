@@ -1,11 +1,11 @@
 import { showDialog } from "../shell/dialog";
-import { openLastUsedWorkspace } from "../storage/workspace";
+import { openWorkspace } from "../storage/workspace";
 import type { Command } from "./use-commands";
 
 export const defaultCommands: Command[] = [
   {
-    id: "storage.openLastUsedWorkspace",
-    run: () => openLastUsedWorkspace(),
+    id: "storage.openWorkspace",
+    run: () => openWorkspace(),
   },
   {
     id: "ui.openConnectionsDialog",
