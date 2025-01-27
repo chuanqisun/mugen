@@ -10,6 +10,7 @@
   <body class="app-layout">
     <menu>
       <button data-action="open-menu">Menu</button>
+      <button data-action="open-files">Files</button>
       <select name="connection" id="active-connection"></select>
     </menu>
     <div id="blocks">
@@ -18,6 +19,9 @@
     </div>
     <dialog>
       <settings-element></settings-element>
+    </dialog>
+    <dialog>
+      <storage-element></storage-element>
     </dialog>
     <script type="module" src="/src/main.ts"></script>
   </body>
