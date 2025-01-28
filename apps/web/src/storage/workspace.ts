@@ -76,8 +76,25 @@ async function verifyPermission(fileHandle: FileSystemHandle) {
   if ((await fileHandle.queryPermission({ mode: "readwrite" })) === "granted") {
     return true;
   }
-  if ((await fileHandle.requestPermission({ mode: "readwrite" })) === "granted") {
+  const currentState = await fileHandle.requestPermission({ mode: "readwrite" });
+  if (currentState === "granted") {
     return true;
   }
+
+  if (currentState === "prompt") {
+    return new Promise((resolve) => {
+      const clear = setInterval(async () => {
+        const newState = await fileHandle.queryPermission({ mode: "readwrite" });
+        if (newState === "granted") {
+          clearInterval(clear);
+          resolve(true);
+        } else if (newState === "denied") {
+          clearInterval(clear);
+          resolve(false);
+        }
+      }, 100);
+    });
+  }
+
   return false;
 }

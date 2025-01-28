@@ -2,7 +2,7 @@ import { html, render } from "lit";
 import { BehaviorSubject, combineLatest, fromEvent, map, merge, startWith, tap } from "rxjs";
 import type { BaseConnection, BaseProvider } from "../model-providers/base";
 import { createProvider } from "../model-providers/factory";
-import { $, getDetail } from "../utils/dom";
+import { $, getEventDetail } from "../utils/dom";
 import { useRouteParameter } from "../utils/route-parameter";
 import { connectionStore } from "./connections-store";
 
@@ -18,7 +18,7 @@ export function useProviderSelector() {
     tap((id) => routeConnectionId.replace(id))
   );
 
-  const options$ = fromEvent(connectionStore, "change").pipe(map(getDetail<BaseConnection[]>), startWith(connectionStore.listConnections()));
+  const options$ = fromEvent(connectionStore, "change").pipe(map(getEventDetail<BaseConnection[]>), startWith(connectionStore.listConnections()));
 
   const updateActiveProvider$ = combineLatest([routeConnectionId.value$, options$]).pipe(
     tap(([latestId, connections]) => {

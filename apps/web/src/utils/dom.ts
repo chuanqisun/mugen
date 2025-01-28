@@ -52,7 +52,7 @@ export function getTargetValue(e: Event) {
   return (e.target as HTMLInputElement).value ?? "";
 }
 
-export function getDetail<T>(e: Event) {
+export function getEventDetail<T>(e: Event) {
   return (e as CustomEvent<T>).detail;
 }
 
