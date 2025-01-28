@@ -8,7 +8,7 @@ import { EmulatedFileSystem } from "./storage/fs-api";
 import { defineStorageElement } from "./storage/storage-element";
 import { useWorkspace, workspaceDirectory$ } from "./storage/workspace";
 import "./style.css";
-import { $, getEventDetail } from "./utils/dom";
+import { $, $new, getEventDetail } from "./utils/dom";
 
 const codeEditor = $<CodeEditorElement>("code-editor-element")!;
 
@@ -32,13 +32,18 @@ fromEvent(codeEditor, "run")
       codeEditor.value = "";
 
       console.log(input);
+      const outputContainer = $new("pre", { style: "padding-block: 0.5rem" }, [`> ${input}\n`]);
+      $<HTMLElement>("#stdout")?.append(outputContainer);
       const [command, ...args] = input.split(" ");
+
       switch (command) {
         case "ls":
-          fs$.value?.ls().then((result) => console.log(result.join("\n")));
+          fs$.value?.ls().then((result) => {
+            outputContainer.textContent += result.join("\n");
+          });
           break;
         case "cd":
-          fs$.value?.cd(args[0]).then(() => console.log(fs$.value?.cwd));
+          fs$.value?.cd(args[0]);
           break;
         default:
           console.log("Unknown command");

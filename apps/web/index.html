@@ -13,8 +13,11 @@
       <button data-command="ui.openStorageDialog" id="workspace-switcher">Workspace</button>
       <select name="connection" id="active-connection"></select>
     </menu>
-    <div id="blocks">
-      <code-editor-element data-lang="txt" value=""></code-editor-element>
+    <div>
+      <div id="stdout"></div>
+      <div id="blocks">
+        <code-editor-element data-lang="txt" value=""></code-editor-element>
+      </div>
     </div>
     <dialog id="app-dialog"></dialog>
     <script type="module" src="/src/main.ts"></script>
