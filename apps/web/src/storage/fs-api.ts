@@ -6,8 +6,8 @@ export class EmulatedFileSystem {
     this.cwdHandle = rootHandle;
   }
 
-  async ls(): Promise<string[]> {
-    if (!this.cwdHandle) return [];
+  async *ls(): AsyncIterable<string> {
+    if (!this.cwdHandle) throw new Error("No current directory");
 
     const results: string[] = []; // dir name ends with '/'
     const entries = this.cwdHandle.entries();
@@ -15,13 +15,13 @@ export class EmulatedFileSystem {
     for await (const [_key, entry] of entries) {
       const name = entry.kind === "directory" ? `${entry.name}/` : entry.name;
 
-      results.push(name);
+      yield `${name}\n`;
     }
 
     return results;
   }
 
-  async cd(path: string): Promise<void> {
+  async *cd(path: string): AsyncIterable<string> {
     let handle = this.rootHandle;
 
     const isRelative = !path.startsWith("/");

@@ -28,7 +28,7 @@ workspaceDirectory$.subscribe((handle) => {
 fromEvent(codeEditor, "run")
   .pipe(
     map(getEventDetail<string>),
-    tap((input) => {
+    tap(async (input) => {
       codeEditor.value = "";
 
       console.log(input);
@@ -36,17 +36,23 @@ fromEvent(codeEditor, "run")
       $<HTMLElement>("#stdout")?.append(outputContainer);
       const [command, ...args] = input.split(" ");
 
+      let result: AsyncIterable<string> | undefined = undefined;
+
       switch (command) {
         case "ls":
-          fs$.value?.ls().then((result) => {
-            outputContainer.textContent += result.join("\n");
-          });
+          result = fs$.value?.ls();
           break;
         case "cd":
-          fs$.value?.cd(args[0]);
+          result = fs$.value?.cd(args[0]);
           break;
         default:
           console.log("Unknown command");
+      }
+
+      if (result) {
+        for await (const line of result) {
+          outputContainer.append(line);
+        }
       }
     })
   )
