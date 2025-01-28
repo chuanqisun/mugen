@@ -30,17 +30,15 @@ fromEvent(codeEditor, "run")
     map(getEventDetail<string>),
     tap(async (input) => {
       codeEditor.value = "";
-
-      console.log(input);
       const outputContainer = $new("pre", { style: "padding-block: 0.5rem" }, [`> ${input}\n`]);
-      $<HTMLElement>("#stdout")?.append(outputContainer);
+      $<HTMLElement>("#stdout")?.prepend(outputContainer);
       const [command, ...args] = input.split(" ");
 
       let result: AsyncIterable<string> | undefined = undefined;
 
       switch (command) {
         case "ls":
-          result = fs$.value?.ls();
+          result = fs$.value?.ls(args[0]);
           break;
         case "cd":
           result = fs$.value?.cd(args[0]);

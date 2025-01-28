@@ -6,15 +6,15 @@ export class EmulatedFileSystem {
     this.cwdHandle = rootHandle;
   }
 
-  async *ls(): AsyncIterable<string> {
-    if (!this.cwdHandle) throw new Error("No current directory");
+  async *ls(path?: string): AsyncIterable<string> {
+    let targetHandle = path ? await this.getDirHandle(this.resolvePath(this.cwd, path)) : this.cwdHandle;
+    if (!targetHandle) throw new Error("Target directory not found.");
 
     const results: string[] = []; // dir name ends with '/'
-    const entries = this.cwdHandle.entries();
+    const entries = targetHandle.entries();
 
     for await (const [_key, entry] of entries) {
       const name = entry.kind === "directory" ? `${entry.name}/` : entry.name;
-
       yield `${name}\n`;
     }
 
@@ -22,30 +22,35 @@ export class EmulatedFileSystem {
   }
 
   async *cd(path: string): AsyncIterable<string> {
-    let handle = this.rootHandle;
+    const absolutePath = this.resolvePath(this.cwd, path);
+    this.cwd = absolutePath;
+    this.cwdHandle = await this.getDirHandle(absolutePath);
+  }
 
-    const isRelative = !path.startsWith("/");
-    const absolutePath = isRelative ? this.resolvePath(this.cwd, path) : path;
-
+  private async getDirHandle(absolutePath: string): Promise<FileSystemDirectoryHandle> {
     const parts = absolutePath.split("/").filter(Boolean);
+    let handle = this.rootHandle;
 
     for (const part of parts) {
       handle = await handle.getDirectoryHandle(part);
-      if (!handle) throw new Error(`No such directory: ${part}`);
     }
 
-    this.cwd = absolutePath;
-    this.cwdHandle = handle;
+    return handle;
   }
 
-  resolvePath(baseAbsolutePath: string, relativePath: string) {
+  resolvePath(baseAbsolutePath: string, maybeRelativePath: string) {
     if (!baseAbsolutePath.startsWith("/")) {
       throw new Error("Base path must be an absolute path.");
     }
 
+    const isRelative = !maybeRelativePath.startsWith("/");
+    if (!isRelative) {
+      return maybeRelativePath;
+    }
+
     // Split the paths into components
     const baseComponents = baseAbsolutePath.split("/").filter((component) => component !== "");
-    const relativeComponents = relativePath.split("/").filter((component) => component !== "");
+    const relativeComponents = maybeRelativePath.split("/").filter((component) => component !== "");
 
     // Process the relative path components
     for (const component of relativeComponents) {
