@@ -78,6 +78,9 @@ fromEvent(codeEditor, "run")
           case "open": {
             break;
           }
+          case "run": {
+            break;
+          }
           default:
             throw new Error(`Command not found: ${command}`);
         }
