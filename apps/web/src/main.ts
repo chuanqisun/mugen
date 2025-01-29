@@ -33,9 +33,15 @@ fromEvent(codeEditor, "run")
       if (!env) return;
 
       codeEditor.value = "";
-      const outputContainer = $new("pre", { style: "padding-block: 0.5rem" }, [`> ${input}\n`]);
+      const outputContainer = $new("pre", { style: "padding-block: 0.5rem; white-space: pre-wrap" }, [`> ${input}\n`]);
       $<HTMLElement>("#stdout")?.prepend(outputContainer);
-      const [command, ...args] = input.split(" ");
+
+      // extract the command from the beginning of the input, and the rawArgString as the rest
+      const trimmedInput = input.trim();
+      const hasSpace = trimmedInput.includes(" ");
+      const command = hasSpace ? trimmedInput.slice(0, trimmedInput.indexOf(" ")) : trimmedInput;
+      const rawArgString = trimmedInput.slice(trimmedInput.indexOf(" ") + 1).trim();
+      const args = rawArgString.split(/\s+/);
 
       const stdout = {
         pipe: async (streamLike: Iterable<string> | AsyncIterable<string>) => {
@@ -46,12 +52,21 @@ fromEvent(codeEditor, "run")
         render: (renderFn: (container: HTMLElement) => any) => renderFn(outputContainer),
       };
 
+      const { provider, connection } = activeProvider.value ?? {};
+      const chatStreamProxy = provider && connection ? provider.getChatStreamProxy(connection) : null;
+
+      const stdlib = {
+        chatStream:
+          chatStreamProxy ??
+          async function* () {
+            return "No chat provider available";
+          },
+      };
+
       try {
         switch (command) {
           case "ls": {
-            getDirHandle(env.root, resolve(env.cwd, args[0]))
-              .then((handle) => ls(handle))
-              .then(stdout.pipe);
+            getDirHandle(env.root, resolve(env.cwd, args[0])).then(ls).then(stdout.pipe);
             break;
           }
           case "cd": {
@@ -78,7 +93,11 @@ fromEvent(codeEditor, "run")
           case "open": {
             break;
           }
-          case "run": {
+          case "!": {
+            break;
+          }
+          case "?": {
+            stdout.pipe(stdlib.chatStream({ messages: [{ role: "user", content: rawArgString }] }));
             break;
           }
           default:

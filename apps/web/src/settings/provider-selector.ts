@@ -6,7 +6,7 @@ import { $, getEventDetail } from "../utils/dom";
 import { useRouteParameter } from "../utils/route-parameter";
 import { connectionStore } from "./connections-store";
 
-export const activeProvider = new BehaviorSubject<BaseProvider | null>(null);
+export const activeProvider = new BehaviorSubject<{ provider: BaseProvider; connection: BaseConnection } | null>(null);
 
 export function useProviderSelector() {
   const routeConnectionId = useRouteParameter({ key: "connectionId" });
@@ -42,7 +42,14 @@ export function useProviderSelector() {
       );
     }),
     map(([latestId, connections]) => connections.find((c) => c.id === latestId) ?? null),
-    map((connection) => (connection ? (createProvider(connection.type) as BaseProvider) : null)),
+    map((connection) =>
+      connection
+        ? {
+            provider: createProvider(connection.type) as BaseProvider,
+            connection,
+          }
+        : null
+    ),
     tap((provider) => activeProvider.next(provider))
   );
 
