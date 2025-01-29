@@ -1,5 +1,5 @@
 import { get, set } from "idb-keyval";
-import { BehaviorSubject, filter, from, merge, tap } from "rxjs";
+import { BehaviorSubject, concatMap, filter, from, merge, tap } from "rxjs";
 import { showDialog } from "../shell/dialog";
 
 export const workspaceDirectory$ = new BehaviorSubject<FileSystemDirectoryHandle | null>(null);
@@ -35,10 +35,31 @@ function listLastUsedItems() {
 }
 
 export function useWorkspace(options: { switcherElement: HTMLElement }) {
-  // init history
-  listLastUsedItems().then((items) => lastUsedWorkspaces$.next(items));
+  const init$ = from(listLastUsedItems()).pipe(
+    tap((items) => lastUsedWorkspaces$.next(items)),
+    concatMap(async (items) =>
+      items
+        .at(0)
+        ?.handle.queryPermission({ mode: "readwrite" })
+        .then((permissionState) => (permissionState === "granted" ? items.at(0)?.handle : null))
+    ),
+    concatMap((grantedHandle) => {
+      if (grantedHandle) {
+        // if last used item can be accessed, use it
+        workspaceDirectory$.next(grantedHandle);
+        return grantedHandle;
+      } else {
+        // else if there are items, prompt for recovery
+        const promptForRecovery = from(listLastUsedItems()).pipe(
+          filter((itemsOrUndefined) => itemsOrUndefined.length > 0),
+          tap((_storedHandle) => showDialog(`<storage-element></storage-element>`))
+        );
+        return promptForRecovery;
+      }
+    })
+  );
 
-  const renderSwitcher = workspaceDirectory$.pipe(
+  const renderSwitcher$ = workspaceDirectory$.pipe(
     tap((handle) => {
       if (!handle) {
         options.switcherElement.textContent = "Workspace";
@@ -47,11 +68,6 @@ export function useWorkspace(options: { switcherElement: HTMLElement }) {
 
       options.switcherElement.textContent = `${handle.name} (change)`;
     })
-  );
-
-  const promptForRecovery = from(get("mugen.lastUsedWorkspaces")).pipe(
-    filter((itemsOrUndefined) => itemsOrUndefined?.length),
-    tap((_storedHandle) => showDialog(`<storage-element></storage-element>`))
   );
 
   const updateHistory$ = workspaceDirectory$.pipe(
@@ -69,7 +85,7 @@ export function useWorkspace(options: { switcherElement: HTMLElement }) {
     })
   );
 
-  return merge(renderSwitcher, promptForRecovery, updateHistory$);
+  return merge(renderSwitcher$, init$, updateHistory$);
 }
 
 async function verifyPermission(fileHandle: FileSystemHandle) {
