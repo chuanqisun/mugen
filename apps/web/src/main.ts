@@ -37,38 +37,52 @@ fromEvent(codeEditor, "run")
       $<HTMLElement>("#stdout")?.prepend(outputContainer);
       const [command, ...args] = input.split(" ");
 
-      let result: Iterable<string> | AsyncIterable<string> | undefined = undefined;
+      const stdout = {
+        pipe: async (streamLike: Iterable<string> | AsyncIterable<string>) => {
+          for await (const line of streamLike) {
+            outputContainer.append(line);
+          }
+        },
+        render: (renderFn: (container: HTMLElement) => any) => renderFn(outputContainer),
+      };
 
-      switch (command) {
-        case "ls": {
-          result = await getDirHandle(env.root, resolve(env.cwd, args[0])).then((handle) => ls(handle));
-          break;
+      try {
+        switch (command) {
+          case "ls": {
+            getDirHandle(env.root, resolve(env.cwd, args[0]))
+              .then((handle) => ls(handle))
+              .then(stdout.pipe);
+            break;
+          }
+          case "cd": {
+            const maybeCwd = resolve(env.cwd, args[0]);
+            await getDirHandle(env.root, maybeCwd);
+            env.cwd = maybeCwd;
+            break;
+          }
+          case "pwd": {
+            stdout.pipe([env.cwd]);
+            break;
+          }
+          case "date": {
+            stdout.pipe([new Date().toString()]);
+            break;
+          }
+          case "cat": {
+            getFileHandle(env.root, resolve(env.cwd, args[0]))
+              .then((handle) => handle.getFile())
+              .then((file) => file.stream().pipeThrough(new TextDecoderStream()))
+              .then(stdout.pipe);
+            break;
+          }
+          case "open": {
+            break;
+          }
+          default:
+            throw new Error(`Command not found: ${command}`);
         }
-        case "cd": {
-          const maybeCwd = resolve(env.cwd, args[0]);
-          await getDirHandle(env.root, maybeCwd);
-          env.cwd = maybeCwd;
-          break;
-        }
-        case "pwd": {
-          result = [env.cwd];
-          break;
-        }
-        case "cat": {
-          const file = await getFileHandle(env.root, resolve(env.cwd, args[0])).then((handle) => handle.getFile());
-          const stream = file.stream();
-          const textStream = stream.pipeThrough(new TextDecoderStream());
-          result = textStream;
-          break;
-        }
-        default:
-          console.log("Unknown command");
-      }
-
-      if (result) {
-        for await (const line of result) {
-          outputContainer.append(line);
-        }
+      } catch (e) {
+        outputContainer.append(`${(e as any)?.message}`);
       }
     })
   )
