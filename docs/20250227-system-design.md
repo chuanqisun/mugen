@@ -1,12 +1,12 @@
 # System Design
 
-## Shell + Kernel
+- Raw data: raw file or stream from disk or network
+- Abstract data: A standard interface for AI compatible data
+- Tool: A function that transforms data
+- Task: The process of applying a tool to abstract data
 
-- Shell
-  - Script the system with natural language
-  - Define and manage tools and data
-  - Handle user inputs and outputs
-- Kernel
-  - Task management
-  - Provide LLM core functionality
-  - Data base and storage management
+## Abstract data
+
+- Referencable
+- Composable
+- Compressible
