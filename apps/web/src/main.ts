@@ -40,7 +40,7 @@ fromEvent(codeEditor, "run")
       const trimmedInput = input.trim();
       const hasSpace = trimmedInput.includes(" ");
       const command = hasSpace ? trimmedInput.slice(0, trimmedInput.indexOf(" ")) : trimmedInput;
-      const rawArgString = trimmedInput.slice(trimmedInput.indexOf(" ") + 1).trim();
+      const rawArgString = hasSpace ? trimmedInput.slice(trimmedInput.indexOf(" ") + 1).trim() : "";
       const args = rawArgString.split(/\s+/);
 
       const stdout = {
@@ -66,11 +66,13 @@ fromEvent(codeEditor, "run")
       try {
         switch (command) {
           case "ls": {
-            getDirHandle(env.root, resolve(env.cwd, args[0])).then(ls).then(stdout.pipe);
+            getDirHandle(env.root, resolve(env.cwd, args.at(0) ?? "."))
+              .then(ls)
+              .then(stdout.pipe);
             break;
           }
           case "cd": {
-            const maybeCwd = resolve(env.cwd, args[0]);
+            const maybeCwd = resolve(env.cwd, args.at(0) ?? ".");
             await getDirHandle(env.root, maybeCwd);
             env.cwd = maybeCwd;
             break;
