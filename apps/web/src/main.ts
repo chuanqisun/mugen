@@ -2,7 +2,11 @@ import { fromEvent, map, tap } from "rxjs";
 import { defineCommandFormElement } from "./lib/command-form.element";
 import { showDialog } from "./lib/dialog";
 import { parseKeyboardShortcut } from "./lib/dom";
+import { defineMessageElement } from "./lib/message.element";
 import "./style.css";
+
+defineCommandFormElement();
+defineMessageElement();
 
 fromEvent<KeyboardEvent>(document, "keydown")
   .pipe(
@@ -17,5 +21,3 @@ fromEvent<KeyboardEvent>(document, "keydown")
     })
   )
   .subscribe();
-
-defineCommandFormElement();
