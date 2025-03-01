@@ -1,0 +1,19 @@
+storage-element {
+  .button-list {
+    display: grid;
+    gap: 0.5rem;
+
+    button {
+      display: flex;
+      text-align: left;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      padding: 0.5rem;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+    }
+  }
+}
