@@ -8,16 +8,14 @@
   </head>
 
   <body class="app-layout">
-    <menu>
-      <button data-command="ui.openConnectionsDialog">Menu</button>
-      <button data-command="ui.openStorageDialog" id="workspace-switcher">Workspace</button>
-      <select name="connection" id="active-connection"></select>
-    </menu>
-    <div>
-      <div id="blocks">
-        <code-editor-element data-lang="txt" value=""></code-editor-element>
+    <details>
+      <summary>Settings</summary>
+      <div class="settings-layout">
+        <input placeholder="developer" />
       </div>
-      <div id="stdout"></div>
+    </details>
+    <div id="blocks" class="thread-layout">
+      <input placeholder="user" />
     </div>
     <dialog id="app-dialog"></dialog>
     <script type="module" src="/src/main.ts"></script>

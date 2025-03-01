@@ -24,15 +24,16 @@ body,
   height: 100%;
 }
 
+.action-field-layout {
+  display: grid;
+  grid-template-columns: auto 1fr;
+}
+
 .app-layout {
   display: grid;
-  grid-template-rows: auto 1fr;
+  gap: 1rem;
+  padding: 1rem;
   align-content: start;
-
-  > :nth-child(2) {
-    min-height: 0;
-    overflow: auto;
-  }
 }
 
 button {
@@ -44,8 +45,23 @@ dialog {
   margin: auto;
   width: calc(100% - 2rem);
   max-width: 40rem;
+  max-height: calc(100% - 2rem);
 }
 
 fieldset {
   padding: 1rem;
+}
+
+input {
+  padding: 0.25rem 0.5rem;
+}
+
+.settings-layout {
+  display: grid;
+  gap: 1rem;
+}
+
+.thread-layout {
+  display: grid;
+  gap: 1rem;
 }
