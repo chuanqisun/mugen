@@ -17,14 +17,16 @@
     <div id="thread" class="thread-layout"></div>
 
     <template id="message">
-      <message-menu-element>
-        <button data-action="toggle-role">User</button>
-        <button data-action="run">Run</button>
-        <button data-action="trim">Trim</button>
-        <button data-action="append">Append</button>
-        <button data-action="delete">Delete</button>
-      </message-menu-element>
-      <code-editor-element data-lang="markdown"></code-editor-element>
+      <message-element>
+        <message-menu-element>
+          <button data-action="toggle-role">User</button>
+          <button data-action="run">Run</button>
+          <button data-action="trim">Trim</button>
+          <button data-action="append">Append</button>
+          <button data-action="delete">Delete</button>
+        </message-menu-element>
+        <code-editor-element data-lang="markdown"></code-editor-element>
+      </message-element>
     </template>
     <dialog id="app-dialog"></dialog>
     <script type="module" src="/src/main.ts"></script>

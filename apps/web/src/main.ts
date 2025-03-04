@@ -20,8 +20,9 @@ document.querySelector("#thread")?.addEventListener("run", async (e) => {
   if (!proxy) throw new Error("Proxy not found");
 
   const newMessage = createMessage("model") as DocumentFragment;
+  const messageElement = editor.closest<HTMLElement>("message-element")!;
   const outputEditor = newMessage.querySelector("code-editor-element") as CodeEditorElement;
-  insertAdacentElements(editor, [...newMessage.children] as HTMLElement[], "afterend");
+  insertAdacentElements(messageElement, [...newMessage.children] as HTMLElement[], "afterend");
 
   const outputStream = proxy({
     messages: [

@@ -65,6 +65,12 @@ input {
   display: grid;
 }
 
-* + message-menu-element {
+* + message-element {
   margin-block-start: 1rem;
+}
+
+message-menu-element {
+  position: sticky;
+  top: 0;
+  z-index: 1; /* above code editor */
 }
