@@ -5,10 +5,9 @@ import { languages } from "@codemirror/language-data";
 import { Compartment } from "@codemirror/state";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { drawSelection, EditorView, highlightSpecialChars, keymap } from "@codemirror/view";
-import { chatKeymap } from "./plugins/chat-keymap";
-
 import "./code-editor-element.css";
 import { blockActionPlugin } from './plugins/block-action-widget';
+import { chatKeymap } from "./plugins/chat-keymap";
 
 const dynamicLanguage = new Compartment();
 
@@ -95,6 +94,7 @@ export class CodeEditorElement extends HTMLElement {
 async function getLanguageSupport(filenameOrExtension: string) {
   const ext = filenameOrExtension.split(".").pop();
   switch (ext) {
+    case "markdown":
     case "md":
       return markdown({ codeLanguages: languages });
     default:
