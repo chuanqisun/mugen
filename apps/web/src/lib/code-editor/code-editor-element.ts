@@ -8,6 +8,7 @@ import { drawSelection, EditorView, highlightSpecialChars, keymap } from "@codem
 import { chatKeymap } from "./plugins/chat-keymap";
 
 import "./code-editor-element.css";
+import { blockActionPlugin } from './plugins/block-action-widget';
 
 const dynamicLanguage = new Compartment();
 
@@ -30,6 +31,7 @@ export class CodeEditorElement extends HTMLElement {
         keymap.of([...chatKeymap(this), ...defaultKeymap, ...historyKeymap]),
         oneDark,
         dynamicLanguage.of([]),
+        blockActionPlugin,
         EditorView.lineWrapping,
         EditorView.focusChangeEffect.of((state, focusing) => {
           if (focusing) return null;
