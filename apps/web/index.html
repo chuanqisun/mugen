@@ -8,7 +8,15 @@
   </head>
 
   <body class="app-layout">
-    <div id="blocks" class="thread-layout"></div>
+    <details>
+      <summary>Settings</summary>
+      <settings-element></settings-element>
+    </details>
+    <select name="connection" id="active-connection"></select>
+
+    <div id="thread" class="thread-layout">
+      <code-editor-element data-lang="markdown"></code-editor-element>
+    </div>
     <dialog id="app-dialog"></dialog>
     <script type="module" src="/src/main.ts"></script>
   </body>
