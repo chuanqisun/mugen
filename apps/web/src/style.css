@@ -63,5 +63,8 @@ input {
 
 .thread-layout {
   display: grid;
-  gap: 1rem;
+}
+
+* + message-menu-element {
+  margin-block-start: 1rem;
 }

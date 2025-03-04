@@ -1,0 +1,4 @@
+message-menu-element {
+  display: flex;
+  flex-wrap: wrap;
+}

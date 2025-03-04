@@ -18,6 +18,15 @@ export const $new: CreateElement = (tag: string, attributes: Record<string, stri
   return element;
 };
 
+
+export function insertAdacentElements(anchor: Element, elements: Element[], position: InsertPosition) {
+  let currentAnchor = anchor;
+  for (const element of elements) {
+    currentAnchor.insertAdjacentElement(position, element);
+    currentAnchor = element;
+  }
+}
+
 /* Event processing */
 export interface ParsedCommandEvent {
   event: Event;
