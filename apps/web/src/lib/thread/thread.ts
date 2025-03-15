@@ -1,5 +1,6 @@
 import { CodeEditorElement } from "../code-editor/code-editor-element";
-import { $all } from "../dom";
+import { $all, insertAdacentElements } from "../dom";
+import { getChatStreamProxy } from "../settings/provider-selector";
 
 export interface ThreadMessages {
   role: string;
@@ -29,7 +30,9 @@ export function appendMessage(newMessage: DocumentFragment, headMessage?: HTMLEl
   const elementsUpToHead = headMessage ? allElements.slice(0, allElements.indexOf(headMessage) + 1) : allElements;
   const lastElement = elementsUpToHead.at(-1);
   if (!lastElement) throw new Error("No message element found");
+  const codeEditor = newMessage.querySelector<CodeEditorElement>("code-editor-element");
   lastElement.after(newMessage);
+  codeEditor?.focus();
 }
 
 export function trimThread(headMessage: HTMLElement) {
@@ -51,4 +54,24 @@ export function deleteMessage(headMessage: HTMLElement) {
   const nextFocusTarget = allElements.at(index + 1) ?? allElements.at(index - 1);
   headMessage.remove();
   nextFocusTarget?.querySelector<CodeEditorElement>("code-editor-element")?.focus();
+}
+
+export async function runMessage(headMessage: HTMLElement) {
+  const proxy = getChatStreamProxy();
+  if (!proxy) throw new Error("Proxy not found");
+
+  const newMessage = createMessage("assistant") as DocumentFragment;
+  const messageElement = headMessage;
+  const outputEditor = newMessage.querySelector("code-editor-element") as CodeEditorElement;
+  insertAdacentElements(messageElement, [...newMessage.children] as HTMLElement[], "afterend");
+
+  // gather messages up to this point
+  const threadMessages = getThreadMessages(messageElement);
+  const outputStream = proxy({
+    messages: threadMessages,
+  });
+
+  for await (const chunk of outputStream) {
+    outputEditor.appendText(chunk);
+  }
 }

@@ -1,8 +1,23 @@
+import type { CodeEditorElement } from "../code-editor/code-editor-element";
+import type { CommandEventDetails } from "../code-editor/plugins/chat-keymap";
 import "./message-menu-element.css";
-import { appendMessage, clearMessage, createMessage, deleteMessage, trimThread } from "./thread";
+import { appendMessage, clearMessage, createMessage, deleteMessage, runMessage, trimThread } from "./thread";
 
 export class MessageMenuElement extends HTMLElement {
   connectedCallback() {
+    const codeEditorElement = this.closest("message-element")!.querySelector<CodeEditorElement>("code-editor-element")!;
+
+    codeEditorElement.addEventListener("command", (event) => {
+      event.stopPropagation();
+      const command = (event as CustomEvent<CommandEventDetails>).detail.command;
+      this.triggerAction(command);
+    });
+
+    codeEditorElement?.addEventListener("append", (event) => {
+      event.stopPropagation();
+      this.triggerAction("append");
+    });
+
     this.addEventListener("click", (event) => {
       const trigger = event.target as HTMLElement;
       const headMessage = trigger.closest<HTMLElement>("message-element")!;
@@ -21,6 +36,11 @@ export class MessageMenuElement extends HTMLElement {
               break;
             }
           }
+          break;
+        }
+
+        case "run": {
+          runMessage(headMessage);
           break;
         }
 
@@ -59,6 +79,11 @@ export class MessageMenuElement extends HTMLElement {
         }
       }
     });
+  }
+
+  triggerAction(action: string) {
+    const trigger = this.querySelector(`[data-action="${action}"]`) as HTMLElement;
+    trigger.click();
   }
 }
 
