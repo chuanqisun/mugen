@@ -2,6 +2,19 @@
 export const $ = document.querySelector.bind(document);
 export const $all = document.querySelectorAll.bind(document);
 
+// same to $ but throws error if not found
+export function $get<K extends keyof HTMLElementTagNameMap>(selectors: K): HTMLElementTagNameMap[K];
+export function $get<K extends keyof SVGElementTagNameMap>(selectors: K): SVGElementTagNameMap[K];
+export function $get<K extends keyof MathMLElementTagNameMap>(selectors: K): MathMLElementTagNameMap[K];
+export function $get<E extends Element = Element>(selectors: string): E;
+export function $get(selectors: string): Element {
+  const element = document.querySelector(selectors);
+  if (element === null) {
+    throw new Error(`Element not found: ${selectors}`);
+  }
+  return element;
+}
+
 interface CreateElement {
   <K extends keyof HTMLElementTagNameMap>(tag: K, attributes?: Record<string, string>, children?: (HTMLElement | string)[]): HTMLElementTagNameMap[K];
   <T extends HTMLElement>(tag: string, attributes?: Record<string, string>, children?: (HTMLElement | string)[]): T;
@@ -17,7 +30,6 @@ export const $new: CreateElement = (tag: string, attributes: Record<string, stri
   }
   return element;
 };
-
 
 export function insertAdacentElements(anchor: Element, elements: Element[], position: InsertPosition) {
   let currentAnchor = anchor;

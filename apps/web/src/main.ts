@@ -1,8 +1,10 @@
-import { CodeEditorElement, defineCodeEditorElement } from './lib/code-editor/code-editor-element';
-import { insertAdacentElements } from './lib/dom';
-import { defineMessageMenuElement } from './lib/message-menu/message-menu-element';
-import { getChatStreamProxy, useProviderSelector } from './lib/settings/provider-selector';
-import { defineSettingsElement } from './lib/settings/settings-element';
+import { fromEvent, map, tap } from "rxjs";
+import { getThreadMessages } from "./lib/chat/thread";
+import { CodeEditorElement, defineCodeEditorElement } from "./lib/code-editor/code-editor-element";
+import { $get, insertAdacentElements } from "./lib/dom";
+import { defineMessageMenuElement } from "./lib/message-menu/message-menu-element";
+import { getChatStreamProxy, useProviderSelector } from "./lib/settings/provider-selector";
+import { defineSettingsElement } from "./lib/settings/settings-element";
 import "./style.css";
 
 defineCodeEditorElement();
@@ -11,42 +13,40 @@ defineMessageMenuElement();
 
 useProviderSelector().subscribe();
 
-document.querySelector("#thread")?.addEventListener("run", async (e) => {
-  const editor = e.target as CodeEditorElement;
-  const value = editor.value;
+const chat$ = fromEvent($get<HTMLElement>("#thread"), "run").pipe(
+  map((e) => e.target as CodeEditorElement),
+  tap(async (editor) => {
+    const proxy = getChatStreamProxy();
+    if (!proxy) throw new Error("Proxy not found");
 
+    const newMessage = createMessage("model") as DocumentFragment;
+    const messageElement = editor.closest<HTMLElement>("message-element")!;
+    const outputEditor = newMessage.querySelector("code-editor-element") as CodeEditorElement;
+    insertAdacentElements(messageElement, [...newMessage.children] as HTMLElement[], "afterend");
 
-  const proxy = getChatStreamProxy();
-  if (!proxy) throw new Error("Proxy not found");
+    // gather messages up to this point
+    const threadMessages = getThreadMessages(messageElement);
+    const outputStream = proxy({
+      messages: threadMessages,
+    });
 
-  const newMessage = createMessage("model") as DocumentFragment;
-  const messageElement = editor.closest<HTMLElement>("message-element")!;
-  const outputEditor = newMessage.querySelector("code-editor-element") as CodeEditorElement;
-  insertAdacentElements(messageElement, [...newMessage.children] as HTMLElement[], "afterend");
+    for await (const chunk of outputStream) {
+      outputEditor.appendText(chunk);
+    }
+  })
+);
 
-  const outputStream = proxy({
-    messages: [
-      {
-        role: "user",
-        content: value,
-      },
-    ],
-  });
-
-  for await (const chunk of outputStream) {
-    outputEditor.appendText(chunk);
-  }
-});
+chat$.subscribe();
 
 // initialize messages
 const thread = document.querySelector("#thread")!;
-thread.appendChild(createMessage("user"));
+thread.append(createMessage("system"), createMessage("user"));
 
 function createMessage(role: string) {
   const template = document.querySelector<HTMLTemplateElement>("#message")!;
   const newMessageRoot = template.content.cloneNode(true) as DocumentFragment;
   newMessageRoot.querySelector(`[data-action="toggle-role"]`)!.textContent = capitalizeInitial(role);
-  newMessageRoot.querySelector("code-editor-element")?.setAttribute("data-role", role);
+  newMessageRoot.querySelector("[data-role]")?.setAttribute("data-role", role);
   return newMessageRoot;
 }
 
