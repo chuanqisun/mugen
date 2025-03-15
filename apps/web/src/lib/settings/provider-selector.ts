@@ -1,4 +1,4 @@
-import { BehaviorSubject, combineLatest, fromEvent, map, merge, startWith, tap } from "rxjs";
+import { BehaviorSubject, combineLatest, concatMap, from, fromEvent, map, merge, startWith, take, takeWhile, tap } from "rxjs";
 import { $, getEventDetail } from "../dom";
 import type { BaseConnection, BaseProvider } from "../model-providers/base";
 import { createProvider } from "../model-providers/factory";
@@ -24,6 +24,14 @@ export function useProviderSelector() {
   );
 
   const options$ = fromEvent(connectionStore, "change").pipe(map(getEventDetail<BaseConnection[]>), startWith(connectionStore.listConnections()));
+
+  const selectDefault$ = options$.pipe(
+    takeWhile(() => routeConnectionId.value$.value === null),
+    concatMap(from),
+    take(1),
+    map((connection) => connection.id),
+    tap(routeConnectionId.replace)
+  );
 
   const updateActiveProvider$ = combineLatest([routeConnectionId.value$, options$]).pipe(
     tap(([latestId, connections]) => {
@@ -85,5 +93,5 @@ export function useProviderSelector() {
     tap((provider) => activeProvider.next(provider))
   );
 
-  return merge(reflectSelection$, updateActiveProvider$);
+  return merge(reflectSelection$, updateActiveProvider$, selectDefault$);
 }
