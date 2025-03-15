@@ -24,5 +24,9 @@ message-menu-element {
     &:hover {
       color: currentColor;
     }
+    &:focus-visible {
+      outline: 1px solid var(--accent-text);
+      outline-offset: -1px;
+    }
   }
 }

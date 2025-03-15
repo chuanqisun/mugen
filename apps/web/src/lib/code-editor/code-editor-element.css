@@ -8,6 +8,7 @@ code-editor-element {
   overflow: auto;
 
   &.cm-focused {
-    outline: none;
+    outline: 1px solid var(--accent-text);
+    outline-offset: -1px;
   }
 }
