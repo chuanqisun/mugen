@@ -1,4 +1,5 @@
 import type { Content, InlineDataPart, TextPart } from "@google/generative-ai";
+import { dataUrlToText } from "../storage/codec";
 import type { BaseConnection, BaseCredential, BaseProvider, ChatStreamProxy, GenericChatParams, GenericMessage } from "./base";
 
 export interface GoogleGenAICredential extends BaseCredential {
@@ -19,7 +20,13 @@ export interface GoogleGenAIConnection extends BaseConnection {
 
 export class GoogleGenAIProvider implements BaseProvider {
   static type = "google-gen-ai";
-  static defaultModels = ["gemini-2.0-flash-exp"];
+  static defaultModels = [
+    "gemini-2.0-pro-exp-02-05",
+    "gemini-2.0-flash-exp",
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite-preview-02-05",
+    "gemini-2.0-flash-thinking-exp-01-21",
+  ];
 
   parseNewCredentialForm(formData: FormData): GoogleGenAICredential[] {
     const accountName = formData.get("newAccountName") as string;
@@ -106,28 +113,40 @@ export class GoogleGenAIProvider implements BaseProvider {
   }
 
   private getGoogleGenAIMessages(messages: GenericMessage[]): { system?: string; messages: Content[] } {
-    let system;
+    let system: string | undefined;
     const convertedMessages: Content[] = [];
 
     messages.forEach((message) => {
       if (message.role === "system") {
-        system = message.content as string;
-      } else if (typeof message.content === "string") {
-        convertedMessages.push({
-          role: message.role as "assistant" | "user",
-          parts: [{ text: message.content }],
-        });
+        if (typeof message.content === "string") {
+          system = message.content;
+        } else {
+          system = message.content
+            .filter((part) => part.type === "text/plain")
+            .map((part) => dataUrlToText(part.url))
+            .join("\n");
+        }
       } else {
+        if (typeof message.content === "string") {
+          return {
+            role: this.toGeminiRoleName(message.role as "assistant" | "user"),
+            parts: [{ text: message.content }],
+          } satisfies Content;
+        }
+
         const convertedMessageParts = message.content.map((part) => {
           switch (part.type) {
-            case "text": {
+            case "text/plain": {
               return {
-                text: part.text,
+                text: dataUrlToText(part.url),
               } satisfies TextPart;
             }
-            case "image_url": {
+            case "image/gif":
+            case "image/png":
+            case "image/webp":
+            case "application/pdf": {
               return {
-                inlineData: this.dataUrlToImagePart(part.image_url.url),
+                inlineData: this.dataUrlToInlineDataPart(part.url),
               } satisfies InlineDataPart;
             }
             default: {
@@ -138,7 +157,7 @@ export class GoogleGenAIProvider implements BaseProvider {
         });
 
         convertedMessages.push({
-          role: message.role as "assistant" | "user",
+          role: this.toGeminiRoleName(message.role as "assistant" | "user"),
           parts: convertedMessageParts.filter((part) => part !== null),
         });
       }
@@ -150,7 +169,11 @@ export class GoogleGenAIProvider implements BaseProvider {
     };
   }
 
-  private dataUrlToImagePart(dataUrl: string) {
+  private toGeminiRoleName(role: "assistant" | "user") {
+    return role === "assistant" ? "model" : "user";
+  }
+
+  private dataUrlToInlineDataPart(dataUrl: string) {
     const split = dataUrl.split(",");
 
     return {

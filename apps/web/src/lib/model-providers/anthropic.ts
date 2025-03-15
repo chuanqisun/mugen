@@ -1,4 +1,12 @@
-import type { ImageBlockParam, MessageParam, TextBlockParam } from "@anthropic-ai/sdk/resources/index.mjs";
+import type {
+  Base64ImageSource,
+  Base64PDFSource,
+  DocumentBlockParam,
+  ImageBlockParam,
+  MessageParam,
+  TextBlockParam,
+} from "@anthropic-ai/sdk/resources/index.mjs";
+import { dataUrlToText } from "../storage/codec";
 import type { BaseConnection, BaseCredential, BaseProvider, ChatStreamProxy, GenericChatParams, GenericMessage } from "./base";
 
 export interface AnthropicCredential extends BaseCredential {
@@ -20,7 +28,7 @@ export interface AnthropicConnection extends BaseConnection {
 
 export class AnthropicProvider implements BaseProvider {
   static type = "anthropic";
-  static defaultModels = ["claude-3-5-sonnet-latest", "claude-3-5-haiku-latest"];
+  static defaultModels = ["claude-3-7-sonnet-latest", "claude-3-5-sonnet-latest", "claude-3-5-haiku-latest"];
 
   parseNewCredentialForm(formData: FormData): AnthropicCredential[] {
     const accountName = formData.get("newAccountName") as string;
@@ -111,7 +119,14 @@ export class AnthropicProvider implements BaseProvider {
 
     messages.forEach((message) => {
       if (message.role === "system") {
-        system = message.content as string;
+        if (typeof message.content === "string") {
+          system = message.content;
+        } else {
+          system = message.content
+            .filter((part) => part.type === "text/plain")
+            .map((part) => dataUrlToText(part.url))
+            .join("\n");
+        }
       } else if (typeof message.content === "string") {
         convertedMessages.push({
           role: message.role as "assistant" | "user",
@@ -120,14 +135,30 @@ export class AnthropicProvider implements BaseProvider {
       } else {
         const convertedMessageParts = message.content.map((part) => {
           switch (part.type) {
-            case "text": {
-              return part satisfies TextBlockParam;
+            case "text/plain": {
+              return {
+                type: "text",
+                text: dataUrlToText(part.url),
+              } satisfies TextBlockParam;
             }
-            case "image_url": {
+            case "application/pdf": {
+              return {
+                type: "document",
+                source: {
+                  ...this.dataUrlToDocumentPart(part.url),
+                  type: "base64",
+                },
+                cache_control: { type: "ephemeral" },
+              } satisfies DocumentBlockParam;
+            }
+            case "image/jpeg":
+            case "image/png":
+            case "image/gif":
+            case "image/webp": {
               return {
                 type: "image",
                 source: {
-                  ...this.dataUrlToImagePart(part.image_url.url),
+                  ...this.dataUrlToImagePart(part.url),
                   type: "base64",
                 },
               } satisfies ImageBlockParam;
@@ -154,8 +185,20 @@ export class AnthropicProvider implements BaseProvider {
 
   private dataUrlToImagePart(dataUrl: string) {
     const split = dataUrl.split(",");
-    const supportedTypes: ImageBlockParam["source"]["media_type"][] = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-    const media_type = split[0].split(";")[0].split(":")[1] as ImageBlockParam["source"]["media_type"];
+    const supportedTypes: Base64ImageSource["media_type"][] = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    const media_type = split[0].split(";")[0].split(":")[1] as Base64ImageSource["media_type"];
+    if (!supportedTypes.includes(media_type)) throw new Error(`Unsupported media type: ${media_type}`);
+
+    return {
+      data: split[1],
+      media_type,
+    };
+  }
+
+  private dataUrlToDocumentPart(dataUrl: string) {
+    const split = dataUrl.split(",");
+    const supportedTypes: Base64PDFSource["media_type"][] = ["application/pdf"];
+    const media_type = split[0].split(";")[0].split(":")[1] as Base64PDFSource["media_type"];
     if (!supportedTypes.includes(media_type)) throw new Error(`Unsupported media type: ${media_type}`);
 
     return {

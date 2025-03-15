@@ -1,4 +1,5 @@
-import type { ChatCompletionMessageParam } from "openai/resources/index.mjs";
+import type { ChatCompletionContentPartImage, ChatCompletionContentPartText, ChatCompletionMessageParam } from "openai/resources/index.mjs";
+import { dataUrlToText } from "../storage/codec";
 import type { BaseConnection, BaseCredential, BaseProvider, ChatStreamProxy, GenericChatParams, GenericMessage } from "./base";
 
 export interface AzureOpenAICredential extends BaseCredential {
@@ -22,7 +23,7 @@ export interface AzureOpenAIConnection extends BaseConnection {
 
 export class AzureOpenAIProvider implements BaseProvider {
   static type = "aoai";
-  static defaultModels = ["gpt-4o", "gpt-4o-mini"];
+  static defaultModels = ["o1-mini", "gpt-4o", "gpt-4o-mini"];
 
   parseNewCredentialForm(formData: FormData): AzureOpenAICredential[] {
     const endpoint = this.ensureTrailingSlash(formData.get("newEndpoint") as string);
@@ -60,7 +61,7 @@ export class AzureOpenAIProvider implements BaseProvider {
           endpoint: credential.endpoint,
           deployment,
           apiKey: credential.apiKey,
-          apiVersion: "2024-10-01-preview",
+          apiVersion: "2025-01-01-preview",
         }) satisfies AzureOpenAIConnection
     );
   }
@@ -89,14 +90,24 @@ export class AzureOpenAIProvider implements BaseProvider {
         dangerouslyAllowBrowser: true,
       });
 
-      const stream = await client.chat.completions.create({
-        stream: true,
-        messages: that.getOpenAIMessages(messages),
-        model: connection.deployment,
-        temperature: config?.temperature,
-        max_tokens: config?.maxTokens,
-        top_p: config?.topP,
-      });
+      const systemRoleName = connection.deployment.startsWith("o") ? "developer" : "system";
+      const isTemperatureSupported = !connection.deployment.startsWith("o");
+
+      const stream = await client.chat.completions.create(
+        {
+          stream: true,
+          messages: that.getOpenAIMessages(messages, {
+            systemRoleName,
+          }),
+          model: connection.deployment,
+          temperature: isTemperatureSupported ? config?.temperature : undefined,
+          max_completion_tokens: config?.maxTokens,
+          top_p: config?.topP,
+        },
+        {
+          signal: abortSignal,
+        }
+      );
 
       for await (const message of stream) {
         const deltaText = message.choices?.at(0)?.delta?.content;
@@ -105,15 +116,51 @@ export class AzureOpenAIProvider implements BaseProvider {
     };
   }
 
-  private getOpenAIMessages(messages: GenericMessage[]): ChatCompletionMessageParam[] {
+  private getOpenAIMessages(
+    messages: GenericMessage[],
+    options: {
+      systemRoleName: string;
+    }
+  ): ChatCompletionMessageParam[] {
     const convertedMessage = messages.map((message) => {
       switch (message.role) {
         case "user":
-          return { role: "user", content: message.content };
-        case "assistant":
-          return { role: "assistant", content: message.content };
+        case "assistant": {
+          if (typeof message.content === "string") return { role: message.role, content: message.content };
+
+          return {
+            role: message.role,
+            content: message.content
+              .map((part) => {
+                if (part.type === "text/plain") {
+                  return { type: "text", text: dataUrlToText(part.url) } satisfies ChatCompletionContentPartText;
+                } else if (part.type.startsWith("image/")) {
+                  return {
+                    type: "image_url",
+                    image_url: {
+                      url: part.url,
+                    },
+                  } satisfies ChatCompletionContentPartImage;
+                } else {
+                  console.warn("Unsupported message part", part);
+                  return null;
+                }
+              })
+              .filter((part) => part !== null),
+          };
+        }
         case "system":
-          return { role: "system", content: message.content };
+          if (typeof message.content === "string") {
+            return { role: options.systemRoleName, content: message.content };
+          } else {
+            return {
+              role: options.systemRoleName,
+              content: message.content
+                .filter((part) => part.type === "text/plain")
+                .map((part) => dataUrlToText(part.url))
+                .join("\n"),
+            };
+          }
         default: {
           console.warn("Unknown message type", message);
           return null;

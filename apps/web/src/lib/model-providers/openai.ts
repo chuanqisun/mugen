@@ -1,4 +1,5 @@
-import type { ChatCompletionMessageParam } from "openai/resources/index.mjs";
+import type { ChatCompletionContentPartImage, ChatCompletionContentPartText, ChatCompletionMessageParam } from "openai/resources/index.mjs";
+import { dataUrlToText } from "../storage/codec";
 import type { BaseConnection, BaseCredential, BaseProvider, ChatStreamProxy, GenericChatParams, GenericMessage } from "./base";
 
 export interface OpenAICredential extends BaseCredential {
@@ -19,7 +20,7 @@ export interface OpenAIConnection extends BaseConnection {
 
 export class OpenAIProvider implements BaseProvider {
   static type = "openai";
-  static defaultModels = ["gpt-4o", "gpt-4o-mini", "o1-mini"];
+  static defaultModels = ["gpt-4.5-preview", "o3-mini", "o1-mini", "gpt-4o", "gpt-4o-mini"];
 
   parseNewCredentialForm(formData: FormData): OpenAICredential[] {
     const accountName = formData.get("newAccountName") as string;
@@ -68,23 +69,27 @@ export class OpenAIProvider implements BaseProvider {
     const that = this;
 
     return async function* ({ messages, abortSignal, ...config }: GenericChatParams) {
-      const AzureOpenAI = await import("openai").then((res) => res.AzureOpenAI);
-      const client = new AzureOpenAI({
+      const OpenAI = await import("openai").then((res) => res.OpenAI);
+      const client = new OpenAI({
         apiKey: connection.apiKey,
         dangerouslyAllowBrowser: true,
       });
 
-      const supportsMaxToken = !connection.model.startsWith("o1");
-      const supportsTemperature = !connection.model.startsWith("o1");
+      const supportsTemperature = !connection.model.startsWith("o1") && !connection.model.startsWith("o3");
 
-      const stream = await client.chat.completions.create({
-        stream: true,
-        messages: that.getOpenAIMessages(messages),
-        model: connection.model,
-        temperature: supportsTemperature ? config?.temperature : undefined,
-        max_tokens: supportsMaxToken ? config?.maxTokens : undefined,
-        top_p: config?.topP,
-      });
+      const stream = await client.chat.completions.create(
+        {
+          stream: true,
+          messages: that.getOpenAIMessages(messages),
+          model: connection.model,
+          temperature: supportsTemperature ? config?.temperature : undefined,
+          max_completion_tokens: config?.maxTokens,
+          top_p: config?.topP,
+        },
+        {
+          signal: abortSignal,
+        }
+      );
 
       for await (const message of stream) {
         const deltaText = message.choices?.at(0)?.delta?.content;
@@ -97,11 +102,42 @@ export class OpenAIProvider implements BaseProvider {
     const convertedMessage = messages.map((message) => {
       switch (message.role) {
         case "user":
-          return { role: "user", content: message.content };
-        case "assistant":
-          return { role: "assistant", content: message.content };
+        case "assistant": {
+          if (typeof message.content === "string") return { role: message.role, content: message.content };
+
+          return {
+            role: message.role,
+            content: message.content
+              .map((part) => {
+                if (part.type === "text/plain") {
+                  return { type: "text", text: dataUrlToText(part.url) } satisfies ChatCompletionContentPartText;
+                } else if (part.type.startsWith("image/")) {
+                  return {
+                    type: "image_url",
+                    image_url: {
+                      url: part.url,
+                    },
+                  } satisfies ChatCompletionContentPartImage;
+                } else {
+                  console.warn("Unsupported message part", part);
+                  return null;
+                }
+              })
+              .filter((part) => part !== null),
+          };
+        }
         case "system":
-          return { role: "system", content: message.content };
+          if (typeof message.content === "string") {
+            return { role: "developer", content: message.content };
+          } else {
+            return {
+              role: "developer",
+              content: message.content
+                .filter((part) => part.type === "text/plain")
+                .map((part) => dataUrlToText(part.url))
+                .join("\n"),
+            };
+          }
         default: {
           console.warn("Unknown message type", message);
           return null;

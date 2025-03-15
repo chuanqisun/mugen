@@ -14,7 +14,7 @@
     "vite": "^6.0.11"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.33.1",
+    "@anthropic-ai/sdk": "^0.39.0",
     "@codemirror/commands": "^6.8.0",
     "@codemirror/lang-markdown": "^6.3.2",
     "@codemirror/language": "^6.10.8",
@@ -22,8 +22,8 @@
     "@codemirror/state": "^6.5.0",
     "@codemirror/theme-one-dark": "^6.1.2",
     "@codemirror/view": "^6.35.3",
-    "@google/generative-ai": "^0.21.0",
-    "openai": "^4.77.0",
+    "@google/generative-ai": "^0.24.0",
+    "openai": "^4.87.3",
     "rxjs": "^7.8.1"
   }
 }
