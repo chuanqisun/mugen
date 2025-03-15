@@ -9,8 +9,14 @@ export const chatKeymap = (eventTarget: EventTarget) =>
     {
       key: "Mod-Enter",
       run: (view) => {
-        const sourceCode = view.state.doc.toString();
         eventTarget.dispatchEvent(new CustomEvent("command", { detail: { command: "run" }, bubbles: true }));
+        return true;
+      },
+    },
+    {
+      key: "Shift-Mod-Enter",
+      run: (_view) => {
+        eventTarget.dispatchEvent(new CustomEvent("command", { detail: { command: "run-all" }, bubbles: true }));
         return true;
       },
     },

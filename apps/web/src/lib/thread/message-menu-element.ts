@@ -1,7 +1,7 @@
 import type { CodeEditorElement } from "../code-editor/code-editor-element";
 import type { CommandEventDetails } from "../code-editor/plugins/chat-keymap";
 import "./message-menu-element.css";
-import { appendMessage, clearMessage, createMessage, deleteMessage, runMessage, trimThread } from "./thread";
+import { appendMessage, clearMessage, createMessage, deleteMessage, runAllMessages, runMessage, trimThread } from "./thread";
 
 export class MessageMenuElement extends HTMLElement {
   connectedCallback() {
@@ -41,6 +41,11 @@ export class MessageMenuElement extends HTMLElement {
 
         case "run": {
           runMessage(headMessage);
+          break;
+        }
+
+        case "run-all": {
+          runAllMessages(headMessage);
           break;
         }
 

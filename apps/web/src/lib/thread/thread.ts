@@ -75,3 +75,8 @@ export async function runMessage(headMessage: HTMLElement) {
     outputEditor.appendText(chunk);
   }
 }
+
+export async function runAllMessages(headMessage: HTMLElement) {
+  const tailMessage = headMessage.parentElement?.querySelector<HTMLElement>("message-element:last-of-type")!;
+  runMessage(tailMessage);
+}

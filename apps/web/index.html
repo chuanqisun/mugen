@@ -20,11 +20,14 @@
     <template id="message">
       <message-element>
         <message-menu-element>
-          <button tabindex="0" data-action="toggle-role" data-role="user"></button>
-          <button tabindex="-1" data-action="run">Run</button>
-          <button tabindex="-1" data-action="trim">Trim</button>
-          <button tabindex="-1" data-action="append">Append</button>
-          <button tabindex="-1" data-action="delete">Delete</button>
+          <button tabindex="0" data-action="toggle-role" data-role="user" title="Toggle role"></button>
+          <button tabindex="-1" data-action="run-all" title="Run all (mod-shift-enter)">⏩</button>
+          <button tabindex="-1" data-action="run" title="Run (mod-enter)">▶️</button>
+          <button tabindex="-1" data-action="run-again" title="Run self">🔄️</button>
+          <button tabindex="-1" data-action="trim" title="Trim below">✂️</button>
+          <button tabindex="-1" data-action="generate" title="Generate content">✨</button>
+          <button tabindex="-1" data-action="append" title="Append">➕</button>
+          <button tabindex="-1" data-action="delete" title="Delete">🗑️</button>
         </message-menu-element>
         <code-editor-element data-lang="markdown"></code-editor-element>
       </message-element>

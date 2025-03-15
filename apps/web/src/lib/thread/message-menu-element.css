@@ -19,6 +19,7 @@ message-menu-element {
     background: none;
     cursor: pointer;
     padding: 0.25rem 0.25rem;
+    font-size: 16px;
     color: color-mix(in srgb, currentColor 50%, transparent);
 
     &:hover {
