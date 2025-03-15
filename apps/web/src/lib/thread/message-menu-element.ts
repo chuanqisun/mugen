@@ -1,11 +1,14 @@
 import "./message-menu-element.css";
-import { appendMessage, createMessage } from "./thread";
+import { appendMessage, clearMessage, createMessage, deleteMessage, trimThread } from "./thread";
 
 export class MessageMenuElement extends HTMLElement {
   connectedCallback() {
     this.addEventListener("click", (event) => {
       const trigger = event.target as HTMLElement;
+      const headMessage = trigger.closest<HTMLElement>("message-element")!;
+      const role = headMessage.querySelector("[data-role]")!.getAttribute("data-role");
       const action = trigger.dataset.action;
+
       switch (action) {
         case "toggle-role": {
           switch (trigger.dataset.role) {
@@ -22,9 +25,8 @@ export class MessageMenuElement extends HTMLElement {
         }
 
         case "append": {
-          const headMessage = trigger.closest<HTMLElement>("message-element")!;
-          const role = headMessage.querySelector("[data-role]")!.getAttribute("data-role");
           switch (role) {
+            case "system":
             case "assistant": {
               appendMessage(createMessage("user"), headMessage);
               break;
@@ -34,6 +36,26 @@ export class MessageMenuElement extends HTMLElement {
               break;
             }
           }
+          break;
+        }
+
+        case "trim": {
+          trimThread(headMessage);
+          break;
+        }
+
+        case "delete": {
+          switch (role) {
+            case "system": {
+              clearMessage(headMessage);
+              break;
+            }
+            default: {
+              deleteMessage(headMessage);
+              break;
+            }
+          }
+          break;
         }
       }
     });

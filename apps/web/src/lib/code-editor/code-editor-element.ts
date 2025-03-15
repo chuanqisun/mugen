@@ -6,7 +6,7 @@ import { Compartment } from "@codemirror/state";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { drawSelection, EditorView, highlightSpecialChars, keymap } from "@codemirror/view";
 import "./code-editor-element.css";
-import { blockActionPlugin } from './plugins/block-action-widget';
+import { blockActionPlugin } from "./plugins/block-action-widget";
 import { chatKeymap } from "./plugins/chat-keymap";
 
 const dynamicLanguage = new Compartment();
@@ -56,6 +56,10 @@ export class CodeEditorElement extends HTMLElement {
     if (name === "value") {
       this.value = newValue;
     }
+  }
+
+  focus() {
+    this.editorView?.focus();
   }
 
   updateLanguage(lang: string) {

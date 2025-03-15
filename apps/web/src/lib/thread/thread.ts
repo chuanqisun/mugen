@@ -31,3 +31,24 @@ export function appendMessage(newMessage: DocumentFragment, headMessage?: HTMLEl
   if (!lastElement) throw new Error("No message element found");
   lastElement.after(newMessage);
 }
+
+export function trimThread(headMessage: HTMLElement) {
+  const allElements = [...$all("message-element")];
+  const index = allElements.indexOf(headMessage);
+  if (index === -1) throw new Error("Head message not found in thread");
+  allElements.slice(index + 1).forEach((message) => message.remove());
+}
+
+export function clearMessage(headMessage: HTMLElement) {
+  headMessage.querySelector<CodeEditorElement>("code-editor-element")!.value = "";
+}
+
+export function deleteMessage(headMessage: HTMLElement) {
+  const allElements = [...$all("message-element")];
+  const index = allElements.indexOf(headMessage);
+  if (index === -1) throw new Error("Head message not found in thread");
+
+  const nextFocusTarget = allElements.at(index + 1) ?? allElements.at(index - 1);
+  headMessage.remove();
+  nextFocusTarget?.querySelector<CodeEditorElement>("code-editor-element")?.focus();
+}
