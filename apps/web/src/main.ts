@@ -19,7 +19,7 @@ const chat$ = fromEvent($get<HTMLElement>("#thread"), "run").pipe(
     const proxy = getChatStreamProxy();
     if (!proxy) throw new Error("Proxy not found");
 
-    const newMessage = createMessage("model") as DocumentFragment;
+    const newMessage = createMessage("assistant") as DocumentFragment;
     const messageElement = editor.closest<HTMLElement>("message-element")!;
     const outputEditor = newMessage.querySelector("code-editor-element") as CodeEditorElement;
     insertAdacentElements(messageElement, [...newMessage.children] as HTMLElement[], "afterend");
@@ -45,7 +45,6 @@ thread.append(createMessage("system"), createMessage("user"));
 function createMessage(role: string) {
   const template = document.querySelector<HTMLTemplateElement>("#message")!;
   const newMessageRoot = template.content.cloneNode(true) as DocumentFragment;
-  newMessageRoot.querySelector(`[data-action="toggle-role"]`)!.textContent = capitalizeInitial(role);
   newMessageRoot.querySelector("[data-role]")?.setAttribute("data-role", role);
   return newMessageRoot;
 }

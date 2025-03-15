@@ -1,4 +1,13 @@
 message-menu-element {
   display: flex;
   flex-wrap: wrap;
+  [data-role="system"]::before {
+    content: "⚙️";
+  }
+  [data-role="user"]::before {
+    content: "🙋";
+  }
+  [data-role="assistant"]::before {
+    content: "🤖";
+  }
 }
