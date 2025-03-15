@@ -17,6 +17,10 @@ export class MessageMenuElement extends HTMLElement {
               break;
             }
           }
+          break;
+        }
+
+        case "append": {
         }
       }
     });

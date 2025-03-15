@@ -1,10 +1,10 @@
 import { fromEvent, map, tap } from "rxjs";
-import { getThreadMessages } from "./lib/chat/thread";
 import { CodeEditorElement, defineCodeEditorElement } from "./lib/code-editor/code-editor-element";
 import { $get, insertAdacentElements } from "./lib/dom";
-import { defineMessageMenuElement } from "./lib/message-menu/message-menu-element";
 import { getChatStreamProxy, useProviderSelector } from "./lib/settings/provider-selector";
 import { defineSettingsElement } from "./lib/settings/settings-element";
+import { defineMessageMenuElement } from "./lib/thread/message-menu-element";
+import { createMessage, getThreadMessages } from "./lib/thread/thread";
 import "./style.css";
 
 defineCodeEditorElement();
@@ -39,16 +39,4 @@ const chat$ = fromEvent($get<HTMLElement>("#thread"), "run").pipe(
 chat$.subscribe();
 
 // initialize messages
-const thread = document.querySelector("#thread")!;
-thread.append(createMessage("system"), createMessage("user"));
-
-function createMessage(role: string) {
-  const template = document.querySelector<HTMLTemplateElement>("#message")!;
-  const newMessageRoot = template.content.cloneNode(true) as DocumentFragment;
-  newMessageRoot.querySelector("[data-role]")?.setAttribute("data-role", role);
-  return newMessageRoot;
-}
-
-function capitalizeInitial(str: string) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
+$get("#thread").append(createMessage("system"), createMessage("user"));

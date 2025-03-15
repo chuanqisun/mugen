@@ -16,3 +16,10 @@ export function getThreadMessages(headMessage?: HTMLElement): ThreadMessages[] {
 
   return threadMessages;
 }
+
+export function createMessage(role: "user" | "assistant" | "system"): DocumentFragment {
+  const template = document.querySelector<HTMLTemplateElement>("#message")!;
+  const newMessageRoot = template.content.cloneNode(true) as DocumentFragment;
+  newMessageRoot.querySelector("[data-role]")?.setAttribute("data-role", role);
+  return newMessageRoot;
+}
