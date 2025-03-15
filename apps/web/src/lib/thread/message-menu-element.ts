@@ -79,6 +79,31 @@ export class MessageMenuElement extends HTMLElement {
         }
       }
     });
+
+    this.addEventListener("keydown", (event) => {
+      // only one button has tabindex=0, we use left/right arrow keys to rotate the focused button in the menu
+      if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+
+      const trigger = event.target as HTMLElement;
+      if (!trigger.matches("[data-action]")) return;
+
+      const buttons = [...this.querySelectorAll<HTMLElement>("[data-action]")];
+      const index = buttons.indexOf(trigger);
+      const nextIndex = event.key === "ArrowRight" ? (index + 1) % buttons.length : (index - 1 + buttons.length) % buttons.length;
+      const nextButton = buttons.at(nextIndex)!;
+      trigger.setAttribute("tabindex", "-1");
+      nextButton.setAttribute("tabindex", "0");
+      nextButton.focus();
+    });
+
+    // on blur, reset tabindex
+    this.addEventListener("focusout", (event) => {
+      const newFocus = event.relatedTarget as HTMLElement;
+      if (newFocus && this.contains(newFocus)) return;
+      const buttons = [...this.querySelectorAll<HTMLElement>("[data-action]")];
+      buttons.forEach((button, index) => button.setAttribute("tabindex", index === 0 ? "0" : "-1"));
+    });
   }
 
   triggerAction(action: string) {
