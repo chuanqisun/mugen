@@ -1,4 +1,3 @@
-import { html, render } from "lit";
 import { BehaviorSubject, combineLatest, fromEvent, map, merge, startWith, tap } from "rxjs";
 import { $, getEventDetail } from "../dom";
 import type { BaseConnection, BaseProvider } from "../model-providers/base";
@@ -28,32 +27,59 @@ export function useProviderSelector() {
 
   const updateActiveProvider$ = combineLatest([routeConnectionId.value$, options$]).pipe(
     tap(([latestId, connections]) => {
+      // Clear previous options
+      while (selectElement.firstChild) {
+        selectElement.removeChild(selectElement.firstChild);
+      }
+
       const isSelectionInvalid = connections.length && !connections.find((c) => c.id === latestId);
 
+      // Handle empty connections case
+      if (!connections.length) {
+        const noConnectionOption = document.createElement("option");
+        noConnectionOption.value = "";
+        noConnectionOption.disabled = true;
+        noConnectionOption.selected = true;
+        noConnectionOption.textContent = "No connection available";
+        selectElement.appendChild(noConnectionOption);
+      }
+
+      // Handle invalid selection case
+      if (isSelectionInvalid) {
+        const selectConnectionOption = document.createElement("option");
+        selectConnectionOption.value = "";
+        selectConnectionOption.disabled = true;
+        selectConnectionOption.selected = true;
+        selectConnectionOption.textContent = "Select a connection";
+        selectElement.appendChild(selectConnectionOption);
+      }
+
+      // Group connections by display group
       const grouped = Object.entries(Object.groupBy(connections, (connection) => connection.displayGroup));
 
-      render(
-        html` ${!connections.length ? html`<option value="" disabled selected>No connection available</option>` : null}
-        ${isSelectionInvalid ? html`<option value="" disabled selected>Select a connection</option>` : null}
-        ${grouped.map(
-          (group) => html`
-            ${html`<optgroup label="${group[0]}">
-              ${group[1]!.map(
-            (connection) => html` <option value="${connection.id}" ?selected=${connection.id === latestId}>${connection.displayName}</option>`
-          )}
-            </optgroup> `}
-          `
-        )}`,
-        selectElement
-      );
+      // Create option groups and options
+      grouped.forEach(([groupName, groupConnections]) => {
+        const optGroup = document.createElement("optgroup");
+        optGroup.label = groupName;
+
+        groupConnections!.forEach((connection) => {
+          const option = document.createElement("option");
+          option.value = connection.id;
+          option.textContent = connection.displayName;
+          option.selected = connection.id === latestId;
+          optGroup.appendChild(option);
+        });
+
+        selectElement.appendChild(optGroup);
+      });
     }),
     map(([latestId, connections]) => connections.find((c) => c.id === latestId) ?? null),
     map((connection) =>
       connection
         ? {
-          provider: createProvider(connection.type) as BaseProvider,
-          connection,
-        }
+            provider: createProvider(connection.type) as BaseProvider,
+            connection,
+          }
         : null
     ),
     tap((provider) => activeProvider.next(provider))
