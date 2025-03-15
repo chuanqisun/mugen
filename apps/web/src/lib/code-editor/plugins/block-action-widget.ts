@@ -1,6 +1,7 @@
 import { syntaxTree } from "@codemirror/language";
 import { Decoration, EditorView, ViewPlugin, ViewUpdate, WidgetType, type DecorationSet } from "@codemirror/view";
 import { $new } from "../../dom";
+import "./block-action-widget.css";
 
 export const blockActionPlugin = ViewPlugin.fromClass(
   class {
@@ -33,7 +34,7 @@ class BlockActionWidget extends WidgetType {
   }
 
   toDOM() {
-    return $new("span", {}, [$new("button", {}, ["Run"]), $new("button", {}, ["Copy"])]);
+    return $new("span", { class: "block-actions" }, [$new("button", {}, ["Run"]), $new("button", {}, ["Copy"])]);
   }
 
   ignoreEvent() {
