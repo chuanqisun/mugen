@@ -1,10 +1,12 @@
 :root {
   color-scheme: dark;
+  --app-background: #111;
   --side-panel-background: #222;
 }
 
 body {
   font-family: monospace;
+  background-color: var(--app-background);
 }
 
 *,

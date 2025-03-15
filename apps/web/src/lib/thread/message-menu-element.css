@@ -2,6 +2,8 @@ message-menu-element {
   display: flex;
   flex-wrap: wrap;
   gap: 1px;
+  background-color: var(--app-background);
+
   [data-role="system"]::before {
     content: "⚙️";
   }
