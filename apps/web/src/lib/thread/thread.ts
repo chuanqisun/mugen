@@ -23,3 +23,11 @@ export function createMessage(role: "user" | "assistant" | "system"): DocumentFr
   newMessageRoot.querySelector("[data-role]")?.setAttribute("data-role", role);
   return newMessageRoot;
 }
+
+export function appendMessage(newMessage: DocumentFragment, headMessage?: HTMLElement): void {
+  const allElements = [...$all("message-element")];
+  const elementsUpToHead = headMessage ? allElements.slice(0, allElements.indexOf(headMessage) + 1) : allElements;
+  const lastElement = elementsUpToHead.at(-1);
+  if (!lastElement) throw new Error("No message element found");
+  lastElement.after(newMessage);
+}

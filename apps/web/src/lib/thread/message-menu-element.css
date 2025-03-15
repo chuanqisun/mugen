@@ -1,6 +1,7 @@
 message-menu-element {
   display: flex;
   flex-wrap: wrap;
+  gap: 1px;
   [data-role="system"]::before {
     content: "⚙️";
   }
@@ -9,5 +10,17 @@ message-menu-element {
   }
   [data-role="assistant"]::before {
     content: "🤖";
+  }
+
+  button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0.25rem 0.25rem;
+    color: color-mix(in srgb, currentColor 50%, transparent);
+
+    &:hover {
+      color: currentColor;
+    }
   }
 }

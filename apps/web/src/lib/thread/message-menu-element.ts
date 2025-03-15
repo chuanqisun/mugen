@@ -1,4 +1,5 @@
 import "./message-menu-element.css";
+import { appendMessage, createMessage } from "./thread";
 
 export class MessageMenuElement extends HTMLElement {
   connectedCallback() {
@@ -21,6 +22,18 @@ export class MessageMenuElement extends HTMLElement {
         }
 
         case "append": {
+          const headMessage = trigger.closest<HTMLElement>("message-element")!;
+          const role = headMessage.querySelector("[data-role]")!.getAttribute("data-role");
+          switch (role) {
+            case "assistant": {
+              appendMessage(createMessage("user"), headMessage);
+              break;
+            }
+            case "user": {
+              appendMessage(createMessage("assistant"), headMessage);
+              break;
+            }
+          }
         }
       }
     });
