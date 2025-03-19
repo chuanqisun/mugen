@@ -1,11 +1,15 @@
+import { fromEvent, merge } from "rxjs";
 import type { CodeEditorElement } from "../code-editor/code-editor-element";
 import type { CommandEventDetails } from "../code-editor/plugins/chat-keymap";
+import "./message-attachments.css";
 import "./message-menu-element.css";
-import { appendMessage, clearMessage, createMessage, deleteMessage, runAllMessages, runMessage, trimThread } from "./thread";
+import { addAttachment, appendMessage, clearMessage, createMessage, deleteMessage, runAllMessages, runMessage, trimThread } from "./thread";
+import { getOneTimeUpload } from "./upload";
 
 export class MessageMenuElement extends HTMLElement {
   connectedCallback() {
     const codeEditorElement = this.closest("message-element")!.querySelector<CodeEditorElement>("code-editor-element")!;
+    const messageAttachments = this.closest("message-element")!.querySelector("attachment-list-element")!;
 
     codeEditorElement.addEventListener("command", (event) => {
       event.stopPropagation();
@@ -18,37 +22,16 @@ export class MessageMenuElement extends HTMLElement {
       this.triggerAction("append");
     });
 
-    this.addEventListener("click", (event) => {
+    const attachmentsClick = fromEvent<MouseEvent>(messageAttachments, "click");
+    const menuClick = fromEvent<MouseEvent>(this, "click");
+
+    merge(attachmentsClick, menuClick).subscribe(async (event) => {
       const trigger = event.target as HTMLElement;
       const headMessage = trigger.closest<HTMLElement>("message-element")!;
       const role = headMessage.querySelector("[data-role]")!.getAttribute("data-role");
       const action = trigger.dataset.action;
 
       switch (action) {
-        case "toggle-role": {
-          switch (trigger.dataset.role) {
-            case "assistant": {
-              trigger.dataset.role = "user";
-              break;
-            }
-            case "user": {
-              trigger.dataset.role = "assistant";
-              break;
-            }
-          }
-          break;
-        }
-
-        case "run": {
-          runMessage(headMessage);
-          break;
-        }
-
-        case "run-all": {
-          runAllMessages(headMessage);
-          break;
-        }
-
         case "append": {
           switch (role) {
             case "system":
@@ -64,8 +47,9 @@ export class MessageMenuElement extends HTMLElement {
           break;
         }
 
-        case "trim": {
-          trimThread(headMessage);
+        case "attach": {
+          const files = await getOneTimeUpload();
+          addAttachment(files, headMessage);
           break;
         }
 
@@ -80,6 +64,40 @@ export class MessageMenuElement extends HTMLElement {
               break;
             }
           }
+          break;
+        }
+
+        case "remove-attachment": {
+          trigger.closest("attachment-element")?.remove();
+          break;
+        }
+
+        case "run": {
+          runMessage(headMessage);
+          break;
+        }
+
+        case "run-all": {
+          runAllMessages(headMessage);
+          break;
+        }
+
+        case "toggle-role": {
+          switch (trigger.dataset.role) {
+            case "assistant": {
+              trigger.dataset.role = "user";
+              break;
+            }
+            case "user": {
+              trigger.dataset.role = "assistant";
+              break;
+            }
+          }
+          break;
+        }
+
+        case "trim": {
+          trimThread(headMessage);
           break;
         }
       }

@@ -27,11 +27,26 @@
           <button tabindex="-1" data-action="trim" title="Trim below">✂️</button>
           <button tabindex="-1" data-action="generate" title="Generate content">✨</button>
           <button tabindex="-1" data-action="append" title="Append">➕</button>
+          <button tabindex="-1" data-action="attach" title="Attach">📎</button>
+          <button tabindex="-1" data-action="copy" title="Copy">📋</button>
           <button tabindex="-1" data-action="delete" title="Delete">🗑️</button>
         </message-menu-element>
         <code-editor-element data-lang="markdown"></code-editor-element>
+        <attachment-list-element> </attachment-list-element>
       </message-element>
     </template>
+    <template id="message-attachment">
+      <attachment-element>
+        <div data-media></div>
+        <div>
+          <div data-name></div>
+          <div data-size></div>
+          <div data-type></div>
+        </div>
+        <button class="remove" data-action="remove-attachment">🗑️</button>
+      </attachment-element>
+    </template>
+
     <dialog id="app-dialog"></dialog>
     <script type="module" src="/src/main.ts"></script>
   </body>

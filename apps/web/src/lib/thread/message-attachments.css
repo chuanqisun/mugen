@@ -1,0 +1,11 @@
+attachment-list-element {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+attachment-element {
+  display: flex;
+  gap: 0.25rem;
+  align-items: baseline;
+}
