@@ -1,20 +1,34 @@
 import { CodeEditorElement } from "../code-editor/code-editor-element";
-import { $all, insertAdacentElements } from "../dom";
+import { $all, $new, insertAdacentElements } from "../dom";
 import { getChatStreamProxy } from "../settings/provider-selector";
+import { fileToDataURL } from "../storage/codec";
 
-export function addAttachment(files: File[], headMessage: HTMLElement) {
+export async function addAttachment(files: File[], headMessage: HTMLElement) {
   const template = document.querySelector<HTMLTemplateElement>("#message-attachment")!;
 
-  const attachmentElements = files.map((file) => {
-    const newAttachment = template.content.cloneNode(true) as DocumentFragment;
+  const attachmentElements = await Promise.all(
+    files.map(async (file) => {
+      const newAttachment = template.content.cloneNode(true) as DocumentFragment;
 
-    newAttachment.querySelector(`[data-media]`)!.textContent = "📄";
-    newAttachment.querySelector(`[data-name]`)!.textContent = file.name;
-    newAttachment.querySelector(`[data-size]`)!.textContent = file.size.toString();
-    newAttachment.querySelector(`[data-type]`)!.textContent = file.type;
+      newAttachment.querySelector(`[data-media]`)!.textContent = "📄";
+      newAttachment.querySelector(`[data-name]`)!.textContent = file.name;
+      newAttachment.querySelector(`[data-size]`)!.textContent = file.size.toString();
+      newAttachment.querySelector(`[data-type]`)!.textContent = file.type;
 
-    return newAttachment;
-  });
+      await fileToDataURL(file).then((dataUrl) => {
+        const object = $new("object", {
+          width: "0",
+          height: "0",
+          data: dataUrl,
+          type: file.type,
+        });
+
+        newAttachment.querySelector(`[data-media]`)?.append(object);
+      });
+
+      return newAttachment;
+    })
+  );
 
   headMessage.querySelector("attachment-list-element")?.append(...attachmentElements);
 }

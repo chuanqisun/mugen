@@ -8,4 +8,8 @@ attachment-element {
   display: flex;
   gap: 0.25rem;
   align-items: baseline;
+
+  object {
+    display: none;
+  }
 }
