@@ -75,14 +75,15 @@ export class OpenAIProvider implements BaseProvider {
         dangerouslyAllowBrowser: true,
       });
 
-      const supportsTemperature = !connection.model.startsWith("o1") && !connection.model.startsWith("o3");
+      const isTemperatureSupported = !connection.model.startsWith("o1") && !connection.model.startsWith("o3");
+      const isSystemMessageSupported = !connection.model.startsWith("o1-mini");
 
       const stream = await client.chat.completions.create(
         {
           stream: true,
-          messages: that.getOpenAIMessages(messages),
+          messages: that.getOpenAIMessages(messages, { isSystemMessageSupported: isSystemMessageSupported }),
           model: connection.model,
-          temperature: supportsTemperature ? config?.temperature : undefined,
+          temperature: isTemperatureSupported ? config?.temperature : undefined,
           max_completion_tokens: config?.maxTokens,
           top_p: config?.topP,
         },
@@ -98,7 +99,12 @@ export class OpenAIProvider implements BaseProvider {
     };
   }
 
-  private getOpenAIMessages(messages: GenericMessage[]): ChatCompletionMessageParam[] {
+  private getOpenAIMessages(
+    messages: GenericMessage[],
+    options?: {
+      isSystemMessageSupported?: boolean;
+    }
+  ): ChatCompletionMessageParam[] {
     const convertedMessage = messages.map((message) => {
       switch (message.role) {
         case "user":
@@ -127,6 +133,10 @@ export class OpenAIProvider implements BaseProvider {
           };
         }
         case "system":
+          if (!options?.isSystemMessageSupported) {
+            console.error("System message is not supported for this model, converted to user message");
+            return { role: "user", content: message.content };
+          }
           if (typeof message.content === "string") {
             return { role: "developer", content: message.content };
           } else {

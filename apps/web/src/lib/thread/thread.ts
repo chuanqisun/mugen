@@ -1,5 +1,6 @@
 import { CodeEditorElement } from "../code-editor/code-editor-element";
 import { $all, $new, insertAdacentElements } from "../dom";
+import type { GenericMessage, GenericMessageRole } from "../model-providers/base";
 import { getChatStreamProxy } from "../settings/provider-selector";
 import { fileToDataURL } from "../storage/codec";
 
@@ -33,7 +34,7 @@ export async function addAttachment(files: File[], headMessage: HTMLElement) {
   headMessage.querySelector("attachment-list-element")?.append(...attachmentElements);
 }
 
-export function createMessage(role: "user" | "assistant" | "system"): DocumentFragment {
+export function createMessage(role: GenericMessageRole): DocumentFragment {
   const template = document.querySelector<HTMLTemplateElement>("#message")!;
   const newMessageRoot = template.content.cloneNode(true) as DocumentFragment;
   newMessageRoot.querySelector("[data-role]")?.setAttribute("data-role", role);
@@ -84,16 +85,11 @@ export async function runMessage(headMessage: HTMLElement) {
   }
 }
 
-export interface ThreadMessages {
-  role: string;
-  content: string;
-}
-
-function getThreadMessages(headMessage?: HTMLElement): ThreadMessages[] {
+function getThreadMessages(headMessage?: HTMLElement): GenericMessage[] {
   const allElements = [...$all("message-element")];
   const elementsUpToHead = headMessage ? allElements.slice(0, allElements.indexOf(headMessage) + 1) : allElements;
   const threadMessages = elementsUpToHead.map((message) => ({
-    role: message.querySelector("[data-role]")!.getAttribute("data-role")!,
+    role: message.querySelector("[data-role]")!.getAttribute("data-role") as GenericMessageRole,
     content: message.querySelector<CodeEditorElement>("code-editor-element")!.value,
   }));
 

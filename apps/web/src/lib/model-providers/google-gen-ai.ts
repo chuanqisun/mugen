@@ -129,7 +129,7 @@ export class GoogleGenAIProvider implements BaseProvider {
       } else {
         if (typeof message.content === "string") {
           return {
-            role: this.toGeminiRoleName(message.role as "assistant" | "user"),
+            role: this.toGeminiRoleName(message.role),
             parts: [{ text: message.content }],
           } satisfies Content;
         }
@@ -157,7 +157,7 @@ export class GoogleGenAIProvider implements BaseProvider {
         });
 
         convertedMessages.push({
-          role: this.toGeminiRoleName(message.role as "assistant" | "user"),
+          role: this.toGeminiRoleName(message.role),
           parts: convertedMessageParts.filter((part) => part !== null),
         });
       }

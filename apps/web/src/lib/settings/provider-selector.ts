@@ -1,4 +1,4 @@
-import { BehaviorSubject, combineLatest, concatMap, from, fromEvent, map, merge, startWith, take, takeWhile, tap } from "rxjs";
+import { BehaviorSubject, combineLatest, fromEvent, map, merge, startWith, take, takeWhile, tap } from "rxjs";
 import { $, getEventDetail } from "../dom";
 import type { BaseConnection } from "../model-providers/base";
 import { createProvider } from "../model-providers/factory";
@@ -20,6 +20,7 @@ export function useProviderSelector() {
 
   const reflectSelection$ = fromEvent(selectElement, "change").pipe(
     map((e) => (e.target as HTMLSelectElement).value),
+    tap((id) => localStorage.setItem("mugen:lastUsedConnectionId", id)),
     tap((id) => routeConnectionId.replace(id))
   );
 
@@ -27,10 +28,14 @@ export function useProviderSelector() {
 
   const selectDefault$ = options$.pipe(
     takeWhile(() => routeConnectionId.value$.value === null),
-    concatMap(from),
+    map((options) => {
+      const lastUsedId = localStorage.getItem("mugen:lastUsedConnectionId");
+      return options.find((o) => o.id === lastUsedId) ?? options.at(0);
+    }),
     take(1),
-    map((connection) => connection.id),
-    tap(routeConnectionId.replace)
+    tap((connection) => {
+      if (connection?.id) routeConnectionId.replace(connection.id);
+    })
   );
 
   const updateActiveProvider$ = combineLatest([routeConnectionId.value$, options$]).pipe(
