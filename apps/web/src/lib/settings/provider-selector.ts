@@ -1,15 +1,15 @@
 import { BehaviorSubject, combineLatest, concatMap, from, fromEvent, map, merge, startWith, take, takeWhile, tap } from "rxjs";
 import { $, getEventDetail } from "../dom";
-import type { BaseConnection, BaseProvider } from "../model-providers/base";
+import type { BaseConnection } from "../model-providers/base";
 import { createProvider } from "../model-providers/factory";
 import { useRouteParameter } from "../route-parameter";
 import { connectionStore } from "./connections-store";
 
-export const activeProvider = new BehaviorSubject<{ provider: BaseProvider; connection: BaseConnection } | null>(null);
+export const activeProvider = new BehaviorSubject<BaseConnection | null>(null);
 
 export function getChatStreamProxy() {
-  const { provider, connection } = activeProvider.value ?? {};
-  const chatStreamProxy = provider && connection ? provider.getChatStreamProxy(connection) : null;
+  const connection = activeProvider.value;
+  const chatStreamProxy = connection ? createProvider(connection.type).getChatStreamProxy(connection) : null;
   return chatStreamProxy;
 }
 
@@ -82,14 +82,6 @@ export function useProviderSelector() {
       });
     }),
     map(([latestId, connections]) => connections.find((c) => c.id === latestId) ?? null),
-    map((connection) =>
-      connection
-        ? {
-            provider: createProvider(connection.type) as BaseProvider,
-            connection,
-          }
-        : null
-    ),
     tap((provider) => activeProvider.next(provider))
   );
 
