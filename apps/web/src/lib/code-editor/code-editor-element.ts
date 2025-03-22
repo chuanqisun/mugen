@@ -104,7 +104,11 @@ async function getLanguageSupport(filenameOrExtension: string) {
     default:
       return (
         (await languages
-          .find((lang) => [lang.name.toLocaleLowerCase(), lang.alias.map((a) => a.toLocaleLowerCase()), ...lang.extensions].includes(ext ?? ""))
+          .find((lang) =>
+            [lang.name.toLocaleLowerCase(), lang.alias.map((a) => a.toLocaleLowerCase()), ...lang.extensions].includes(
+              ext ?? "",
+            ),
+          )
           ?.load()) ?? []
       );
   }

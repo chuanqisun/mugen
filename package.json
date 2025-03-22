@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "npm run dev -w apps/web",
-    "build": "npm run build -w apps/web"
+    "build": "npm run build -w apps/web",
+    "format": "npm run format -w apps/web"
   },
   "devDependencies": {
-    "prettier": "^3.4.2"
+    "prettier": "^3.5.3"
   },
   "workspaces": [
     "apps/*"

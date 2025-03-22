@@ -16,11 +16,19 @@ export function $get(selectors: string): Element {
 }
 
 interface CreateElement {
-  <K extends keyof HTMLElementTagNameMap>(tag: K, attributes?: Record<string, string>, children?: (HTMLElement | string)[]): HTMLElementTagNameMap[K];
+  <K extends keyof HTMLElementTagNameMap>(
+    tag: K,
+    attributes?: Record<string, string>,
+    children?: (HTMLElement | string)[],
+  ): HTMLElementTagNameMap[K];
   <T extends HTMLElement>(tag: string, attributes?: Record<string, string>, children?: (HTMLElement | string)[]): T;
 }
 
-export const $new: CreateElement = (tag: string, attributes: Record<string, string> = {}, children: (HTMLElement | string)[] = []) => {
+export const $new: CreateElement = (
+  tag: string,
+  attributes: Record<string, string> = {},
+  children: (HTMLElement | string)[] = [],
+) => {
   const element = document.createElement(tag);
   for (const [key, value] of Object.entries(attributes)) {
     element.setAttribute(key, value);

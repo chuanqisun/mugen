@@ -1,6 +1,17 @@
-import type { ChatCompletionContentPartImage, ChatCompletionContentPartText, ChatCompletionMessageParam } from "openai/resources/index.mjs";
+import type {
+  ChatCompletionContentPartImage,
+  ChatCompletionContentPartText,
+  ChatCompletionMessageParam,
+} from "openai/resources/index.mjs";
 import { dataUrlToText } from "../storage/codec";
-import type { BaseConnection, BaseCredential, BaseProvider, ChatStreamProxy, GenericChatParams, GenericMessage } from "./base";
+import type {
+  BaseConnection,
+  BaseCredential,
+  BaseProvider,
+  ChatStreamProxy,
+  GenericChatParams,
+  GenericMessage,
+} from "./base";
 
 export interface OpenAICredential extends BaseCredential {
   id: string;
@@ -50,7 +61,7 @@ export class OpenAIProvider implements BaseProvider {
           displayName: model,
           model,
           apiKey: credential.apiKey,
-        }) satisfies OpenAIConnection
+        }) satisfies OpenAIConnection,
     );
   }
 
@@ -89,7 +100,7 @@ export class OpenAIProvider implements BaseProvider {
         },
         {
           signal: abortSignal,
-        }
+        },
       );
 
       for await (const message of stream) {
@@ -103,7 +114,7 @@ export class OpenAIProvider implements BaseProvider {
     messages: GenericMessage[],
     options?: {
       isSystemMessageSupported?: boolean;
-    }
+    },
   ): ChatCompletionMessageParam[] {
     const convertedMessage = messages.map((message) => {
       switch (message.role) {

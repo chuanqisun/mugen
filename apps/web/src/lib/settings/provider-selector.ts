@@ -21,10 +21,13 @@ export function useProviderSelector() {
   const reflectSelection$ = fromEvent(selectElement, "change").pipe(
     map((e) => (e.target as HTMLSelectElement).value),
     tap((id) => localStorage.setItem("mugen:lastUsedConnectionId", id)),
-    tap((id) => routeConnectionId.replace(id))
+    tap((id) => routeConnectionId.replace(id)),
   );
 
-  const options$ = fromEvent(connectionStore, "change").pipe(map(getEventDetail<BaseConnection[]>), startWith(connectionStore.listConnections()));
+  const options$ = fromEvent(connectionStore, "change").pipe(
+    map(getEventDetail<BaseConnection[]>),
+    startWith(connectionStore.listConnections()),
+  );
 
   const selectDefault$ = options$.pipe(
     takeWhile(() => routeConnectionId.value$.value === null),
@@ -35,7 +38,7 @@ export function useProviderSelector() {
     take(1),
     tap((connection) => {
       if (connection?.id) routeConnectionId.replace(connection.id);
-    })
+    }),
   );
 
   const updateActiveProvider$ = combineLatest([routeConnectionId.value$, options$]).pipe(
@@ -87,7 +90,7 @@ export function useProviderSelector() {
       });
     }),
     map(([latestId, connections]) => connections.find((c) => c.id === latestId) ?? null),
-    tap((provider) => activeProvider.next(provider))
+    tap((provider) => activeProvider.next(provider)),
   );
 
   return merge(reflectSelection$, updateActiveProvider$, selectDefault$);

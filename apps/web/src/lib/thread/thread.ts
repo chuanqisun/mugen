@@ -28,7 +28,7 @@ export async function addAttachment(files: File[], headMessage: HTMLElement) {
       });
 
       return newAttachment;
-    })
+    }),
   );
 
   headMessage.querySelector("attachment-list-element")?.append(...attachmentElements);

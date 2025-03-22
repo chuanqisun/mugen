@@ -7,7 +7,14 @@ import type {
   TextBlockParam,
 } from "@anthropic-ai/sdk/resources/index.mjs";
 import { dataUrlToText } from "../storage/codec";
-import type { BaseConnection, BaseCredential, BaseProvider, ChatStreamProxy, GenericChatParams, GenericMessage } from "./base";
+import type {
+  BaseConnection,
+  BaseCredential,
+  BaseProvider,
+  ChatStreamProxy,
+  GenericChatParams,
+  GenericMessage,
+} from "./base";
 
 export interface AnthropicCredential extends BaseCredential {
   id: string;
@@ -59,7 +66,7 @@ export class AnthropicProvider implements BaseProvider {
           model,
           apiKey: credential.apiKey,
           apiVersion: "2023-06-01",
-        }) satisfies AnthropicConnection
+        }) satisfies AnthropicConnection,
     );
   }
 
@@ -94,7 +101,7 @@ export class AnthropicProvider implements BaseProvider {
         },
         {
           signal: abortSignal,
-        }
+        },
       );
 
       for await (const message of stream) {

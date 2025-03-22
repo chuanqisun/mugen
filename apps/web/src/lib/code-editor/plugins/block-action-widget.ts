@@ -24,7 +24,7 @@ export const blockActionPlugin = ViewPlugin.fromClass(
         // TODO emit the block lang and text content
       },
     },
-  }
+  },
 );
 
 class BlockActionWidget extends WidgetType {

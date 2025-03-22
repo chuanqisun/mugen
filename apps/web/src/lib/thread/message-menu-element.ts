@@ -3,7 +3,16 @@ import type { CodeEditorElement } from "../code-editor/code-editor-element";
 import type { CommandEventDetails } from "../code-editor/plugins/chat-keymap";
 import "./message-attachments.css";
 import "./message-menu-element.css";
-import { addAttachment, appendMessage, clearMessage, createMessage, deleteMessage, runAllMessages, runMessage, trimThread } from "./thread";
+import {
+  addAttachment,
+  appendMessage,
+  clearMessage,
+  createMessage,
+  deleteMessage,
+  runAllMessages,
+  runMessage,
+  trimThread,
+} from "./thread";
 import { getOneTimeUpload } from "./upload";
 
 export class MessageMenuElement extends HTMLElement {
@@ -113,7 +122,8 @@ export class MessageMenuElement extends HTMLElement {
 
       const buttons = [...this.querySelectorAll<HTMLElement>("[data-action]")];
       const index = buttons.indexOf(trigger);
-      const nextIndex = event.key === "ArrowRight" ? (index + 1) % buttons.length : (index - 1 + buttons.length) % buttons.length;
+      const nextIndex =
+        event.key === "ArrowRight" ? (index + 1) % buttons.length : (index - 1 + buttons.length) % buttons.length;
       const nextButton = buttons.at(nextIndex)!;
       trigger.setAttribute("tabindex", "-1");
       nextButton.setAttribute("tabindex", "0");
