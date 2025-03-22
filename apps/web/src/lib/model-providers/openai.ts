@@ -133,15 +133,16 @@ export class OpenAIProvider implements BaseProvider {
           };
         }
         case "system":
+          let finalRole = "developer";
           if (!options?.isSystemMessageSupported) {
             console.error("System message is not supported for this model, converted to user message");
-            return { role: "user", content: message.content };
+            finalRole = "user";
           }
           if (typeof message.content === "string") {
-            return { role: "developer", content: message.content };
+            return { role: finalRole, content: message.content };
           } else {
             return {
-              role: "developer",
+              role: finalRole,
               content: message.content
                 .filter((part) => part.type === "text/plain")
                 .map((part) => dataUrlToText(part.url))
