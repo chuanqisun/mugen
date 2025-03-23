@@ -1,5 +1,6 @@
 import { fromEvent, merge } from "rxjs";
 import type { CodeEditorElement } from "../code-editor/code-editor-element";
+import type { BlockEventInit } from "../code-editor/plugins/block-action-widget";
 import type { CommandEventDetails } from "../code-editor/plugins/chat-keymap";
 import "./message-attachments.css";
 import "./message-menu-element.css";
@@ -31,13 +32,14 @@ export class MessageMenuElement extends HTMLElement {
       this.triggerAction("append");
     });
 
-    codeEditorElement?.addEventListener("run-block", (e) => {
+    codeEditorElement?.addEventListener("block-run", (e) => {
       e.stopPropagation();
       console.log("will run", (e as CustomEvent).detail);
     });
-    codeEditorElement?.addEventListener("copy-block", (e) => {
+    codeEditorElement?.addEventListener("block-copy", (e) => {
       e.stopPropagation();
-      console.log("will copy", (e as CustomEvent).detail);
+      console.log("block-copy", (e as CustomEvent<BlockEventInit>).detail);
+      navigator.clipboard.writeText((e as CustomEvent<BlockEventInit>).detail.code);
     });
 
     const attachmentsClick = fromEvent<MouseEvent>(messageAttachments, "click");

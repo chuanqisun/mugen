@@ -3,6 +3,15 @@ import { Decoration, EditorView, ViewPlugin, ViewUpdate, WidgetType, type Decora
 import { $new } from "../../dom";
 import "./block-action-widget.css";
 
+export interface BlockEventInit {
+  code: string;
+  blockStart: number;
+  blockEnd: number;
+  codeStart: number;
+  codeEnd: number;
+  lang: string;
+}
+
 export const blockActionPlugin = ViewPlugin.fromClass(
   class {
     decorations: DecorationSet;
@@ -38,11 +47,17 @@ export const blockActionPlugin = ViewPlugin.fromClass(
           const lang = view.state.sliceDoc(from, to).trim();
           const resolvedLang = lang === "```" ? "txt" : lang.split(" ")[0].trim();
 
+          // code start is the first line below opening ```
+          const codeStart = remaintingDoc.indexOf("\n", 3) + 1;
+          const maybeBacktickIndex = remaintingDoc.indexOf("```", codeStart);
+          const codeEnd = maybeBacktickIndex === -1 ? remaintingDoc.length : maybeBacktickIndex;
+          const blockEnd = maybeBacktickIndex === -1 ? remaintingDoc.length : maybeBacktickIndex + 3;
+
           switch (action) {
             case "run":
               view.dom.dispatchEvent(
-                new CustomEvent("run-block", {
-                  detail: { content, blockStart, lang: resolvedLang },
+                new CustomEvent<BlockEventInit>("block-run", {
+                  detail: { code: content, blockStart, blockEnd, codeStart, codeEnd, lang: resolvedLang },
                   bubbles: true,
                   cancelable: true,
                 }),
@@ -50,8 +65,8 @@ export const blockActionPlugin = ViewPlugin.fromClass(
               break;
             case "copy":
               view.dom.dispatchEvent(
-                new CustomEvent("copy-block", {
-                  detail: { content, blockStart, lang: resolvedLang },
+                new CustomEvent<BlockEventInit>("block-copy", {
+                  detail: { code: content, blockStart, blockEnd, codeStart, codeEnd, lang: resolvedLang },
                   bubbles: true,
                   cancelable: true,
                 }),
