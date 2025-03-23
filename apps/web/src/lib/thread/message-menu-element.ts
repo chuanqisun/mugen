@@ -33,11 +33,11 @@ export class MessageMenuElement extends HTMLElement {
 
     codeEditorElement?.addEventListener("run-block", (e) => {
       e.stopPropagation();
-      console.log("will run");
+      console.log("will run", (e as CustomEvent).detail);
     });
     codeEditorElement?.addEventListener("copy-block", (e) => {
       e.stopPropagation();
-      console.log("will copy");
+      console.log("will copy", (e as CustomEvent).detail);
     });
 
     const attachmentsClick = fromEvent<MouseEvent>(messageAttachments, "click");

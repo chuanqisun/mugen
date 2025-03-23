@@ -26,12 +26,37 @@ export const blockActionPlugin = ViewPlugin.fromClass(
         if (trigger) {
           const action = trigger.getAttribute("data-action");
           e.stopPropagation();
+
+          const from = parseInt(trigger!.closest("[data-from]")!.getAttribute("data-from")!);
+          const to = parseInt(trigger!.closest("[data-to]")!.getAttribute("data-to")!);
+          // the content of [from, to] can be either the opening ``` or the lang + attribute string
+
+          const blockStart = from - 3;
+          const remaintingDoc = view.state.sliceDoc(blockStart);
+          const markdownBlockPattern = /```(?:[^\n]*)\n([\s\S]*?)```/;
+          // if no match, use rest of the document
+          const content = remaintingDoc.match(markdownBlockPattern)?.[1] ?? view.state.sliceDoc(to + 1);
+          const lang = view.state.sliceDoc(from, to).trim();
+          const resolvedLang = lang === "```" ? "txt" : lang.split(" ")[0].trim();
+
           switch (action) {
             case "run":
-              view.dom.dispatchEvent(new CustomEvent("run-block", { bubbles: true, cancelable: true }));
+              view.dom.dispatchEvent(
+                new CustomEvent("run-block", {
+                  detail: { content, lang: resolvedLang },
+                  bubbles: true,
+                  cancelable: true,
+                }),
+              );
               break;
             case "copy":
-              view.dom.dispatchEvent(new CustomEvent("copy-block", { bubbles: true, cancelable: true }));
+              view.dom.dispatchEvent(
+                new CustomEvent("copy-block", {
+                  detail: { content, lang: resolvedLang },
+                  bubbles: true,
+                  cancelable: true,
+                }),
+              );
               break;
             default:
           }
@@ -42,13 +67,15 @@ export const blockActionPlugin = ViewPlugin.fromClass(
 );
 
 class BlockActionWidget extends WidgetType {
-  eq(_other: BlockActionWidget) {
-    // command bars are always the same
-    return true;
+  constructor(
+    private from: number,
+    private to: number,
+  ) {
+    super();
   }
 
   toDOM(_view: EditorView) {
-    return $new("span", { class: "block-actions" }, [
+    return $new("span", { class: "block-actions", "data-from": this.from.toString(), "data-to": this.to.toString() }, [
       $new("button", { "data-action": "run" }, ["Run"]),
       $new("button", { "data-action": "copy" }, ["Copy"]),
     ]);
@@ -82,7 +109,7 @@ function actionBarDecorationSet(view: EditorView) {
       if (node.name === "CodeMark" && nextNode?.name === "CodeInfo" && node.to === nextNode?.from) continue;
 
       const deco = Decoration.widget({
-        widget: new BlockActionWidget(),
+        widget: new BlockActionWidget(node.from, node.to),
         side: 1,
       });
 
