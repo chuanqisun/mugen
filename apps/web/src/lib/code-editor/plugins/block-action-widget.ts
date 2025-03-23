@@ -62,7 +62,6 @@ function actionBarDecorationSet(view: EditorView) {
 
     for (let node of pushSites) {
       const nextNode = pushSites[pushSites.indexOf(node) + 1];
-      console.log([node, nextNode]);
       if (node.name === "CodeMark" && nextNode?.name === "CodeInfo" && node.to === nextNode?.from) continue;
 
       const deco = Decoration.widget({
