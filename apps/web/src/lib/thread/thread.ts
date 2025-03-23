@@ -90,22 +90,27 @@ function getThreadMessages(headMessage?: HTMLElement): GenericMessage[] {
   const allElements = [...$all("message-element")];
   const elementsUpToHead = headMessage ? allElements.slice(0, allElements.indexOf(headMessage) + 1) : allElements;
 
-  const threadMessages = elementsUpToHead.map((message) => {
-    const attachments = [...message.querySelectorAll(`attachment-element`)].map((e) => ({
-      url: e.querySelector(`object`)!.getAttribute("data")!,
-      type: e.querySelector(`[data-type]`)!.textContent!,
-      name: e.querySelector(`[data-name]`)!.textContent!,
-    }));
+  const threadMessages = elementsUpToHead
+    .map((message) => {
+      const attachments = [...message.querySelectorAll(`attachment-element`)].map((e) => ({
+        url: e.querySelector(`object`)!.getAttribute("data")!,
+        type: e.querySelector(`[data-type]`)!.textContent!,
+        name: e.querySelector(`[data-name]`)!.textContent!,
+      }));
 
-    const textContent = message.querySelector<CodeEditorElement>("code-editor-element")?.value ?? "";
+      const textContent = message.querySelector<CodeEditorElement>("code-editor-element")?.value ?? "";
 
-    return {
-      role: message.querySelector("[data-role]")!.getAttribute("data-role") as GenericMessageRole,
-      content: attachments.length
-        ? [...attachments, { type: "text/plain", url: textToDataUrl(textContent) }]
-        : textContent,
-    } as GenericMessage;
-  });
+      const isEmpty = !textContent && !attachments.length;
+      if (isEmpty) return null;
+
+      return {
+        role: message.querySelector("[data-role]")!.getAttribute("data-role") as GenericMessageRole,
+        content: attachments.length
+          ? [...attachments, { type: "text/plain", url: textToDataUrl(textContent) }]
+          : textContent,
+      } as GenericMessage;
+    })
+    .filter((m) => m !== null);
 
   return threadMessages;
 }
