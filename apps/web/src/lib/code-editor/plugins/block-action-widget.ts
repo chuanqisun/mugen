@@ -20,8 +20,22 @@ export const blockActionPlugin = ViewPlugin.fromClass(
     decorations: (v) => v.decorations,
 
     eventHandlers: {
-      mousedown: (e, view) => {
+      click: (e, view) => {
         // TODO emit the block lang and text content
+        const trigger = (e.target as HTMLElement).closest(`[data-action]`);
+        if (trigger) {
+          const action = trigger.getAttribute("data-action");
+          e.stopPropagation();
+          switch (action) {
+            case "run":
+              view.dom.dispatchEvent(new CustomEvent("run-block", { bubbles: true, cancelable: true }));
+              break;
+            case "copy":
+              view.dom.dispatchEvent(new CustomEvent("copy-block", { bubbles: true, cancelable: true }));
+              break;
+            default:
+          }
+        }
       },
     },
   },
@@ -33,8 +47,11 @@ class BlockActionWidget extends WidgetType {
     return true;
   }
 
-  toDOM() {
-    return $new("span", { class: "block-actions" }, [$new("button", {}, ["Run"]), $new("button", {}, ["Copy"])]);
+  toDOM(_view: EditorView) {
+    return $new("span", { class: "block-actions" }, [
+      $new("button", { "data-action": "run" }, ["Run"]),
+      $new("button", { "data-action": "copy" }, ["Copy"]),
+    ]);
   }
 
   ignoreEvent() {

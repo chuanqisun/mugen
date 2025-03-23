@@ -47,7 +47,15 @@
       </attachment-element>
     </template>
 
-    <dialog id="app-dialog"></dialog>
+    <artifact-editor-element>
+      <dialog id="artifact-editor" class="artifact-editor">
+        <div><button>Run</button><button>Done</button></div>
+        <div>
+          <code-editor-element></code-editor-element>
+          <iframe></iframe>
+        </div>
+      </dialog>
+    </artifact-editor-element>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
