@@ -2,7 +2,7 @@ import { CodeEditorElement } from "../code-editor/code-editor-element";
 import { $all, $new, insertAdacentElements } from "../dom";
 import type { GenericMessage, GenericMessageRole } from "../model-providers/base";
 import { getChatStreamProxy } from "../settings/provider-selector";
-import { fileToDataURL } from "../storage/codec";
+import { fileToDataURL, textToDataUrl } from "../storage/codec";
 import { getReadableFileSize } from "./file-size";
 
 export async function addAttachment(files: File[], headMessage: HTMLElement) {
@@ -15,7 +15,7 @@ export async function addAttachment(files: File[], headMessage: HTMLElement) {
       newAttachment.querySelector(`[data-media]`)!.textContent = "📄";
       newAttachment.querySelector(`[data-name]`)!.textContent = file.name;
       newAttachment.querySelector(`[data-size]`)!.textContent = getReadableFileSize(file.size);
-      newAttachment.querySelector(`[data-type]`)!.textContent = file.type;
+      newAttachment.querySelector(`[data-type]`)!.textContent = file.type ? file.type : "text/plain";
 
       await fileToDataURL(file).then((dataUrl) => {
         const object = $new("object", {
@@ -89,10 +89,23 @@ export async function runMessage(headMessage: HTMLElement) {
 function getThreadMessages(headMessage?: HTMLElement): GenericMessage[] {
   const allElements = [...$all("message-element")];
   const elementsUpToHead = headMessage ? allElements.slice(0, allElements.indexOf(headMessage) + 1) : allElements;
-  const threadMessages = elementsUpToHead.map((message) => ({
-    role: message.querySelector("[data-role]")!.getAttribute("data-role") as GenericMessageRole,
-    content: message.querySelector<CodeEditorElement>("code-editor-element")!.value,
-  }));
+
+  const threadMessages = elementsUpToHead.map((message) => {
+    const attachments = [...message.querySelectorAll(`attachment-element`)].map((e) => ({
+      url: e.querySelector(`object`)!.getAttribute("data")!,
+      type: e.querySelector(`[data-type]`)!.textContent!,
+      name: e.querySelector(`[data-name]`)!.textContent!,
+    }));
+
+    const textContent = message.querySelector<CodeEditorElement>("code-editor-element")?.value ?? "";
+
+    return {
+      role: message.querySelector("[data-role]")!.getAttribute("data-role") as GenericMessageRole,
+      content: attachments.length
+        ? [...attachments, { type: "text/plain", url: textToDataUrl(textContent) }]
+        : textContent,
+    } as GenericMessage;
+  });
 
   return threadMessages;
 }
