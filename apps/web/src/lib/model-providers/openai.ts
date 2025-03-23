@@ -1,4 +1,5 @@
 import type {
+  ChatCompletionContentPart,
   ChatCompletionContentPartImage,
   ChatCompletionContentPartText,
   ChatCompletionMessageParam,
@@ -135,6 +136,14 @@ export class OpenAIProvider implements BaseProvider {
                       url: part.url,
                     },
                   } satisfies ChatCompletionContentPartImage;
+                } else if (part.type === "application/pdf") {
+                  return {
+                    type: "file",
+                    file: {
+                      file_data: part.url,
+                      filename: part.name,
+                    },
+                  } satisfies ChatCompletionContentPart.File;
                 } else {
                   console.warn("Unsupported message part", part);
                   return null;
