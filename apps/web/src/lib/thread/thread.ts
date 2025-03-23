@@ -3,6 +3,7 @@ import { $all, $new, insertAdacentElements } from "../dom";
 import type { GenericMessage, GenericMessageRole } from "../model-providers/base";
 import { getChatStreamProxy } from "../settings/provider-selector";
 import { fileToDataURL } from "../storage/codec";
+import { getReadableFileSize } from "./file-size";
 
 export async function addAttachment(files: File[], headMessage: HTMLElement) {
   const template = document.querySelector<HTMLTemplateElement>("#message-attachment")!;
@@ -13,7 +14,7 @@ export async function addAttachment(files: File[], headMessage: HTMLElement) {
 
       newAttachment.querySelector(`[data-media]`)!.textContent = "📄";
       newAttachment.querySelector(`[data-name]`)!.textContent = file.name;
-      newAttachment.querySelector(`[data-size]`)!.textContent = file.size.toString();
+      newAttachment.querySelector(`[data-size]`)!.textContent = getReadableFileSize(file.size);
       newAttachment.querySelector(`[data-type]`)!.textContent = file.type;
 
       await fileToDataURL(file).then((dataUrl) => {
