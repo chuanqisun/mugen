@@ -30,8 +30,7 @@ export const blockActionPlugin = ViewPlugin.fromClass(
           const from = parseInt(trigger!.closest("[data-from]")!.getAttribute("data-from")!);
           const to = parseInt(trigger!.closest("[data-to]")!.getAttribute("data-to")!);
           // the content of [from, to] can be either the opening ``` or the lang + attribute string
-
-          const blockStart = from - 3;
+          const blockStart = Math.max(0, from - 3);
           const remaintingDoc = view.state.sliceDoc(blockStart);
           const markdownBlockPattern = /```(?:[^\n]*)\n([\s\S]*?)```/;
           // if no match, use rest of the document
@@ -43,7 +42,7 @@ export const blockActionPlugin = ViewPlugin.fromClass(
             case "run":
               view.dom.dispatchEvent(
                 new CustomEvent("run-block", {
-                  detail: { content, lang: resolvedLang },
+                  detail: { content, blockStart, lang: resolvedLang },
                   bubbles: true,
                   cancelable: true,
                 }),
@@ -52,7 +51,7 @@ export const blockActionPlugin = ViewPlugin.fromClass(
             case "copy":
               view.dom.dispatchEvent(
                 new CustomEvent("copy-block", {
-                  detail: { content, lang: resolvedLang },
+                  detail: { content, blockStart, lang: resolvedLang },
                   bubbles: true,
                   cancelable: true,
                 }),
