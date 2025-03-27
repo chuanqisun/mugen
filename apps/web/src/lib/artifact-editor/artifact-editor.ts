@@ -12,6 +12,12 @@ export function openArtifact(options: OpenArtifactOptions) {
   codeEditor.value = options.code;
   codeEditor.updateLanguage(options.lang);
   dialog.showModal();
+
+  // based on language, load the artifact provider
+
+  // rerun on code change
+
+  // initial run
 }
 
 export function useArtifactEditor() {}
