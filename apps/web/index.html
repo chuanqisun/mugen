@@ -47,15 +47,11 @@
       </attachment-element>
     </template>
 
-    <artifact-editor-element>
-      <dialog id="artifact-editor" class="artifact-editor">
-        <div><button>Run</button><button>Done</button></div>
-        <div>
-          <code-editor-element></code-editor-element>
-          <iframe></iframe>
-        </div>
-      </dialog>
-    </artifact-editor-element>
+    <dialog id="artifact-editor" class="artifact-editor full-screen-dialog">
+      <div class="artifact-menu"><button>Run</button><button>Done</button></div>
+      <code-editor-element class="artifact-code"></code-editor-element>
+      <iframe class="artifact-preview"></iframe>
+    </dialog>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
