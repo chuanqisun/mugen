@@ -13,3 +13,5 @@ export function openArtifact(options: OpenArtifactOptions) {
   codeEditor.updateLanguage(options.lang);
   dialog.showModal();
 }
+
+export function useArtifactEditor() {}

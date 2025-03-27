@@ -48,7 +48,9 @@
     </template>
 
     <dialog id="artifact-editor" class="artifact-editor full-screen-dialog">
-      <div class="artifact-menu"><button>Run</button><button>Done</button></div>
+      <form class="artifact-menu" method="dialog">
+        <button type="button" data-action="run">Run</button><button type="submit">Done</button>
+      </form>
       <code-editor-element class="artifact-code"></code-editor-element>
       <iframe class="artifact-preview"></iframe>
     </dialog>
