@@ -28,6 +28,7 @@ export interface GoogleGenAIConnection extends BaseConnection {
 export class GoogleGenAIProvider implements BaseProvider {
   static type = "google-gen-ai";
   static defaultModels = [
+    "gemini-2.5-pro-exp-03-25",
     "gemini-2.0-pro-exp-02-05",
     "gemini-2.0-flash-exp",
     "gemini-2.0-flash",
@@ -119,7 +120,10 @@ export class GoogleGenAIProvider implements BaseProvider {
     return connection.type === "google-gen-ai";
   }
 
-  private getGoogleGenAIMessages(messages: GenericMessage[]): { system?: string; messages: Content[] } {
+  private getGoogleGenAIMessages(messages: GenericMessage[]): {
+    system?: string;
+    messages: Content[];
+  } {
     let system: string | undefined;
     const convertedMessages: Content[] = [];
 
@@ -133,14 +137,12 @@ export class GoogleGenAIProvider implements BaseProvider {
             .map((part) => dataUrlToText(part.url))
             .join("\n");
         }
+      } else if (typeof message.content === "string") {
+        convertedMessages.push({
+          role: this.toGeminiRoleName(message.role),
+          parts: [{ text: message.content }],
+        });
       } else {
-        if (typeof message.content === "string") {
-          return {
-            role: this.toGeminiRoleName(message.role),
-            parts: [{ text: message.content }],
-          } satisfies Content;
-        }
-
         const convertedMessageParts = message.content.map((part) => {
           switch (part.type) {
             case "text/plain": {
