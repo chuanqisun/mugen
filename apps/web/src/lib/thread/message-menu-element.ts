@@ -106,6 +106,17 @@ export class MessageMenuElement extends HTMLElement {
           break;
         }
 
+        case "run-as-artifact": {
+          const codeEditorElement = headMessage.querySelector<CodeEditorElement>("code-editor-element")!;
+          const currentCode = codeEditorElement.value;
+          const updatedCode = await startArtifact({
+            code: codeEditorElement.value,
+            lang: codeEditorElement.getAttribute("data-lang") ?? "markdown",
+          });
+          if (updatedCode !== currentCode) codeEditorElement.value = updatedCode;
+          break;
+        }
+
         case "toggle-role": {
           switch (trigger.dataset.role) {
             case "assistant": {
