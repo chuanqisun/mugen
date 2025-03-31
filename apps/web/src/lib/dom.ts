@@ -29,6 +29,12 @@ export function $get(selectors: string) {
   return element;
 }
 
+export function $frag(literal: { raw: readonly string[] | ArrayLike<string> }, ...values: string[]) {
+  const template = document.createElement("template");
+  template.innerHTML = String.raw(literal, ...values);
+  return template.content;
+}
+
 interface CreateElement {
   <K extends keyof HTMLElementTagNameMap>(
     tag: K,

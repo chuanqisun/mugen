@@ -6,12 +6,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Mugen</title>
   </head>
-  <body>
+  <body class="c-app-layout">
     <menu id="app-menu">
-      <button data-action="add-text">Text</button>
-      <button data-action="add-file">File</button>
+      <button data-action="login">Login</button>
+      <button data-action="compile">Compile</button>
+      <button data-action="run">Run</button>
     </menu>
-    <div class="c-grid-layout"></div>
+    <details open>
+      <summary>Template</summary>
+      <div class="u-rows">
+        <div class="u-cols">
+          <code-editor-element data-for="input" data-lang="ts"></code-editor-element>
+          <code-editor-element data-for="output" data-lang="ts"></code-editor-element>
+        </div>
+        <code-editor-element data-for="prompt" data-lang="liquid"></code-editor-element>
+      </div>
+    </details>
+    <details open>
+      <summary>Program</summary>
+      <iframe id="program"></iframe>
+    </details>
+
+    <details open>
+      <summary>Output</summary>
+    </details>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

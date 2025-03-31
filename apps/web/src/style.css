@@ -2,6 +2,7 @@
   font-family: system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   line-height: 1.2;
   font-weight: 400;
+  font-size: 6.25%; /* 1rem = (6.25/100) * 16px = 1px */
   color-scheme: light dark;
 
   font-synthesis: none;
@@ -25,6 +26,8 @@
 *,
 *::before,
 *::after {
+  font-family: inherit;
+  font-size: inherit;
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -40,11 +43,45 @@ a:hover {
 
 body {
   margin: 0;
+  font-size: 14rem;
 }
 
-/* Components */
-.c-grid-layout {
+button {
+  padding: 2rem 4rem;
+}
+
+fieldset {
+  padding: 8rem;
+}
+
+iframe {
+  border: none;
+  display: block;
+  width: 100%;
+}
+
+/* components */
+.c-app-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8rem;
+  width: 100%;
+  max-width: 1080rem;
+  margin: auto;
+}
+
+/* utils */
+.u-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+}
+
+.u-cols {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-  gap: 1rem;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+
+  gap: 4rem;
 }
