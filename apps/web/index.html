@@ -48,11 +48,11 @@
     </template>
 
     <dialog id="artifact-editor" class="artifact-editor full-screen-dialog">
-      <form class="artifact-menu" method="dialog">
+      <form id="artifact-menu" class="artifact-menu" method="dialog">
         <button type="button" data-action="run">Run</button><button type="submit">Done</button>
       </form>
       <code-editor-element class="artifact-code"></code-editor-element>
-      <iframe class="artifact-preview"></iframe>
+      <iframe id="artifact-iframe" class="artifact-preview"></iframe>
     </dialog>
     <script type="module" src="/src/main.ts"></script>
   </body>

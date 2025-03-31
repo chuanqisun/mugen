@@ -93,6 +93,16 @@ export class CodeEditorElement extends HTMLElement {
       },
     });
   }
+
+  replaceText(from: number, to: number, text: string) {
+    this.editorView?.dispatch({
+      changes: {
+        from,
+        to,
+        insert: text,
+      },
+    });
+  }
 }
 
 async function getLanguageSupport(filenameOrExtension: string) {

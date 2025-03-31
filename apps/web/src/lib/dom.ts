@@ -1,18 +1,38 @@
 /* Query and Mutation helpers */
-export const $ = document.querySelector.bind(document);
-export const $all = document.querySelectorAll.bind(document);
+
+export function $<K extends keyof HTMLElementTagNameMap>(selectors: K): HTMLElementTagNameMap[K] | null;
+export function $<K extends keyof SVGElementTagNameMap>(selectors: K): SVGElementTagNameMap[K] | null;
+export function $<K extends keyof MathMLElementTagNameMap>(selectors: K): MathMLElementTagNameMap[K] | null;
+export function $<E extends Element = HTMLElement>(selectors: string): E | null;
+export function $(selector: string) {
+  return document.querySelector(selector);
+}
+
+export function $$<K extends keyof HTMLElementTagNameMap>(selectors: K): HTMLElementTagNameMap[K][];
+export function $$<K extends keyof SVGElementTagNameMap>(selectors: K): SVGElementTagNameMap[K][];
+export function $$<K extends keyof MathMLElementTagNameMap>(selectors: K): MathMLElementTagNameMap[K][];
+export function $$<E extends Element = HTMLElement>(selectors: string): E[];
+export function $$(selectors: string) {
+  return Array.from(document.querySelectorAll(selectors));
+}
 
 // same to $ but throws error if not found
 export function $get<K extends keyof HTMLElementTagNameMap>(selectors: K): HTMLElementTagNameMap[K];
 export function $get<K extends keyof SVGElementTagNameMap>(selectors: K): SVGElementTagNameMap[K];
 export function $get<K extends keyof MathMLElementTagNameMap>(selectors: K): MathMLElementTagNameMap[K];
-export function $get<E extends Element = Element>(selectors: string): E;
-export function $get(selectors: string): Element {
+export function $get<E extends Element = HTMLElement>(selectors: string): E;
+export function $get(selectors: string) {
   const element = document.querySelector(selectors);
   if (element === null) {
     throw new Error(`Element not found: ${selectors}`);
   }
   return element;
+}
+
+export function $frag(literal: { raw: readonly string[] | ArrayLike<string> }, ...values: string[]) {
+  const template = document.createElement("template");
+  template.innerHTML = String.raw(literal, ...values);
+  return template.content;
 }
 
 interface CreateElement {

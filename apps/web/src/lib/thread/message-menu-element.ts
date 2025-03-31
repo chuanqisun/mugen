@@ -1,5 +1,5 @@
 import { fromEvent, merge } from "rxjs";
-import { openArtifact } from "../artifact-editor/artifact-editor";
+import { startArtifact } from "../artifact-editor/artifact-editor";
 import type { CodeEditorElement } from "../code-editor/code-editor-element";
 import type { BlockEventInit } from "../code-editor/plugins/block-action-widget";
 import type { CommandEventDetails } from "../code-editor/plugins/chat-keymap";
@@ -33,10 +33,11 @@ export class MessageMenuElement extends HTMLElement {
       this.triggerAction("append");
     });
 
-    codeEditorElement?.addEventListener("block-run", (e) => {
+    codeEditorElement?.addEventListener("block-run", async (e) => {
       e.stopPropagation();
-      const { code, lang } = (e as CustomEvent<BlockEventInit>).detail;
-      openArtifact({ code: code, lang: lang });
+      const { code, lang, codeStart, codeEnd } = (e as CustomEvent<BlockEventInit>).detail;
+      const updatedCode = await startArtifact({ code, lang: lang });
+      if (updatedCode !== code) codeEditorElement.replaceText(codeStart, codeEnd, updatedCode);
     });
     codeEditorElement?.addEventListener("block-copy", (e) => {
       e.stopPropagation();

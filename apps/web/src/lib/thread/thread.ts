@@ -1,5 +1,5 @@
 import { CodeEditorElement } from "../code-editor/code-editor-element";
-import { $all, $new, insertAdacentElements } from "../dom";
+import { $$, $new, insertAdacentElements } from "../dom";
 import type { GenericMessage, GenericMessageRole } from "../model-providers/base";
 import { getChatStreamProxy } from "../settings/provider-selector";
 import { fileToDataURL, textToDataUrl } from "../storage/codec";
@@ -43,7 +43,7 @@ export function createMessage(role: GenericMessageRole): DocumentFragment {
 }
 
 export function appendMessage(newMessage: DocumentFragment, headMessage?: HTMLElement): void {
-  const allElements = [...$all("message-element")];
+  const allElements = $$("message-element");
   const elementsUpToHead = headMessage ? allElements.slice(0, allElements.indexOf(headMessage) + 1) : allElements;
   const lastElement = elementsUpToHead.at(-1);
   if (!lastElement) throw new Error("No message element found");
@@ -57,7 +57,7 @@ export function clearMessage(headMessage: HTMLElement) {
 }
 
 export function deleteMessage(headMessage: HTMLElement) {
-  const allElements = [...$all("message-element")];
+  const allElements = $$("message-element");
   const index = allElements.indexOf(headMessage);
   if (index === -1) throw new Error("Head message not found in thread");
 
@@ -87,7 +87,7 @@ export async function runMessage(headMessage: HTMLElement) {
 }
 
 function getThreadMessages(headMessage?: HTMLElement): GenericMessage[] {
-  const allElements = [...$all("message-element")];
+  const allElements = $$("message-element");
   const elementsUpToHead = headMessage ? allElements.slice(0, allElements.indexOf(headMessage) + 1) : allElements;
 
   const threadMessages = elementsUpToHead
@@ -121,7 +121,7 @@ export async function runAllMessages(headMessage: HTMLElement) {
 }
 
 export function trimThread(headMessage: HTMLElement) {
-  const allElements = [...$all("message-element")];
+  const allElements = $$("message-element");
   const index = allElements.indexOf(headMessage);
   if (index === -1) throw new Error("Head message not found in thread");
   allElements.slice(index + 1).forEach((message) => message.remove());
