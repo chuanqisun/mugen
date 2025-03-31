@@ -48,10 +48,13 @@ export const blockActionPlugin = ViewPlugin.fromClass(
           const resolvedLang = lang === "```" ? "txt" : lang.split(" ")[0].trim();
 
           // code start is the first line below opening ```
-          const codeStart = remaintingDoc.indexOf("\n", 3) + 1;
-          const maybeBacktickIndex = remaintingDoc.indexOf("```", codeStart);
-          const codeEnd = maybeBacktickIndex === -1 ? remaintingDoc.length : maybeBacktickIndex;
-          const blockEnd = maybeBacktickIndex === -1 ? remaintingDoc.length : maybeBacktickIndex + 3;
+          const codeStartWithInBlock = remaintingDoc.indexOf("\n", 3) + 1;
+          const maybeBacktickIndex = remaintingDoc.indexOf("```", codeStartWithInBlock);
+          const codeEndWithInBlock = maybeBacktickIndex === -1 ? remaintingDoc.length : maybeBacktickIndex;
+          const blockEndWithInBlock = maybeBacktickIndex === -1 ? remaintingDoc.length : maybeBacktickIndex + 3;
+          const codeStart = blockStart + codeStartWithInBlock;
+          const codeEnd = blockStart + codeEndWithInBlock;
+          const blockEnd = blockStart + blockEndWithInBlock;
 
           switch (action) {
             case "run":

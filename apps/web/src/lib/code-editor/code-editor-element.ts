@@ -95,6 +95,13 @@ export class CodeEditorElement extends HTMLElement {
   }
 
   replaceText(from: number, to: number, text: string) {
+    console.log("replace", {
+      from,
+      to,
+      oldText: this.editorView?.state.doc.sliceString(from, to),
+      newText: text,
+    });
+
     this.editorView?.dispatch({
       changes: {
         from,

@@ -35,8 +35,9 @@ export class MessageMenuElement extends HTMLElement {
 
     codeEditorElement?.addEventListener("block-run", async (e) => {
       e.stopPropagation();
-      const { code, lang, codeStart, codeEnd } = (e as CustomEvent<BlockEventInit>).detail;
-      const updatedCode = await startArtifact({ code, lang: lang });
+      const { code, lang, blockStart, blockEnd, codeStart, codeEnd } = (e as CustomEvent<BlockEventInit>).detail;
+      console.log("block-run", { code, lang, blockStart, blockEnd, codeStart, codeEnd });
+      const updatedCode = await startArtifact({ code, lang });
       if (updatedCode !== code) codeEditorElement.replaceText(codeStart, codeEnd, updatedCode);
     });
     codeEditorElement?.addEventListener("block-copy", (e) => {
