@@ -144,10 +144,18 @@ export class MessageMenuElement extends HTMLElement {
 
         case "toggle-minimize": {
           const isMinimized = trigger.hasAttribute("data-minimized");
-          trigger.toggleAttribute("data-minimized", !isMinimized);
-          trigger.querySelector("use")!.setAttribute("href", isMinimized ? "#shrink" : "#expand");
-          headMessage.toggleAttribute("data-minimized", !isMinimized);
-          headMessage.querySelector<CodeEditorElement>("code-editor-element")!.toggleMinimize(!isMinimized);
+
+          const affectedMessages =
+            event.ctrlKey || event.metaKey ? [...document.querySelectorAll("message-element")] : [headMessage];
+
+          affectedMessages.forEach((message) => {
+            const trigger = message.querySelector("[data-action='toggle-minimize']") as HTMLElement;
+            // set all other messages to the same state
+            trigger.toggleAttribute("data-minimized", !isMinimized);
+            trigger.querySelector("use")!.setAttribute("href", isMinimized ? "#shrink" : "#expand");
+            message.toggleAttribute("data-minimized", !isMinimized);
+            message.querySelector<CodeEditorElement>("code-editor-element")!.toggleMinimize(!isMinimized);
+          });
           break;
         }
 
