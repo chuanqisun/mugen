@@ -16,4 +16,9 @@
       border-color: ButtonBorder;
     }
   }
+
+  button:disabled {
+    background-color: color-mix(in srgb, currentColor 25%, transparent);
+    pointer-events: none;
+  }
 }

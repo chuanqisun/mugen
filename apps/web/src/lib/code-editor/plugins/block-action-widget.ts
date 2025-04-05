@@ -87,20 +87,21 @@ class BlockActionWidget extends WidgetType {
   constructor(
     private from: number,
     private to: number,
+    private isClosed: boolean = false,
   ) {
     super();
   }
 
   toDOM(_view: EditorView) {
     return $new("span", { class: "block-actions", "data-from": this.from.toString(), "data-to": this.to.toString() }, [
-      $new("button", { "data-action": "run" }, ["Run"]),
-      $new("button", { "data-action": "copy" }, ["Copy"]),
+      $new("button", { "data-action": "run", ...(this.isClosed ? {} : { disabled: "" }) }, ["Run"]),
+      $new("button", { "data-action": "copy", ...(this.isClosed ? {} : { disabled: "" }) }, ["Copy"]),
     ]);
   }
 
   eq(widget: WidgetType): boolean {
     if (!(widget instanceof BlockActionWidget)) return false;
-    return this.from === widget.from && this.to === widget.to;
+    return this.from === widget.from && this.to === widget.to && this.isClosed === widget.isClosed;
   }
 
   ignoreEvent() {
@@ -113,13 +114,24 @@ function actionBarDecorationSet(view: EditorView) {
   for (let { from, to } of view.visibleRanges) {
     const pushSites = [] as { name: string; from: number; to: number }[];
     let isInBlock = false;
+    let isBlockClosed = false;
     syntaxTree(view.state).iterate({
       from,
       to,
       enter: (node) => {
-        if (node.type.name === "CodeMark" && isInBlock) return;
+        // we only support triple backtick
         if (node.type.name === "CodeMark" && node.to - node.from !== 3) return;
+
+        // closing triple backtick
+        if (node.type.name === "CodeMark" && isInBlock) {
+          isBlockClosed = true;
+          return;
+        }
+
+        // opening triple backtick
         if (node.type.name === "CodeMark") isInBlock = true;
+
+        // opening triple backtick with code info
         if (node.type.name === "CodeInfo") {
           pushSites.push({ name: node.type.name, from: node.from, to: node.to });
         }
@@ -130,7 +142,7 @@ function actionBarDecorationSet(view: EditorView) {
       const nextNode = pushSites[pushSites.indexOf(node) + 1];
       if (node.name === "CodeMark" && nextNode?.name === "CodeInfo" && node.to === nextNode?.from) continue;
 
-      const deco = Decoration.widget({ widget: new BlockActionWidget(node.from, node.to), side: 1 });
+      const deco = Decoration.widget({ widget: new BlockActionWidget(node.from, node.to, isBlockClosed), side: 1 });
 
       widgets.push(deco.range(node.to));
     }
