@@ -195,7 +195,7 @@ export class MessageMenuElement extends HTMLElement {
       const trigger = event.target as HTMLElement;
       if (!trigger.matches("[data-action]")) return;
 
-      const buttons = [...this.querySelectorAll<HTMLElement>("[data-action]")];
+      const buttons = [...this.querySelectorAll<HTMLElement>("[data-action]:not([hidden])")];
       const index = buttons.indexOf(trigger);
       const nextIndex =
         event.key === "ArrowRight" ? (index + 1) % buttons.length : (index - 1 + buttons.length) % buttons.length;
