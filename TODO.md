@@ -11,6 +11,10 @@
 - Handle attachment role switching (img: inline or file)
 - Code interpreter mode
 - File icon fallback/timeout attachment
+- Run typescript/react code
+- Preview mermaid dialog
+- Preview markdown code
+- Dyanmic preview rendering of markdown code
 
 # DONE
 
