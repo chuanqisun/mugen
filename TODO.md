@@ -1,3 +1,4 @@
+- Run block action based on cursor position
 - Auto trim when rerun
 - Pin message to avoid auto trim
 - Show chat speed and consumption
