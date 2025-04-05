@@ -137,6 +137,10 @@ export class CodeEditorElement extends HTMLElement {
 
     return { write, end };
   }
+
+  toggleMinimize(setMinimized: boolean) {
+    this.toggleAttribute("data-minimized", setMinimized);
+  }
 }
 
 async function getLanguageSupport(filenameOrExtension: string) {

@@ -123,6 +123,7 @@ export class MessageMenuElement extends HTMLElement {
           trigger.toggleAttribute("data-minimized", !isMinimized);
           trigger.querySelector("use")!.setAttribute("href", isMinimized ? "#chevron-down" : "#chevron-right");
           headMessage.toggleAttribute("data-minimized", !isMinimized);
+          headMessage.querySelector<CodeEditorElement>("code-editor-element")!.toggleMinimize(!isMinimized);
           break;
         }
 
