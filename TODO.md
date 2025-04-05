@@ -1,9 +1,13 @@
+- Add abort controller for each run
+- Stop button
+- Preview markdown code
+- Dyanmic preview rendering of markdown code
+- Artifact menu
 - Show chat speed and consumption
 - MCP tool
 - Save and restore
 - Resize preview
 - Per message model switch
-- Add abort controller for each run
 - Move message up/down
 - Model switch dialog
 - Generate message content (based on template, if any)
@@ -13,9 +17,7 @@
 - File icon fallback/timeout attachment
 - Run typescript/react code
 - Preview mermaid dialog
-- Preview markdown code
-- Dyanmic preview rendering of markdown code
-- Artifact menu
+- Clean up unused icons
 
 # DONE
 
