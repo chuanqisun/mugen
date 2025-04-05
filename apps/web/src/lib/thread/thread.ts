@@ -3,7 +3,9 @@ import { $$, $new, insertAdacentElements } from "../dom";
 import type { GenericMessage, GenericMessageRole } from "../model-providers/base";
 import { getChatStreamProxy } from "../settings/provider-selector";
 import { fileToDataURL, textToDataUrl } from "../storage/codec";
-import { getReadableFileSize } from "./file-size";
+import { getFileIconUrl } from "./attachment/file-icon";
+import { getReadableFileSize } from "./attachment/file-size";
+import { truncateMiddle } from "./attachment/filename";
 
 export async function addAttachment(files: File[], headMessage: HTMLElement) {
   const template = document.querySelector<HTMLTemplateElement>("#message-attachment")!;
@@ -12,8 +14,8 @@ export async function addAttachment(files: File[], headMessage: HTMLElement) {
     files.map(async (file) => {
       const newAttachment = template.content.cloneNode(true) as DocumentFragment;
 
-      newAttachment.querySelector(`[data-media]`)!.textContent = "📄";
-      newAttachment.querySelector(`[data-name]`)!.textContent = file.name;
+      newAttachment.querySelector<HTMLImageElement>(`[data-media]`)!.src = await getFileIconUrl(file.name);
+      newAttachment.querySelector(`[data-name]`)!.textContent = truncateMiddle(file.name, 24);
       newAttachment.querySelector(`[data-size]`)!.textContent = getReadableFileSize(file.size);
       newAttachment.querySelector(`[data-type]`)!.textContent = file.type ? file.type : "text/plain";
 

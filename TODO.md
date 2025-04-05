@@ -4,3 +4,5 @@
 - MCP tool
 - Save and restore
 - Resize preview
+- Per message model switch
+- Pretty file attachment

@@ -7,7 +7,7 @@ attachment-list-element {
 attachment-element {
   display: flex;
   gap: 0.25rem;
-  align-items: baseline;
+  align-items: top;
   font-family:
     system-ui,
     -apple-system,
@@ -21,10 +21,20 @@ attachment-element {
     "Helvetica Neue",
     sans-serif;
   font-size: 12px;
+  line-height: 16px;
   border: 1px solid #444;
   padding: 2px;
 
   object {
+    display: none;
+  }
+
+  [data-media] {
+    width: 16px;
+    height: 16px;
+  }
+
+  [data-size] {
     display: none;
   }
 
