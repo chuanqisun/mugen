@@ -120,7 +120,7 @@ function actionBarDecorationSet(view: EditorView) {
         if (node.type.name === "CodeMark" && isInBlock) return;
         if (node.type.name === "CodeMark" && node.to - node.from !== 3) return;
         if (node.type.name === "CodeMark") isInBlock = true;
-        if (node.type.name === "CodeMark" || node.type.name === "CodeInfo") {
+        if (node.type.name === "CodeInfo") {
           pushSites.push({ name: node.type.name, from: node.from, to: node.to });
         }
       },
