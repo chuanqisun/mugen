@@ -5,4 +5,5 @@
 - Save and restore
 - Resize preview
 - Per message model switch
+- Model switch dialog
 - File icon fallback/timeout attachment
