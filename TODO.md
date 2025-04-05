@@ -15,6 +15,7 @@
 - Preview mermaid dialog
 - Preview markdown code
 - Dyanmic preview rendering of markdown code
+- Artifact menu
 
 # DONE
 
