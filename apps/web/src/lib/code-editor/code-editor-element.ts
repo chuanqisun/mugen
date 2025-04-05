@@ -2,12 +2,14 @@ import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { markdown } from "@codemirror/lang-markdown";
 import { defaultHighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { languages } from "@codemirror/language-data";
-import { Compartment } from "@codemirror/state";
+import { Compartment, EditorSelection, EditorState } from "@codemirror/state";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { drawSelection, EditorView, highlightSpecialChars, keymap } from "@codemirror/view";
+import { ReplaySubject, tap } from "rxjs";
 import "./code-editor-element.css";
 import { blockActionPlugin } from "./plugins/block-action-widget";
 import { chatKeymap } from "./plugins/chat-keymap";
+import { syncDispatch } from "./sync";
 
 const dynamicLanguage = new Compartment();
 
@@ -70,13 +72,7 @@ export class CodeEditorElement extends HTMLElement {
   }
 
   set value(value: string) {
-    this.editorView?.dispatch({
-      changes: {
-        from: 0,
-        to: this.editorView.state.doc.length,
-        insert: value,
-      },
-    });
+    this.editorView?.dispatch({ changes: { from: 0, to: this.editorView.state.doc.length, insert: value } });
   }
 
   get value() {
@@ -85,30 +81,56 @@ export class CodeEditorElement extends HTMLElement {
 
   appendText(text: string) {
     const length = this.editorView?.state.doc.length ?? 0;
-    this.editorView?.dispatch({
-      changes: {
-        from: length,
-        to: length,
-        insert: text,
-      },
-    });
+    this.editorView?.dispatch({ changes: { from: length, to: length, insert: text } });
   }
 
   replaceText(from: number, to: number, text: string) {
-    console.log("replace", {
-      from,
-      to,
-      oldText: this.editorView?.state.doc.sliceString(from, to),
-      newText: text,
+    console.log("replace", { from, to, oldText: this.editorView?.state.doc.sliceString(from, to), newText: text });
+
+    this.editorView?.dispatch({ changes: { from, to, insert: text } });
+  }
+
+  spawnCursor(options?: { selection?: EditorSelection }) {
+    if (!this.editorView) {
+      throw new Error("EditorView not initialized");
+    }
+
+    const cursorView = document.createElement("div");
+    const chatView = new EditorView({
+      state: EditorState.create({ doc: this.editorView.state.doc }), // share doc and nothing else
+      parent: cursorView,
+      dispatch: (tr) => syncDispatch(tr, chatView, this.editorView!),
     });
 
-    this.editorView?.dispatch({
-      changes: {
-        from,
-        to,
-        insert: text,
-      },
-    });
+    const initialSelection = options?.selection ?? this.editorView.state.selection.main;
+
+    // initial selection
+    chatView.dispatch({ selection: initialSelection });
+
+    const cursorInput$ = new ReplaySubject();
+    cursorInput$
+      .pipe(
+        tap((chunk: any) => {
+          chatView.dispatch({
+            changes: { from: chatView.state.selection.main.from, insert: chunk },
+            selection: {
+              anchor: chatView.state.selection.main.from + chunk.length,
+              head: chatView.state.selection.main.from + chunk.length,
+            },
+          });
+        }),
+        tap({
+          finalize: () => {
+            chatView.destroy();
+          },
+        }),
+      )
+      .subscribe();
+
+    const write = (text: string) => cursorInput$.next(text);
+    const end = () => cursorInput$.complete();
+
+    return { write, end };
   }
 }
 

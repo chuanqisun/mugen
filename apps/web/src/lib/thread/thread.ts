@@ -18,12 +18,7 @@ export async function addAttachment(files: File[], headMessage: HTMLElement) {
       newAttachment.querySelector(`[data-type]`)!.textContent = file.type ? file.type : "text/plain";
 
       await fileToDataURL(file).then((dataUrl) => {
-        const object = $new("object", {
-          width: "0",
-          height: "0",
-          data: dataUrl,
-          type: file.type,
-        });
+        const object = $new("object", { width: "0", height: "0", data: dataUrl, type: file.type });
 
         newAttachment.querySelector(`[data-media]`)?.append(object);
       });
@@ -77,13 +72,11 @@ export async function runMessage(headMessage: HTMLElement) {
 
   // gather messages up to this point
   const threadMessages = getThreadMessages(messageElement);
-  const outputStream = proxy({
-    messages: threadMessages,
-  });
+  const outputStream = proxy({ messages: threadMessages });
 
-  for await (const chunk of outputStream) {
-    outputEditor.appendText(chunk);
-  }
+  const cursor = outputEditor.spawnCursor();
+  for await (const chunk of outputStream) cursor.write(chunk);
+  cursor.end();
 }
 
 function getThreadMessages(headMessage?: HTMLElement): GenericMessage[] {
