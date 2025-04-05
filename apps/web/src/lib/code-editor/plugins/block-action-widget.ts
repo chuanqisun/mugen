@@ -98,6 +98,11 @@ class BlockActionWidget extends WidgetType {
     ]);
   }
 
+  eq(widget: WidgetType): boolean {
+    if (!(widget instanceof BlockActionWidget)) return false;
+    return this.from === widget.from && this.to === widget.to;
+  }
+
   ignoreEvent() {
     return false;
   }
@@ -125,10 +130,7 @@ function actionBarDecorationSet(view: EditorView) {
       const nextNode = pushSites[pushSites.indexOf(node) + 1];
       if (node.name === "CodeMark" && nextNode?.name === "CodeInfo" && node.to === nextNode?.from) continue;
 
-      const deco = Decoration.widget({
-        widget: new BlockActionWidget(node.from, node.to),
-        side: 1,
-      });
+      const deco = Decoration.widget({ widget: new BlockActionWidget(node.from, node.to), side: 1 });
 
       widgets.push(deco.range(node.to));
     }
