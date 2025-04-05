@@ -112,7 +112,7 @@ class BlockActionWidget extends WidgetType {
 function actionBarDecorationSet(view: EditorView) {
   let widgets = [] as any[];
   for (let { from, to } of view.visibleRanges) {
-    const pushSites = [] as { name: string; from: number; to: number }[];
+    const pushSites = [] as { name: string; from: number; to: number; isBlockClosed: boolean }[];
     let isInBlock = false;
     let isBlockClosed = false;
     syntaxTree(view.state).iterate({
@@ -124,16 +124,15 @@ function actionBarDecorationSet(view: EditorView) {
 
         // closing triple backtick
         if (node.type.name === "CodeMark" && isInBlock) {
-          isBlockClosed = true;
+          pushSites.at(-1)!.isBlockClosed = true;
           return;
         }
 
-        // opening triple backtick
-        if (node.type.name === "CodeMark") isInBlock = true;
-
         // opening triple backtick with code info
         if (node.type.name === "CodeInfo") {
-          pushSites.push({ name: node.type.name, from: node.from, to: node.to });
+          isInBlock = true;
+          isBlockClosed = false;
+          pushSites.push({ name: node.type.name, from: node.from, to: node.to, isBlockClosed: false });
         }
       },
     });
@@ -142,7 +141,10 @@ function actionBarDecorationSet(view: EditorView) {
       const nextNode = pushSites[pushSites.indexOf(node) + 1];
       if (node.name === "CodeMark" && nextNode?.name === "CodeInfo" && node.to === nextNode?.from) continue;
 
-      const deco = Decoration.widget({ widget: new BlockActionWidget(node.from, node.to, isBlockClosed), side: 1 });
+      const deco = Decoration.widget({
+        widget: new BlockActionWidget(node.from, node.to, node.isBlockClosed),
+        side: 1,
+      });
 
       widgets.push(deco.range(node.to));
     }
