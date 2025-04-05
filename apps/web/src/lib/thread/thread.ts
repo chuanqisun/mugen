@@ -119,5 +119,9 @@ export function trimThread(headMessage: HTMLElement) {
   const allElements = $$("message-element");
   const index = allElements.indexOf(headMessage);
   if (index === -1) throw new Error("Head message not found in thread");
-  allElements.slice(index + 1).forEach((message) => message.remove());
+  allElements.slice(index + 1).forEach((message) => {
+    const isPinned = message.querySelector("[data-pinned]");
+    if (isPinned) return;
+    message.remove();
+  });
 }

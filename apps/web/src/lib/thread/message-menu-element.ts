@@ -97,6 +97,7 @@ export class MessageMenuElement extends HTMLElement {
         }
 
         case "run": {
+          trimThread(headMessage);
           runMessage(headMessage);
           break;
         }
@@ -114,6 +115,21 @@ export class MessageMenuElement extends HTMLElement {
             lang: codeEditorElement.getAttribute("data-lang") ?? "markdown",
           });
           if (updatedCode !== currentCode) codeEditorElement.value = updatedCode;
+          break;
+        }
+
+        case "toggle-minimize": {
+          const isMinimized = trigger.hasAttribute("data-minimized");
+          trigger.toggleAttribute("data-minimized", !isMinimized);
+          trigger.querySelector("use")!.setAttribute("href", isMinimized ? "#chevron-down" : "#chevron-right");
+          headMessage.toggleAttribute("data-minimized", !isMinimized);
+          break;
+        }
+
+        case "toggle-pin": {
+          const isPinned = trigger.hasAttribute("data-pinned");
+          trigger.toggleAttribute("data-pinned", !isPinned);
+          trigger.querySelector("use")!.setAttribute("href", isPinned ? "#pin" : "#pin-filled");
           break;
         }
 

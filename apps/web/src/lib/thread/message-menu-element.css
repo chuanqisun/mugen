@@ -4,6 +4,12 @@ message-menu-element {
   gap: 1px;
   background-color: var(--app-background);
 
+  [data-role]::after {
+    display: inline-flex;
+    justify-content: center;
+    width: 15px;
+  }
+
   [data-role="system"]::after {
     content: "⚙️";
   }

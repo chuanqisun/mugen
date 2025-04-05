@@ -55,6 +55,10 @@ fieldset {
   padding: 1rem;
 }
 
+[hidden] {
+  display: none;
+}
+
 input {
   padding: 0.25rem 0.5rem;
 }
