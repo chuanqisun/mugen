@@ -62,10 +62,12 @@ export class MessageMenuElement extends HTMLElement {
     const menuClick = fromEvent<MouseEvent>(this, "click");
 
     merge(attachmentsClick, menuClick).subscribe(async (event) => {
-      const trigger = (event.target as HTMLElement)?.closest("[data-action]") as HTMLElement;
-      const headMessage = trigger.closest<HTMLElement>("message-element")!;
-      const role = headMessage.querySelector("[data-role]")!.getAttribute("data-role");
-      const action = trigger.dataset.action;
+      const trigger = (event.target as HTMLElement)?.closest<HTMLElement>("[data-action]");
+      if (!trigger) return;
+      const headMessage = trigger?.closest<HTMLElement>("message-element");
+      if (!headMessage) return;
+      const role = headMessage?.querySelector("[data-role]")!.getAttribute("data-role");
+      const action = trigger?.dataset.action;
 
       switch (action) {
         case "append": {
@@ -143,7 +145,7 @@ export class MessageMenuElement extends HTMLElement {
         case "toggle-minimize": {
           const isMinimized = trigger.hasAttribute("data-minimized");
           trigger.toggleAttribute("data-minimized", !isMinimized);
-          trigger.querySelector("use")!.setAttribute("href", isMinimized ? "#chevron-down" : "#chevron-right");
+          trigger.querySelector("use")!.setAttribute("href", isMinimized ? "#shrink" : "#expand");
           headMessage.toggleAttribute("data-minimized", !isMinimized);
           headMessage.querySelector<CodeEditorElement>("code-editor-element")!.toggleMinimize(!isMinimized);
           break;
