@@ -1,8 +1,9 @@
-import { fromEvent, merge } from "rxjs";
+import { distinctUntilChanged, fromEvent, map, merge, tap } from "rxjs";
 import { startArtifact } from "../artifact-editor/artifact-editor";
-import type { CodeEditorElement } from "../code-editor/code-editor-element";
+import type { CodeEditorElement, CurosrChangeEventDetails } from "../code-editor/code-editor-element";
 import type { BlockEventInit } from "../code-editor/plugins/block-action-widget";
 import type { CommandEventDetails } from "../code-editor/plugins/chat-keymap";
+import { getCodeBlockAtCurosr } from "./cursor-context";
 import "./message-attachments.css";
 import "./message-menu-element.css";
 import {
@@ -33,18 +34,28 @@ export class MessageMenuElement extends HTMLElement {
       this.triggerAction("append");
     });
 
-    codeEditorElement?.addEventListener("block-run", async (e) => {
-      e.stopPropagation();
-      const { code, lang, blockStart, blockEnd, codeStart, codeEnd } = (e as CustomEvent<BlockEventInit>).detail;
-      console.log("block-run", { code, lang, blockStart, blockEnd, codeStart, codeEnd });
-      const updatedCode = await startArtifact({ code, lang });
-      if (updatedCode !== code) codeEditorElement.replaceText(codeStart, codeEnd, updatedCode);
-    });
     codeEditorElement?.addEventListener("block-copy", (e) => {
       e.stopPropagation();
       console.log("block-copy", (e as CustomEvent<BlockEventInit>).detail);
       navigator.clipboard.writeText((e as CustomEvent<BlockEventInit>).detail.code);
     });
+
+    fromEvent<CustomEvent<CurosrChangeEventDetails>>(codeEditorElement, "cursorchange")
+      .pipe(
+        map((e) => e.detail),
+        distinctUntilChanged((a, b) => a.from === b.from && a.to === b.to && a.doc === b.doc),
+        tap((e) => {
+          const block = getCodeBlockAtCurosr(e.doc, e.from, e.to);
+          const editCodeTrigger = this.querySelector("[data-action='edit-code']") as HTMLElement;
+          editCodeTrigger.setAttribute("data-from", block ? block.innerCodeStart.toString() : "0");
+          editCodeTrigger.setAttribute("data-to", block ? block.innerCodeEnd.toString() : e.doc.length.toString());
+          editCodeTrigger.setAttribute(
+            "data-lang",
+            block?.lang ?? codeEditorElement.getAttribute("data-lang") ?? "markdown",
+          );
+        }),
+      )
+      .subscribe();
 
     const attachmentsClick = fromEvent<MouseEvent>(messageAttachments, "click");
     const menuClick = fromEvent<MouseEvent>(this, "click");
@@ -74,6 +85,16 @@ export class MessageMenuElement extends HTMLElement {
         case "attach": {
           const files = await getOneTimeUpload();
           addAttachment(files, headMessage);
+          break;
+        }
+
+        case "edit-code": {
+          const codeStart = parseInt(trigger.getAttribute("data-from")!);
+          const codeEnd = parseInt(trigger.getAttribute("data-to")!);
+          const lang = trigger.getAttribute("data-lang") ?? "markdown";
+          const code = codeEditorElement.value.slice(codeStart, codeEnd);
+          const updatedCode = await startArtifact({ code, lang });
+          if (updatedCode !== code) codeEditorElement.replaceText(codeStart, codeEnd, updatedCode);
           break;
         }
 

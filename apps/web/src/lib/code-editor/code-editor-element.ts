@@ -7,7 +7,6 @@ import { oneDark } from "@codemirror/theme-one-dark";
 import { drawSelection, EditorView, highlightSpecialChars, keymap } from "@codemirror/view";
 import { ReplaySubject, tap } from "rxjs";
 import "./code-editor-element.css";
-import { blockActionPlugin } from "./plugins/block-action-widget";
 import { chatKeymap } from "./plugins/chat-keymap";
 import { syncDispatch } from "./sync";
 
@@ -15,6 +14,13 @@ const dynamicLanguage = new Compartment();
 
 export function defineCodeEditorElement() {
   customElements.define("code-editor-element", CodeEditorElement);
+}
+
+export type ChangeEventDetails = string;
+export interface CurosrChangeEventDetails {
+  from: number;
+  to: number;
+  doc: string;
 }
 
 export class CodeEditorElement extends HTMLElement {
@@ -33,12 +39,22 @@ export class CodeEditorElement extends HTMLElement {
         keymap.of([...chatKeymap(this), ...defaultKeymap, ...historyKeymap]),
         oneDark,
         dynamicLanguage.of([]),
-        blockActionPlugin,
         EditorView.lineWrapping,
         EditorView.focusChangeEffect.of((state, focusing) => {
           if (focusing) return null;
-          this.dispatchEvent(new CustomEvent("change", { detail: state.doc.toString() }));
+          this.dispatchEvent(new CustomEvent<ChangeEventDetails>("change", { detail: state.doc.toString() }));
           return null;
+        }),
+        EditorView.updateListener.of((update) => {
+          this.dispatchEvent(
+            new CustomEvent<CurosrChangeEventDetails>("cursorchange", {
+              detail: {
+                from: update.state.selection.main.from,
+                to: update.state.selection.main.to,
+                doc: update.state.doc.toString(),
+              },
+            }),
+          );
         }),
       ],
       dispatch: (tr) => syncDispatch(tr, this.editorView!, this.cursorViews),
