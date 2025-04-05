@@ -5,5 +5,11 @@
 - Save and restore
 - Resize preview
 - Per message model switch
+- Add abort controller for each run
+- Move message up/down
 - Model switch dialog
 - File icon fallback/timeout attachment
+- Generate message content (based on template, if any)
+- Handle file pasting
+- Handle attachment role switching (img: inline or file)
+- Code interpreter mode
