@@ -50,7 +50,7 @@ export class MessageMenuElement extends HTMLElement {
     const menuClick = fromEvent<MouseEvent>(this, "click");
 
     merge(attachmentsClick, menuClick).subscribe(async (event) => {
-      const trigger = event.target as HTMLElement;
+      const trigger = (event.target as HTMLElement)?.closest("[data-action]") as HTMLElement;
       const headMessage = trigger.closest<HTMLElement>("message-element")!;
       const role = headMessage.querySelector("[data-role]")!.getAttribute("data-role");
       const action = trigger.dataset.action;

@@ -4,13 +4,13 @@ message-menu-element {
   gap: 1px;
   background-color: var(--app-background);
 
-  [data-role="system"]::before {
+  [data-role="system"]::after {
     content: "⚙️";
   }
-  [data-role="user"]::before {
+  [data-role="user"]::after {
     content: "🙋";
   }
-  [data-role="assistant"]::before {
+  [data-role="assistant"]::after {
     content: "🤖";
   }
 
@@ -19,7 +19,10 @@ message-menu-element {
     background: none;
     cursor: pointer;
     padding: 0.25rem 0.25rem;
-    font-size: 16px;
+    display: flex;
+    align-items: center;
+    font-size: 15px;
+    line-height: 15px;
     color: color-mix(in srgb, currentColor 50%, transparent);
 
     &:hover {
