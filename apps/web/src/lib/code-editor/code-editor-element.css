@@ -15,6 +15,9 @@ code-editor-element {
   &[data-minimized] {
     .cm-editor {
       max-height: 6ch;
+      .cm-scroller {
+        overflow-y: scroll;
+      }
     }
   }
 }

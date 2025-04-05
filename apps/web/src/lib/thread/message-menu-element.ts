@@ -3,6 +3,7 @@ import { startArtifact } from "../artifact-editor/artifact-editor";
 import type { CodeEditorElement, CurosrChangeEventDetails } from "../code-editor/code-editor-element";
 import type { BlockEventInit } from "../code-editor/plugins/block-action-widget";
 import type { CommandEventDetails } from "../code-editor/plugins/chat-keymap";
+import type { FileIconElement } from "./attachment/file-icon-element";
 import { getCodeBlockAtCurosr } from "./cursor-context";
 import "./message-attachments.css";
 import "./message-menu-element.css";
@@ -49,10 +50,10 @@ export class MessageMenuElement extends HTMLElement {
           const editCodeTrigger = this.querySelector("[data-action='edit-code']") as HTMLElement;
           editCodeTrigger.setAttribute("data-from", block ? block.innerCodeStart.toString() : "0");
           editCodeTrigger.setAttribute("data-to", block ? block.innerCodeEnd.toString() : e.doc.length.toString());
-          editCodeTrigger.setAttribute(
-            "data-lang",
-            block?.lang ?? codeEditorElement.getAttribute("data-lang") ?? "markdown",
-          );
+          const lang = block?.lang ?? codeEditorElement.getAttribute("data-lang") ?? "markdown";
+          editCodeTrigger.setAttribute("data-lang", lang);
+          editCodeTrigger.querySelector<FileIconElement>("file-icon-element")!.setAttribute("data-lang", lang);
+          editCodeTrigger.title = `Edit code (${lang})`;
         }),
       )
       .subscribe();

@@ -91,7 +91,7 @@ export function getCodeBlockAtCurosr(
       return null;
     } else {
       // Continue searching forward
-      closingIndex = lineEnd + 1;
+      closingIndex = lineEnd;
     }
   }
 
