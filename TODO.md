@@ -2,3 +2,5 @@
 - Pin message to avoid auto trim
 - Show chat speed and consumption
 - MCP tool
+- Save and restore
+- Resize preview

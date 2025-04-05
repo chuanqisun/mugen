@@ -20,6 +20,7 @@ export function defineCodeEditorElement() {
 export class CodeEditorElement extends HTMLElement {
   static observedAttributes = ["data-lang", "value"];
 
+  private cursorViews: EditorView[] = [];
   private editorView: EditorView | null = null;
 
   connectedCallback() {
@@ -40,6 +41,7 @@ export class CodeEditorElement extends HTMLElement {
           return null;
         }),
       ],
+      dispatch: (tr) => syncDispatch(tr, this.editorView!, this.cursorViews),
       parent: this,
     });
 
@@ -95,33 +97,36 @@ export class CodeEditorElement extends HTMLElement {
       throw new Error("EditorView not initialized");
     }
 
-    const cursorView = document.createElement("div");
-    const chatView = new EditorView({
+    const cursorEditor = document.createElement("div");
+    const cursorView = new EditorView({
       state: EditorState.create({ doc: this.editorView.state.doc }), // share doc and nothing else
-      parent: cursorView,
-      dispatch: (tr) => syncDispatch(tr, chatView, this.editorView!),
+      parent: cursorEditor,
+      dispatch: (tr) => syncDispatch(tr, cursorView, [this.editorView!]),
     });
+
+    this.cursorViews.push(cursorView);
 
     const initialSelection = options?.selection ?? this.editorView.state.selection.main;
 
     // initial selection
-    chatView.dispatch({ selection: initialSelection });
+    cursorView.dispatch({ selection: initialSelection });
 
     const cursorInput$ = new ReplaySubject();
     cursorInput$
       .pipe(
         tap((chunk: any) => {
-          chatView.dispatch({
-            changes: { from: chatView.state.selection.main.from, insert: chunk },
+          cursorView.dispatch({
+            changes: { from: cursorView.state.selection.main.from, insert: chunk },
             selection: {
-              anchor: chatView.state.selection.main.from + chunk.length,
-              head: chatView.state.selection.main.from + chunk.length,
+              anchor: cursorView.state.selection.main.from + chunk.length,
+              head: cursorView.state.selection.main.from + chunk.length,
             },
           });
         }),
         tap({
           finalize: () => {
-            chatView.destroy();
+            this.cursorViews = this.cursorViews.filter((view) => view !== cursorView);
+            cursorView.destroy();
           },
         }),
       )
