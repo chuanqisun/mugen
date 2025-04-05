@@ -1,15 +1,18 @@
 const iconFileMap: Record<string, string> = {
-  js: "file_type_js_official.svg",
-  jsx: "file_type_js_official.svg",
-  ts: "file_type_js_official.svg",
-  tsx: "file_type_js_official.svg",
-  html: "file_type_html.svg",
-  json: "file_type_json.svg",
-  yaml: "file_type_yaml.svg",
-  md: "file_type_markdown.svg",
-  markdown: "file_type_markdown.svg",
-  txt: "file_type_text.svg",
+  css: "file_type_css.svg",
   default: "default_file.svg",
+  html: "file_type_html.svg",
+  js: "file_type_js_official.svg",
+  json: "file_type_json.svg",
+  jsx: "file_type_reactjs.svg",
+  markdown: "file_type_markdown.svg",
+  md: "file_type_markdown.svg",
+  mermaid: "file_type_mermaid.svg",
+  svg: "file_type_svg.svg",
+  ts: "file_type_typescript_official.svg",
+  tsx: "file_type_reactts.svg",
+  txt: "file_type_text.svg",
+  yaml: "file_type_yaml.svg",
 };
 
 export function getFileIconUrl(filename: string): string {
