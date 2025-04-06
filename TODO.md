@@ -1,5 +1,3 @@
-- Add abort controller for each run
-- Stop button
 - Preview markdown code
 - Dyanmic preview rendering of markdown code
 - Artifact menu
@@ -24,3 +22,5 @@
 - Run block action based on cursor position
 - Auto trim when rerun
 - Pin message to avoid auto trim
+- Add abort controller for each run
+- Stop button
