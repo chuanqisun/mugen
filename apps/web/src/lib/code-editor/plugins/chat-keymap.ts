@@ -37,4 +37,14 @@ export const chatKeymap = (eventTarget: EventTarget) =>
         }
       },
     },
+    {
+      key: "Escape",
+      run: (view) => {
+        // if there is no select, emoit an "stop" command event
+        if (view.state.selection.ranges.length === 1 && view.state.selection.ranges[0].empty) {
+          eventTarget.dispatchEvent(new CustomEvent("command", { detail: { command: "stop" }, bubbles: true }));
+          return true;
+        }
+      },
+    },
   ] as KeyBinding[];
