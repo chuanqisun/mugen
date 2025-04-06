@@ -6,6 +6,7 @@ import { fileToDataURL, textToDataUrl } from "../storage/codec";
 import { getFileIconUrl } from "./attachment/file-icon";
 import { getReadableFileSize } from "./attachment/file-size";
 import { truncateMiddle } from "./attachment/filename";
+import { MessageMenuElement } from "./message-menu-element";
 
 export async function addAttachment(files: File[], headMessage: HTMLElement) {
   const template = document.querySelector<HTMLTemplateElement>("#message-attachment")!;
@@ -70,15 +71,21 @@ export async function runMessage(headMessage: HTMLElement) {
   const newMessage = createMessage("assistant") as DocumentFragment;
   const messageElement = headMessage;
   const outputEditor = newMessage.querySelector("code-editor-element") as CodeEditorElement;
+  const messageMenu = newMessage.querySelector<MessageMenuElement>("message-menu-element")!;
   insertAdacentElements(messageElement, [...newMessage.children] as HTMLElement[], "afterend");
 
   // gather messages up to this point
   const threadMessages = getThreadMessages(messageElement);
-  const outputStream = proxy({ messages: threadMessages });
+  const task = messageMenu.addTask();
+  const outputStream = proxy({ messages: threadMessages, abortSignal: task.signal });
 
-  const cursor = outputEditor.spawnCursor();
-  for await (const chunk of outputStream) cursor.write(chunk);
-  cursor.end();
+  try {
+    const cursor = outputEditor.spawnCursor();
+    for await (const chunk of outputStream) cursor.write(chunk);
+    cursor.end();
+  } finally {
+    task.abort();
+  }
 }
 
 function getThreadMessages(headMessage?: HTMLElement): GenericMessage[] {

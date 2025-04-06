@@ -20,6 +20,8 @@ import {
 import { getOneTimeUpload } from "./upload";
 
 export class MessageMenuElement extends HTMLElement {
+  private tasks: AbortController[] = [];
+
   connectedCallback() {
     const codeEditorElement = this.closest("message-element")!.querySelector<CodeEditorElement>("code-editor-element")!;
     const messageAttachments = this.closest("message-element")!.querySelector("attachment-list-element")!;
@@ -142,6 +144,11 @@ export class MessageMenuElement extends HTMLElement {
           break;
         }
 
+        case "stop": {
+          this.tasks.forEach((task) => task.abort());
+          break;
+        }
+
         case "toggle-minimize": {
           const isMinimized = trigger.hasAttribute("data-minimized");
 
@@ -217,6 +224,33 @@ export class MessageMenuElement extends HTMLElement {
   triggerAction(action: string) {
     const trigger = this.querySelector(`[data-action="${action}"]`) as HTMLElement;
     trigger.click();
+  }
+
+  addTask(options?: { cancelOthers?: boolean }) {
+    const abortController = new AbortController();
+    abortController.signal.addEventListener("abort", () => {
+      this.tasks = this.tasks.filter((task) => task !== abortController);
+      this.updateSpinner();
+    });
+
+    if (options?.cancelOthers) {
+      this.tasks.forEach((task) => task.abort());
+      this.tasks = [];
+    }
+
+    this.tasks.push(abortController);
+    this.updateSpinner();
+
+    return {
+      signal: abortController.signal,
+      abort: () => abortController.abort(),
+    };
+  }
+
+  private updateSpinner() {
+    const hasRunningTask = this.tasks.some((task) => !task.signal.aborted);
+    const stopButton = this.querySelector(`[data-action="stop"]`)!;
+    stopButton.toggleAttribute("hidden", !hasRunningTask);
   }
 }
 
