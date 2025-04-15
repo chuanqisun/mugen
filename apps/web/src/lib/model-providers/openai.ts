@@ -32,7 +32,16 @@ export interface OpenAIConnection extends BaseConnection {
 
 export class OpenAIProvider implements BaseProvider {
   static type = "openai";
-  static defaultModels = ["gpt-4.5-preview", "o3-mini", "o1-mini", "gpt-4o", "gpt-4o-mini"];
+  static defaultModels = [
+    "gpt-4.5-preview",
+    "gpt-4.1",
+    "gpt-4.1-mini",
+    "gpt-4.1-nano",
+    "o3-mini",
+    "o1-mini",
+    "gpt-4o",
+    "gpt-4o-mini",
+  ];
 
   parseNewCredentialForm(formData: FormData): OpenAICredential[] {
     const accountName = formData.get("newAccountName") as string;
